@@ -9,8 +9,8 @@
 #include <math.h>
 #include <time.h>
 
-#include "SDL.h"
-#include "SDL_ttf.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_ttf.h"
 
 #define TITLE "FlipClock"
 #define WIDTH 1024
@@ -18,3 +18,9 @@
 
 bool ampm = false;
 bool full = false;
+
+int main(int argc, char *argv[])
+{
+	/* code */
+	return 0;
+}
