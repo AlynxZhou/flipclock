@@ -14,17 +14,15 @@
 
 	bool appInit(const char programName[]);
 	void renderBackGround(void);
-	void drawTimeBackGround(const SDL_Rect *targetRect,
+	void renderTimeBackGround(const SDL_Rect *targetRect,
 				const int radius);
-	void drawClockDigits(SDL_Texture *targetTexture,
+	void renderClockDigits(SDL_Texture *targetTexture,
 			     const SDL_Rect *targetRect,
 			     TTF_Font* font,
 			     const char digits[],
 			     const int radius,
 		     	     const SDL_Color tempColor);
-	int iMax(int a,
-		 int b);
-	void drawTime(SDL_Texture *targetTexture,
+	void renderTime(SDL_Texture *targetTexture,
 		      const SDL_Rect *targetRect,
 		      TTF_Font *font,
 		      const char nowDigits[],
@@ -32,7 +30,7 @@
 		      const int radius,
 		      const int step,
 		      const int maxSteps);
-	void drawClock(const int step,
+	void renderClock(const int step,
 		       const int maxSteps);
 	void renderAnimate(void);
 	Uint32 timeUpdater(Uint32 interval,
