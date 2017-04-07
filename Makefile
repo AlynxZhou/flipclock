@@ -19,4 +19,4 @@ getarg/getarg.o : getarg/getarg.h
 clean :
 	-rm -f flipclock flipclock.o ${OBJECTS} flipclock.h.gch getarg/getarg.h.gch a.out
 
-rebuild : clean lab
+rebuild : clean flipclock

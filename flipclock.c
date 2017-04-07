@@ -306,5 +306,5 @@ void printHelp(const char programName[])
 	printf("\t-w\t\tRun in window.\n");
 	printf("\t-t <12|24>\tToggle 12-hour clock format (AM/PM) or 24-hour clock format.\n");
 	printf("\t-f <font>\tCustom font.\n");
-	printf("\t-s <scaleFactor>\t\tCustom resolution with a scale factor, e.g. 1024x768.\n");
+	printf("\t-s <factor>\tCustom resolution with a scale factor.\n");
 }
