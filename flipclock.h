@@ -13,7 +13,8 @@
 #	include "getarg/getarg.h"
 
 	bool appInit(const char programName[]);
-	void renderBackGround(void);
+	void renderBackGround(SDL_Texture *targetTexture,
+			      const SDL_Color *backGroundColor);
 	void renderTimeBackGround(const SDL_Rect *targetRect,
 				const int radius);
 	void renderClockDigits(SDL_Texture *targetTexture,
