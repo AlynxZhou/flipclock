@@ -197,6 +197,7 @@ bool appInit(const char programName[])
 		fprintf(stderr, "%s: Texture could not be created! SDL Error: %s\n", programName, SDL_GetError());
 		return false;
 	}
+	renderBackGround();
 	timeTexture = SDL_CreateTexture(Renderer, 0, SDL_TEXTUREACCESS_TARGET, rectSize, rectSize);
 	if (timeTexture == NULL) {
 		fprintf(stderr, "%s: Texture could not be created! SDL Error: %s\n", programName, SDL_GetError());
@@ -227,6 +228,7 @@ bool appInit(const char programName[])
 
 void renderBackGround(void)
 {
+	SDL_SetRenderTarget(Renderer, Texture);
 	SDL_SetRenderDrawColor(Renderer, backGroundColor->r, backGroundColor->g, backGroundColor->b, backGroundColor->a);
 	SDL_RenderClear(Renderer);
 }
@@ -314,6 +316,7 @@ void renderTime(SDL_Texture *targetTexture,
 	halfDstRect.w = targetRect->w;
 	halfDstRect.h = targetRect->h / 2;
 	renderClockDigits(targetTexture, targetRect, font, nowDigits, radius, tempColor);
+	SDL_SetRenderTarget(Renderer, Texture);
 	SDL_RenderCopy(Renderer, targetTexture, &halfSrcRect, &halfDstRect);
 
 	// Calculate the scale factor and the color change.
@@ -339,6 +342,7 @@ void renderTime(SDL_Texture *targetTexture,
 	halfDstRect.w = targetRect->w;
 	halfDstRect.h = targetRect->h * scale / 2;
 	renderClockDigits(targetTexture, targetRect, font, upperhalf? prevDigits : nowDigits, radius, tempColor);
+	SDL_SetRenderTarget(Renderer, Texture);
 	SDL_RenderCopy(Renderer, targetTexture, &halfSrcRect, &halfDstRect);
 
 	// render divider
@@ -370,10 +374,8 @@ void renderClock(const int step,
 	}
 	if (nowTime->tm_hour != prevTime->tm_hour) {
 		ampm? strftime(nowDigits, sizeof(nowDigits), "%I", nowTime) : strftime(nowDigits, sizeof(nowDigits), "%H", nowTime);
-		// printf("%d\n", prevTime->tm_hour);
 		ampm? strftime(prevDigits, sizeof(prevDigits), "%I", prevTime) : strftime(prevDigits, sizeof(prevDigits), "%H", prevTime);
 		renderTime(timeTexture, &hourRect, timeFont, nowDigits, prevDigits, radius, step, maxSteps);
-		// ampm?
 	}
 	if (nowTime->tm_min != prevTime->tm_min) {
 		strftime(nowDigits, sizeof(nowDigits), "%M", nowTime);
@@ -381,7 +383,7 @@ void renderClock(const int step,
 		renderTime(timeTexture, &minuteRect, timeFont, nowDigits, prevDigits, radius, step, maxSteps);
 
 	}
-	renderBackGround();
+	SDL_SetRenderTarget(Renderer, NULL);
 	SDL_RenderCopy(Renderer, Texture, NULL, NULL);
 	SDL_RenderPresent(Renderer);
 	if (step == maxSteps - 1)
@@ -390,7 +392,7 @@ void renderClock(const int step,
 
 void renderAnimate(void)
 {
-	const int DURATION = 260;
+	const int DURATION = 180;
 	int startTick = SDL_GetTicks();
 	int endTick = startTick + DURATION;
 	int currentTick;
