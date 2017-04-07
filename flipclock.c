@@ -74,6 +74,7 @@ const char *fontPath = FALLBACKFONT;
 
 int width = WIDTH;
 int height = HEIGHT;
+double scaleFactor = 0.0;
 int rectSize = 0;
 int wSpace = 0;
 int radius = 0;
@@ -92,6 +93,9 @@ int main(int argc, const char *argv[])
 				break;
 			case 'f':
 				fontPath = optarg;
+				break;
+			case 's':
+				sscanf(optarg, "%lf", &scaleFactor);
 				break;
 			case 'h':
 				printHelp(argv[0]);
@@ -151,7 +155,12 @@ bool appInit(const char programName[])
 		SDL_Quit();
 		return false;
 	}
-	if (full) {
+
+	if (scaleFactor != 0.0) {
+		full = false;
+		width *= scaleFactor;
+		height *= scaleFactor;
+	} else if (full) {
 		SDL_DisplayMode displayMode;
 		SDL_GetCurrentDisplayMode(0, &displayMode);
 		width = displayMode.w;
@@ -333,7 +342,7 @@ void renderTime(SDL_Texture *targetTexture,
 	SDL_RenderCopy(Renderer, targetTexture, &halfSrcRect, &halfDstRect);
 
 	// render divider
-	dividerRect.h = targetRect->h * 0.01;
+	dividerRect.h = targetRect->h / 100;
 	dividerRect.w = targetRect->w;
 	dividerRect.x = targetRect->x;
 	dividerRect.y = targetRect->y + (targetRect->h - dividerRect.h) / 2;
