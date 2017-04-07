@@ -1,6 +1,6 @@
 # flipclock
 
-=======
+A flip clock screensaver support by SDL2.
 
 Usage:
 
