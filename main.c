@@ -5,6 +5,7 @@
  */
 #include "flipclock.h"
 
+// Global SDL varibles.
 SDL_Window *Window = NULL;
 SDL_Renderer *Renderer = NULL;
 SDL_Texture *Texture = NULL;
@@ -24,10 +25,12 @@ SDL_Rect hourRect;
 SDL_Rect minuteRect;
 SDL_Rect modeRect;
 
+// Time.
 struct tm _prevTime;
 struct tm *prevTime = &_prevTime;
 struct tm _nowTime;
 struct tm *nowTime = &_nowTime;
+// Some global resource.
 const char FALLBACKFONT[] = "numbers.ttf";
 const char OPTSTRING[] = "hwt:f:s:";
 const char TITLE[] = "FlipClock";
@@ -35,15 +38,18 @@ const char *fontPath = NULL;
 const int MAXSTEPS = 180;
 bool full = true;
 bool ampm = false;
+// Default width and height.
 int width = 1024;
 int height = 768;
 double scaleFactor = 0.0;
+// Varibles about time rect.
 int rectSize = 0;
 int wSpace = 0;
 int radius = 0;
 
 int main(int argc, const char *argv[])
 {
+	// Dealing with argument.
 	int arg;
 	while ((arg = getArg(argc, argv, OPTSTRING)) != -1) {
 		switch(arg) {
@@ -69,14 +75,17 @@ int main(int argc, const char *argv[])
         	}
     	}
 
+	// Try to init app.
 	if (!appInit(argv[0])) {
 		appQuit();
 		exit(EXIT_FAILURE);
 	}
 
+	// This keeps a safe numbers which will let the clock init.
 	prevTime->tm_hour = -25;
 	prevTime->tm_min = -25;
 
+	// Listen for update.
 	bool quit = false;
 	SDL_Event event;
 	SDL_TimerID timer = SDL_AddTimer(60, timeUpdater, prevTime);
@@ -84,10 +93,12 @@ int main(int argc, const char *argv[])
 	while (!quit && SDL_WaitEvent(&event)) {
 		switch (event.type) {
 			case SDL_USEREVENT:
+				// Time to update.
 				renderClock();
 				break;
 			case SDL_KEYDOWN:
 				switch(event.key.keysym.sym) {
+					// Use <q> or <Esc> to quit.
 					case SDLK_ESCAPE:
 					case SDLK_q:
 						quit = true;

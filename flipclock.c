@@ -7,12 +7,13 @@
 
 bool appInit(const char programName[])
 {
+	// Init SDL.
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) < 0) {
 		fprintf(stderr, "%s: Unable to init SDL: %s\n", programName, SDL_GetError());
 		SDL_Quit();
 		return false;
 	}
-
+	// Calculate numbers.
 	if (scaleFactor != 0.0) {
 		full = false;
 		width *= scaleFactor;
@@ -39,22 +40,27 @@ bool appInit(const char programName[])
 	modeRect.h = rectSize / 10;
 	modeRect.x = (width - modeRect.w) / 2;
 	modeRect.y = (height - rectSize) / 2 + rectSize + ((height - rectSize) / 2 - modeRect.h) / 2;
+	// Create window.
 	Window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, (full? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN));
 	if (Window == NULL) {
 		fprintf(stderr, "%s: Window could not be created! SDL Error: %s\n", programName, SDL_GetError());
 		return false;
 	}
+	// Create renderer.
 	Renderer = SDL_CreateRenderer(Window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_TARGETTEXTURE);
 	if (Renderer == NULL) {
 		fprintf(stderr, "%s: Renderer could not be created! SDL Error: %s\n", programName, SDL_GetError());
 		return false;
 	}
+	// Main screen buffer texture.
 	Texture = SDL_CreateTexture(Renderer, 0, SDL_TEXTUREACCESS_TARGET, width, height);
 	if (Texture == NULL) {
 		fprintf(stderr, "%s: Texture could not be created! SDL Error: %s\n", programName, SDL_GetError());
 		return false;
 	}
+	// Fill with black.
 	renderBackGround(Texture, blackColor);
+	// Two transparent texture swap for tribuffer.
 	currTexture = SDL_CreateTexture(Renderer, 0, SDL_TEXTUREACCESS_TARGET, width, height);
 	if (currTexture == NULL) {
 		fprintf(stderr, "%s: Texture could not be created! SDL Error: %s\n", programName, SDL_GetError());
@@ -67,10 +73,12 @@ bool appInit(const char programName[])
 		return false;
 	}
 	renderBackGround(prevTexture, transparent);
+	// Init SDL_ttf.
 	if (TTF_Init() < 0) {
 		fprintf(stderr, "%s: SDL_ttf could not initialize! SDL_ttf Error: %s\n", programName, TTF_GetError());
 		return false;
 	}
+	// Load custom/fallback font.
 	if (fontPath != NULL) {
 		timeFont = TTF_OpenFont(fontPath, rectSize);
 		modeFont = TTF_OpenFont(fontPath, rectSize / 10);
@@ -91,10 +99,10 @@ bool appInit(const char programName[])
 			return false;
 		}
 	}
-
 	return true;
 }
 
+// Clear texture with color.
 void renderBackGround(SDL_Texture *targetTexture,
 		      const SDL_Color *backGroundColor)
 {
@@ -103,6 +111,7 @@ void renderBackGround(SDL_Texture *targetTexture,
 	SDL_RenderClear(Renderer);
 }
 
+// Render time background.
 void renderTimeRect(const SDL_Rect *targetRect,
 		    const int radius)
 {
@@ -111,6 +120,7 @@ void renderTimeRect(const SDL_Rect *targetRect,
 	roundedBoxRGBA(Renderer, targetRect->x, targetRect->y, targetRect->x + targetRect->w, targetRect->y + targetRect->h, radius, rectColor->r, rectColor->g, rectColor->b, rectColor->a);
 }
 
+// Render time text to backend buffer.
 void renderTimeText(SDL_Texture *targetTexture,
 		    const SDL_Rect *targetRect,
 		    TTF_Font* font,
@@ -144,6 +154,8 @@ void renderTimeText(SDL_Texture *targetTexture,
 	SDL_SetRenderTarget(Renderer, Texture);
 }
 
+// Move and zoom time from back buffer to front main buffer.
+// This will make a part of a frame.
 void renderTime(const SDL_Rect *targetRect,
 		const int step,
 		const int maxSteps)
@@ -198,6 +210,8 @@ void renderTime(const SDL_Rect *targetRect,
 	SDL_SetRenderTarget(Renderer, NULL);
 }
 
+// Find which part of frame should be rendered and render them.
+// And render them to main texture then display on screen.
 void renderFrame(const int step,
 	         const int maxSteps)
 {
@@ -212,6 +226,7 @@ void renderFrame(const int step,
 	SDL_RenderPresent(Renderer);
 }
 
+// Calculate time and which frame should be render.
 void renderClock(void)
 {
 	const int DURATION = MAXSTEPS;
@@ -258,6 +273,7 @@ void renderClock(void)
 	*prevTime = *nowTime;
 }
 
+// Raise events for time update.
 Uint32 timeUpdater(Uint32 interval,
 		   void *param)
 {
