@@ -2,7 +2,7 @@
 
 A flip clock screensaver supported by SDL2.
 
-![screenshot.png](screenshot.png)
+![flipclock.png](flipclock.png)
 
 Usage:
 
