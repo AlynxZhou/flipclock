@@ -6,7 +6,7 @@ A flip clock screensaver supported by SDL2.
 
 Usage:
 
-1. Install SDL2, SDL2_gfx, SDL2_ttf.
+1. Install sdl2, sdl2_gfx, sdl2_ttf.
 
 2. Compile it with `make`.
 
