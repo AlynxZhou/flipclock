@@ -9,10 +9,10 @@ install:
 	install -o root -m 0755 -D flipclock /usr/bin/flipclock
 	install -o root -m 0644 -D flipclock.ttf /usr/share/fonts/flipclock.ttf
 	install -o root -m 0644 -D flipclock.png /usr/share/pixmaps/flipclock.png
-	install -o root -m 0644 -D flipclock.desktop /usr/share/applications/screensavers/flipclock.desktop
+	install -o root -m 0644 -D flipclock.desktop /usr/share/applications/flipclock.desktop
 
 uninstall:
-	-rm -f /usr/share/applications/screensavers/flipclock.desktop\
+	-rm -f /usr/share/applications/flipclock.desktop\
 	       /usr/share/fonts/flipclock.ttf\
 	       /usr/share/pixmaps/flipclock.png\
 	       /usr/bin/flipclock\
