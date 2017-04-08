@@ -2,6 +2,8 @@
 
 A flip clock screensaver support by SDL2.
 
+![screenshot.png](screenshot.png)
+
 Usage:
 
 1. Install SDL2, SDL2_gfx, SDL2_ttf.
