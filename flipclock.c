@@ -41,7 +41,7 @@ bool appInit(const char programName[])
 	modeRect.x = (width - modeRect.w) / 2;
 	modeRect.y = (height - rectSize) / 2 + rectSize + ((height - rectSize) / 2 - modeRect.h) / 2;
 	// Create window.
-	Window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, (full? SDL_WINDOW_FULLSCREEN_DESKTOP : 
+	Window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, (full? SDL_WINDOW_FULLSCREEN_DESKTOP :
 SDL_WINDOW_SHOWN)|SDL_WINDOW_ALLOW_HIGHDPI);
 	if (Window == NULL) {
 		fprintf(stderr, "%s: Window could not be created! SDL Error: %s\n", programName, SDL_GetError());
@@ -143,6 +143,7 @@ void renderTimeText(SDL_Texture *targetTexture,
 	digitRects.h = textSurface->h;
 	SDL_FreeSurface(textSurface);
 	SDL_RenderCopy(Renderer, textTexture, NULL, &digitRects);
+	SDL_DestroyTexture(textTexture);
 	textSurface = TTF_RenderGlyph_Blended(font, digits[1], *fontColor);
 	textTexture = SDL_CreateTextureFromSurface(Renderer, textSurface);
 	digitRects.x = targetRect->x + targetRect->w / 2 + (targetRect->w / 2 - textSurface->w) / 2;
