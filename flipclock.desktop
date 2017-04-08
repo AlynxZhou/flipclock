@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=FlipClock
+Comment=A flip clock screensaver supported by SDL2.
+Icon=flipclock
+Exec=/usr/bin/flipclock -f /usr/share/fonts/flipclock.ttf
+TryExec=/usr/bin/flipclock
+StartupNotify=false
+Terminal=false
+Type=Application
+Categories=Screensaver;

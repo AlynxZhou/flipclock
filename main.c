@@ -31,7 +31,7 @@ struct tm *prevTime = &_prevTime;
 struct tm _nowTime;
 struct tm *nowTime = &_nowTime;
 // Some global resource.
-const char FALLBACKFONT[] = "numbers.ttf";
+const char FALLBACKFONT[] = "flipclock.ttf";
 const char OPTSTRING[] = "hwt:f:s:";
 const char TITLE[] = "FlipClock";
 const char *fontPath = NULL;
