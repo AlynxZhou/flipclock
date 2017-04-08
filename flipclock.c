@@ -36,8 +36,8 @@ bool appInit(const char programName[])
 	minuteRect.y = hourRect.y;
 	minuteRect.w = rectSize;
 	minuteRect.h = rectSize;
-	modeRect.w = rectSize / 5;
-	modeRect.h = rectSize / 10;
+	modeRect.w = rectSize / 4;
+	modeRect.h = rectSize / 8;
 	modeRect.x = (width - modeRect.w) / 2;
 	modeRect.y = (height - rectSize) / 2 + rectSize + ((height - rectSize) / 2 - modeRect.h) / 2;
 	// Create window.
