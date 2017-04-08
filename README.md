@@ -10,4 +10,4 @@ Usage:
 
 2. Compile it with `make`.
 
-3. Run `./flipclock -h` to see usage.
+3. Run `./flipclock -h` to see usage. Press `q` or `Esc` to quit.
