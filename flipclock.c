@@ -112,13 +112,53 @@ void renderBackGround(SDL_Texture *targetTexture,
 	SDL_RenderClear(Renderer);
 }
 
+//Bresenham's circle algorithm.
+void renderRoundedBox(SDL_Renderer *Renderer,
+		      const SDL_Rect *rect,
+		      int radius)
+{
+	if (radius <= 1) {
+		SDL_RenderFillRect(Renderer, rect);
+		return;
+	}
+	if (2 * radius > rect->w)
+		radius = rect->w / 2;
+	if (2 * radius > rect->h)
+		radius = rect->h / 2;
+
+	int x = 0, y = radius, d = 3 - 2 * radius;
+	SDL_Rect temp;
+
+        while (x <= y) {
+		SDL_RenderDrawLine(Renderer, rect->x + radius - x, rect->y + radius - y, rect->x + rect->w - radius + x - 1, rect->y + radius - y);
+		SDL_RenderDrawLine(Renderer, rect->x + radius - x, rect->y + rect->h - radius + y, rect->x + rect->w - radius + x - 1, rect->y + rect->h - radius + y);
+		SDL_RenderDrawLine(Renderer, rect->x + radius - y, rect->y + radius - x, rect->x + rect->w - radius + y - 1, rect->y + radius - x);
+		SDL_RenderDrawLine(Renderer, rect->x + radius - y, rect->y + rect->h - radius + x, rect->x + rect->w - radius + y - 1, rect->y + rect->h - radius + x);
+        	if (d < 0) {
+			d = d + 4 * x + 6;
+        	} else {
+			d = d + 4 * (x - y) + 10;
+        		y--;
+        	}
+        	x++;
+        }
+	temp.x = rect->x;
+	temp.y = rect->y + radius;
+	temp.w = rect->w;
+	temp.h = rect->h - 2 * radius;
+	SDL_RenderFillRect(Renderer, &temp);
+}
+
 // Render time background.
-void renderTimeRect(const SDL_Rect *targetRect,
+void renderTimeRect(SDL_Texture *targetTexture,
+		    const SDL_Rect *targetRect,
 		    const int radius)
 {
 	// Use SDL2_gfx to render a roundedBox to
 	// Renderer whose target is bgTexture.
-	roundedBoxRGBA(Renderer, targetRect->x, targetRect->y, targetRect->x + targetRect->w, targetRect->y + targetRect->h, radius, rectColor->r, rectColor->g, rectColor->b, rectColor->a);
+	SDL_SetRenderTarget(Renderer, targetTexture);
+	SDL_SetRenderDrawColor(Renderer, rectColor->r, rectColor->g, rectColor->b, rectColor->a);
+	renderRoundedBox(Renderer, targetRect, radius);
 }
 
 // Render time text to backend buffer.
@@ -133,8 +173,7 @@ void renderTimeText(SDL_Texture *targetTexture,
 	SDL_Texture *textTexture = NULL;
 	SDL_Rect digitRects;
 
-	SDL_SetRenderTarget(Renderer, targetTexture);
-	renderTimeRect(targetRect, radius);
+	renderTimeRect(targetTexture, targetRect, radius);
 	textSurface = TTF_RenderGlyph_Blended(font, digits[0], *fontColor);
 	textTexture = SDL_CreateTextureFromSurface(Renderer, textSurface);
 	digitRects.x = targetRect->x + (targetRect->w / 2 - textSurface->w) / 2;
@@ -142,6 +181,7 @@ void renderTimeText(SDL_Texture *targetTexture,
 	digitRects.w = textSurface->w;
 	digitRects.h = textSurface->h;
 	SDL_FreeSurface(textSurface);
+	SDL_SetRenderTarget(Renderer, targetTexture);
 	SDL_RenderCopy(Renderer, textTexture, NULL, &digitRects);
 	SDL_DestroyTexture(textTexture);
 	textSurface = TTF_RenderGlyph_Blended(font, digits[1], *fontColor);
@@ -151,9 +191,9 @@ void renderTimeText(SDL_Texture *targetTexture,
 	digitRects.w = textSurface->w;
 	digitRects.h = textSurface->h;
 	SDL_FreeSurface(textSurface);
+	SDL_SetRenderTarget(Renderer, targetTexture);
 	SDL_RenderCopy(Renderer, textTexture, NULL, &digitRects);
 	SDL_DestroyTexture(textTexture);
-	SDL_SetRenderTarget(Renderer, Texture);
 }
 
 // Move and zoom time from back buffer to front main buffer.
@@ -162,7 +202,6 @@ void renderTime(const SDL_Rect *targetRect,
 		const int step,
 		const int maxSteps)
 {
-	SDL_SetRenderTarget(Renderer, Texture);
 	SDL_Rect halfSrcRect, halfDstRect, dividerRect;
 	double scale;
 	// Draw the upper current digit and render it.

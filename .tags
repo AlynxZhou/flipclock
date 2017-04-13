@@ -1,0 +1,59 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BLACKCOLOR	main.c	/^const SDL_Color BLACKCOLOR = {0x00, 0x00, 0x00, 0xff};$/;"	v
+CC	Makefile	/^CC ?= gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS ?= -std=c11 -lSDL2 -lSDL2_ttf -lSDL2_gfx$/;"	m
+FALLBACKFONT	main.c	/^const char FALLBACKFONT[] = "flipclock.ttf";$/;"	v
+FONTCOLOR	main.c	/^const SDL_Color FONTCOLOR = {0xb7, 0xb7, 0xb7, 0xff};$/;"	v
+MAXSTEPS	main.c	/^const int MAXSTEPS = 180;$/;"	v
+OBJECTS	Makefile	/^OBJECTS := main.o flipclock.o getarg\/getarg.o$/;"	m
+OPTSTRING	main.c	/^const char OPTSTRING[] = "hwt:f:s:";$/;"	v
+RECTCOLOR	main.c	/^const SDL_Color RECTCOLOR = {0x17, 0x17, 0x17, 0xff};$/;"	v
+Renderer	main.c	/^SDL_Renderer *Renderer = NULL;$/;"	v
+TITLE	main.c	/^const char TITLE[] = "FlipClock";$/;"	v
+TRANSPARENT	main.c	/^const SDL_Color TRANSPARENT = {0x00, 0x00, 0x00, 0x00};$/;"	v
+Texture	main.c	/^SDL_Texture *Texture = NULL;$/;"	v
+Window	main.c	/^SDL_Window *Window = NULL;$/;"	v
+_FILPCLOCK_H	flipclock.h	7;"	d
+_GETARG_H	getarg/getarg.h	7;"	d
+_nowTime	main.c	/^struct tm _nowTime;$/;"	v	typeref:struct:tm
+_prevTime	main.c	/^struct tm _prevTime;$/;"	v	typeref:struct:tm
+ampm	main.c	/^bool ampm = false;$/;"	v
+appInit	flipclock.c	/^bool appInit(const char programName[])$/;"	f
+appQuit	flipclock.c	/^void appQuit(void)$/;"	f
+blackColor	main.c	/^const SDL_Color *blackColor = &BLACKCOLOR;$/;"	v
+currTexture	main.c	/^SDL_Texture *currTexture = NULL;$/;"	v
+fontColor	main.c	/^const SDL_Color *fontColor = &FONTCOLOR;$/;"	v
+fontPath	main.c	/^const char *fontPath = NULL;$/;"	v
+full	main.c	/^bool full = true;$/;"	v
+getArg	getarg/getarg.c	/^int getArg(int argc, const char *argv[], const char optstring[])$/;"	f
+height	main.c	/^int height = 768;$/;"	v
+hourRect	main.c	/^SDL_Rect hourRect;$/;"	v
+main	main.c	/^int main(int argc, const char *argv[])$/;"	f
+minuteRect	main.c	/^SDL_Rect minuteRect;$/;"	v
+modeFont	main.c	/^TTF_Font *modeFont = NULL;$/;"	v
+modeRect	main.c	/^SDL_Rect modeRect;$/;"	v
+nowTime	main.c	/^struct tm *nowTime = &_nowTime;$/;"	v	typeref:struct:tm
+optarg	getarg/getarg.c	/^const char *optarg = NULL;$/;"	v
+prevTexture	main.c	/^SDL_Texture *prevTexture = NULL;$/;"	v
+prevTime	main.c	/^struct tm *prevTime = &_prevTime;$/;"	v	typeref:struct:tm
+printHelp	flipclock.c	/^void printHelp(const char programName[])$/;"	f
+radius	main.c	/^int radius = 0;$/;"	v
+rectColor	main.c	/^const SDL_Color *rectColor = &RECTCOLOR;$/;"	v
+rectSize	main.c	/^int rectSize = 0;$/;"	v
+renderBackGround	flipclock.c	/^void renderBackGround(SDL_Texture *targetTexture,$/;"	f
+renderClock	flipclock.c	/^void renderClock(void)$/;"	f
+renderFrame	flipclock.c	/^void renderFrame(const int step,$/;"	f
+renderTime	flipclock.c	/^void renderTime(const SDL_Rect *targetRect,$/;"	f
+renderTimeRect	flipclock.c	/^void renderTimeRect(const SDL_Rect *targetRect,$/;"	f
+renderTimeText	flipclock.c	/^void renderTimeText(SDL_Texture *targetTexture,$/;"	f
+scaleFactor	main.c	/^double scaleFactor = 0.0;$/;"	v
+timeFont	main.c	/^TTF_Font *timeFont = NULL;$/;"	v
+timeUpdater	flipclock.c	/^Uint32 timeUpdater(Uint32 interval,$/;"	f
+transparent	main.c	/^const SDL_Color *transparent = &TRANSPARENT;$/;"	v
+wSpace	main.c	/^int wSpace = 0;$/;"	v
+width	main.c	/^int width = 1024;$/;"	v

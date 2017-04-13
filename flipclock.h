@@ -15,7 +15,6 @@
 
 #	include "SDL2/SDL.h"
 #	include "SDL2/SDL_ttf.h"
-#	include "SDL2/SDL2_gfxPrimitives.h"
 #	include "getarg/getarg.h"
 
 	extern SDL_Window *Window;
@@ -51,7 +50,11 @@
 	bool appInit(const char programName[]);
 	void renderBackGround(SDL_Texture *targetTexture,
 			      const SDL_Color *backGroundColor);
-	void renderTimeRect(const SDL_Rect *targetRect,
+	void renderRoundedBox(SDL_Renderer *Renderer,
+			      const SDL_Rect *rect,
+			      int radius);
+	void renderTimeRect(SDL_Texture *targetTexture,
+			    const SDL_Rect *targetRect,
 			    const int radius);
 	void renderTimeText(SDL_Texture *targetTexture,
 			    const SDL_Rect *targetRect,
