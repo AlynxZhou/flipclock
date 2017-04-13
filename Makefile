@@ -1,5 +1,5 @@
 CC ?= gcc
-CFLAGS ?= -std=c11 -lSDL2 -lSDL2_ttf -lSDL2_gfx
+CFLAGS ?= -std=c11 -lSDL2 -lSDL2_ttf
 OBJECTS := main.o flipclock.o getarg/getarg.o
 
 flipclock : ${OBJECTS}
