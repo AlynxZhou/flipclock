@@ -27,9 +27,9 @@
 	extern const SDL_Color *rectColor;
 	extern const SDL_Color *blackColor;
 	extern const SDL_Color *transparent;
-	extern SDL_Rect hourRect;
-	extern SDL_Rect minuteRect;
-	extern SDL_Rect modeRect;
+	extern SDL_Rect *hourRect;
+	extern SDL_Rect *minuteRect;
+	extern SDL_Rect *modeRect;
 	extern struct tm *prevTime;
 	extern struct tm *nowTime;
 	extern bool ampm;
@@ -39,6 +39,7 @@
 	extern const char TITLE[];
 	extern const char VERSION[];
 	extern const char *fontPath;
+	extern const char *programName;
 	extern const int MAXSTEPS;
 	extern int width;
 	extern int height;
@@ -47,30 +48,30 @@
 	extern int wSpace;
 	extern int radius;
 
-	bool appInit(const char programName[]);
-	void renderBackGround(SDL_Texture *targetTexture,
+	bool appInit(void);
+	void renderBackGround(SDL_Texture *targetTexture, \
 			      const SDL_Color *backGroundColor);
-	void renderRoundedBox(SDL_Renderer *Renderer,
-			      const SDL_Rect *rect,
+	void renderRoundedBox(SDL_Renderer *Renderer, \
+			      const SDL_Rect *rect, \
 			      int radius);
-	void renderTimeRect(SDL_Texture *targetTexture,
-			    const SDL_Rect *targetRect,
+	void renderTimeRect(SDL_Texture *targetTexture, \
+			    const SDL_Rect *targetRect, \
 			    const int radius);
-	void renderTimeText(SDL_Texture *targetTexture,
-			    const SDL_Rect *targetRect,
-			    TTF_Font* font,
-			    const char digits[],
-			    const int radius,
+	void renderTimeText(SDL_Texture *targetTexture, \
+			    const SDL_Rect *targetRect, \
+			    TTF_Font* font, \
+			    const char digits[], \
+			    const int radius, \
 			    const SDL_Color *fontColor);
-	void renderTime(const SDL_Rect *targetRect,
-			const int step,
+	void renderTime(const SDL_Rect *targetRect, \
+			const int step, \
 			const int maxSteps);
-	void renderFrame(const int step,
+	void renderFrame(const int step, \
 		         const int maxSteps);
 	void renderClock(void);
-	Uint32 timeUpdater(Uint32 interval,
+	Uint32 timeUpdater(Uint32 interval, \
 			   void *param);
 	void appQuit(void);
-	void printHelp(const char programName[]);
+	void printHelp(void);
 
 #endif

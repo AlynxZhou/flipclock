@@ -21,9 +21,12 @@ const SDL_Color *fontColor = &FONTCOLOR;
 const SDL_Color *rectColor = &RECTCOLOR;
 const SDL_Color *blackColor = &BLACKCOLOR;
 const SDL_Color *transparent = &TRANSPARENT;
-SDL_Rect hourRect;
-SDL_Rect minuteRect;
-SDL_Rect modeRect;
+SDL_Rect _hourRect;
+SDL_Rect _minuteRect;
+SDL_Rect _modeRect;
+SDL_Rect *hourRect = &_hourRect;
+SDL_Rect *minuteRect = &_minuteRect;
+SDL_Rect *modeRect = &_modeRect;
 
 // Time.
 struct tm _prevTime;
@@ -36,6 +39,7 @@ const char OPTSTRING[] = "hwt:f:s:";
 const char TITLE[] = "FlipClock";
 const char VERSION[] = "1.1.1";
 const char *fontPath = NULL;
+const char *programName = NULL;
 const int MAXSTEPS = 180;
 bool full = true;
 bool ampm = false;
@@ -68,7 +72,7 @@ int main(int argc, const char *argv[])
 				sscanf(optarg, "%lf", &scaleFactor);
 				break;
 			case 'h':
-				printHelp(argv[0]);
+				printHelp();
 				exit(EXIT_SUCCESS);
 				break;
 			default:
@@ -76,8 +80,10 @@ int main(int argc, const char *argv[])
         	}
     	}
 
+	programName = argv[0];
+
 	// Try to init app.
-	if (!appInit(argv[0])) {
+	if (!appInit()) {
 		appQuit();
 		exit(EXIT_FAILURE);
 	}
@@ -93,24 +99,24 @@ int main(int argc, const char *argv[])
 
 	while (!quit && SDL_WaitEvent(&event)) {
 		switch (event.type) {
-			case SDL_USEREVENT:
-				// Time to update.
-				renderClock();
-				break;
-			case SDL_KEYDOWN:
-				switch(event.key.keysym.sym) {
-					// Use <q> or <Esc> to quit.
-					case SDLK_ESCAPE:
-					case SDLK_q:
-						quit = true;
-						break;
-					default:
-						break;
-				}
-				break;
-			case SDL_QUIT:
+		case SDL_USEREVENT:
+			// Time to update.
+			renderClock();
+			break;
+		case SDL_KEYDOWN:
+			switch (event.key.keysym.sym) {
+			// Use <q> or <Esc> to quit.
+			case SDLK_ESCAPE:
+			case SDLK_q:
 				quit = true;
 				break;
+			default:
+				break;
+			}
+			break;
+		case SDL_QUIT:
+			quit = true;
+			break;
 		}
 	}
 
