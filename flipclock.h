@@ -37,6 +37,7 @@
 	extern const char FALLBACKFONT[];
 	extern const char OPTSTRING[];
 	extern const char TITLE[];
+	extern const char VERSION[];
 	extern const char *fontPath;
 	extern const int MAXSTEPS;
 	extern int width;

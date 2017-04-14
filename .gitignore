@@ -31,5 +31,8 @@
 # Debug files
 *.dSYM/
 *.su
+
+# Custom files
 flipclock
 .tags
+Windows/Release/*

@@ -34,6 +34,7 @@ struct tm *nowTime = &_nowTime;
 const char FALLBACKFONT[] = "flipclock.ttf";
 const char OPTSTRING[] = "hwt:f:s:";
 const char TITLE[] = "FlipClock";
+const char VERSION[] = "1.1.1";
 const char *fontPath = NULL;
 const int MAXSTEPS = 180;
 bool full = true;

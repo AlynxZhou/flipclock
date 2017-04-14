@@ -356,7 +356,8 @@ void appQuit(void)
 
 void printHelp(const char programName[])
 {
-	printf("A simple flip clock using SDL2 by AlynxZhou. Version 1.0.\n");
+	printf("A simple flip clock screensaver using SDL2.\n");
+	printf("Written by AlynxZhou. Version %s.\n", VERSION);
 	printf("Usage: %s [OPTION...] <value>\n", programName);
 	printf("Options:\n");
 	printf("\t-h\t\tDisplay this help.\n");
@@ -364,4 +365,5 @@ void printHelp(const char programName[])
 	printf("\t-t <12|24>\tToggle 12-hour clock format (AM/PM) or 24-hour clock format.\n");
 	printf("\t-f <font>\tCustom font.\n");
 	printf("\t-s <factor>\tCustom resolution with a scale factor.\n");
+	printf("Press `q` or `Esc` to quit.\n");
 }
