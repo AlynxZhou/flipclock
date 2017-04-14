@@ -9,7 +9,7 @@
 *.pch
 
 # Libraries
-*.lib
+#*.lib
 *.a
 *.la
 *.lo
@@ -35,5 +35,5 @@
 # Custom files
 flipclock
 .tags
-Windows/Release/*
+Windows/Release
 Windows/.vs
