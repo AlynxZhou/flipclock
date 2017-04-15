@@ -41,7 +41,7 @@ bool appInit(void)
 	modeRect->h = rectSize / 8;
 	modeRect->x = (width - modeRect->w) / 2;
 	modeRect->y = (height - rectSize) / 2 + rectSize + \
-		     ((height - rectSize) / 2 - modeRect->h) / 2;
+		      ((height - rectSize) / 2 - modeRect->h) / 2;
 	// Create window.
 	Window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED, \
 				  SDL_WINDOWPOS_UNDEFINED, width, height, \
@@ -366,7 +366,7 @@ void renderClock(void)
 			       nowDigits, mRadius, fontColor);
 	}
 	if (nowTime->tm_hour != prevTime->tm_hour) {
-		ampm? strftime(nowDigits, sizeof(nowDigits), "%I", nowTime) :
+		ampm? strftime(nowDigits, sizeof(nowDigits), "%I", nowTime) : \
 		      strftime(nowDigits, sizeof(nowDigits), "%H", nowTime);
 		renderTimeText(currTexture, hourRect, timeFont, \
 			       nowDigits, radius, fontColor);
