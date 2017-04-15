@@ -3,7 +3,8 @@ CFLAGS ?= -std=c11 -O2 -lSDL2 -lSDL2_ttf
 OBJECTS := main.o flipclock.o getarg/getarg.o
 
 flipclock : ${OBJECTS}
-	${CC} ${CFLAGS} -o flipclock ${OBJECTS}
+	${CC} ${CFLAGS} -o flipclock \
+	   ${OBJECTS}
 
 .PHONY : install
 install:
