@@ -15,38 +15,61 @@
 #	include "SDL2/SDL.h"
 #	include "SDL2/SDL_ttf.h"
 #	include "getarg/getarg.h"
+#	define FALLBACK_FONT "flipclock.ttf";
+#	define OPTSTRING "hwt:f:s:"
+#	define TITLE "FlipClock"
+#	define VERSION "1.1.1"
+#	define MAXSTEPS 180
 
-	extern SDL_Window *Window;
-	extern SDL_Renderer *Renderer;
-	extern SDL_Texture *Texture;
-	extern SDL_Texture *currTexture;
-	extern SDL_Texture *prevTexture;
-	extern TTF_Font *timeFont;
-	extern TTF_Font *modeFont;
-	extern const SDL_Color *fontColor;
-	extern const SDL_Color *rectColor;
-	extern const SDL_Color *blackColor;
-	extern const SDL_Color *transparent;
-	extern SDL_Rect *hourRect;
-	extern SDL_Rect *minuteRect;
-	extern SDL_Rect *modeRect;
-	extern struct tm *prevTime;
-	extern struct tm *nowTime;
-	extern bool ampm;
-	extern bool full;
-	extern const char FALLBACKFONT[];
-	extern const char OPTSTRING[];
-	extern const char TITLE[];
-	extern const char VERSION[];
-	extern const char *fontPath;
-	extern const char *programName;
-	extern const int MAXSTEPS;
-	extern int width;
-	extern int height;
-	extern double scaleFactor;
-	extern int rectSize;
-	extern int wSpace;
-	extern int radius;
+	typedef struct app_colors {
+		SDL_Color font = {0xb7, 0xb7, 0xb7, 0xff};
+		SDL_Color rect = {0x17, 0x17, 0x17, 0xff};
+		SDL_Color black = {0x00, 0x00, 0x00, 0xff};
+		SDL_Color transparent = {0x00, 0x00, 0x00, 0x00};
+	} Colors;
+	typedef struct app_rects {
+		SDL_Rect hour;
+		SDL_Rect minute;
+		SDL_Rect mode;
+	} Rects;
+	typedef struct app_fonts {
+		TTF_Font *time = NULL;
+		TTF_Font *mode = NULL;
+	} Fonts;
+	typedef struct app_times {
+		struct tm past;
+		struct tm now;
+	} Times;
+	typedef struct app_properties {
+		const char *font_path = NULL;
+		const char *program_name = NULL;
+		bool full = true;
+		bool ampm = false;
+		// Default width and height.
+		int width = 1024;
+		int height = 768;
+		double scale = 0.0;
+		// Varibles about time rect.
+		int rectSize = 0;
+		int wSpace = 0;
+		int radius = 0;
+	} Properties;
+	typedef struct app_textures {
+		SDL_Texture *texture = NULL;
+		SDL_Texture *current = NULL;
+		SDL_Texture *previous = NULL;
+	} Textures;
+	typedef struct app {
+		SDL_Window *window = NULL;
+		SDL_Renderer *renderer = NULL;
+		struct app_textures textures;
+		struct app_rects rects;
+		struct app_fonts fonts;
+		struct app_times times;
+		struct app_colors colors;
+		struct app_properties properties;
+	} App;
+
 
 	bool appInit(void);
 	void renderBackGround(SDL_Texture *targetTexture, \

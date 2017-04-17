@@ -4,7 +4,7 @@
  * alynx.zhou@gmail.com, http://alynx.xyz/.
  */
 #include "flipclock.h"
-
+/*
 // Global SDL varibles.
 SDL_Window *Window = NULL;
 SDL_Renderer *Renderer = NULL;
@@ -13,13 +13,13 @@ SDL_Texture *currTexture = NULL;
 SDL_Texture *prevTexture = NULL;
 TTF_Font *timeFont = NULL;
 TTF_Font *modeFont = NULL;
-const SDL_Color FONTCOLOR = {0xb7, 0xb7, 0xb7, 0xff};
-const SDL_Color RECTCOLOR = {0x17, 0x17, 0x17, 0xff};
-const SDL_Color BLACKCOLOR = {0x00, 0x00, 0x00, 0xff};
-const SDL_Color TRANSPARENT = {0x00, 0x00, 0x00, 0x00};
-const SDL_Color *fontColor = &FONTCOLOR;
-const SDL_Color *rectColor = &RECTCOLOR;
-const SDL_Color *blackColor = &BLACKCOLOR;
+const SDL_Color FONT_COLOR = {0xb7, 0xb7, 0xb7, 0xff};
+const SDL_Color RECT_COLOR = {0x17, 0x17, 0x17, 0xff};
+const SDL_Color BLACK_COLOR = {0x00, 0x00, 0x00, 0xff};
+const SDL_Color TRANSPARENT_COLOR = {0x00, 0x00, 0x00, 0x00};
+const SDL_Color *font_color = &FONTCOLOR;
+const SDL_Color *rect_color = &RECTCOLOR;
+const SDL_Color *black_color = &BLACKCOLOR;
 const SDL_Color *transparent = &TRANSPARENT;
 SDL_Rect _hourRect;
 SDL_Rect _minuteRect;
@@ -51,7 +51,7 @@ double scaleFactor = 0.0;
 int rectSize = 0;
 int wSpace = 0;
 int radius = 0;
-
+*/
 int main(int argc, const char *argv[])
 {
 	// Dealing with argument.
