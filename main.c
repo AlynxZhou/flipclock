@@ -105,7 +105,7 @@ int main(int argc, const char *argv[])
 			break;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
-			// Use <q> or <Esc> to quit.
+			// Press `q` or `Esc` to quit.
 			case SDLK_ESCAPE:
 			case SDLK_q:
 				quit = true;
