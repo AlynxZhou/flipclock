@@ -10,8 +10,8 @@
 #	include <string.h>
 
 	// Global optarg.
-	extern const char *optarg;
+	extern char *optarg;
 
-	int getArg(int argc, const char *argv[], const char optstring[]);
+	int get_arg(int argc, char *argv[], char opt_string[]);
 
 #endif

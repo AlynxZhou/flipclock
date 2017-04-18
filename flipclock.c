@@ -5,125 +5,148 @@
  */
 #include "flipclock.h"
 
-bool appInit(void)
+bool init_app(struct app_all *app)
 {
 	// Init SDL.
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
 		fprintf(stderr, "%s: SDL could not be inited! " \
-			"SDL Error: %s\n", programName, SDL_GetError());
+			"SDL Error: %s\n", app->properties.program_name, \
+			SDL_GetError());
 		SDL_Quit();
 		return false;
 	}
 	// Calculate numbers.
-	if (scaleFactor != 0.0) {
-		full = false;
-		width *= scaleFactor;
-		height *= scaleFactor;
-	} else if (full) {
+	if (app->properties.scale != 0.0) {
+		app->properties.full = false;
+		app->properties.width *= app->properties.scale;
+		app->properties.height *= app->properties.scale;
+	} else if (app->properties.full) {
 		SDL_DisplayMode displayMode;
 		SDL_GetCurrentDisplayMode(0, &displayMode);
-		width = displayMode.w;
-		height = displayMode.h;
+		app->properties.width = displayMode.w;
+		app->properties.height = displayMode.h;
 		SDL_ShowCursor(SDL_DISABLE);
 	}
-	rectSize = width * 0.4;
-	wSpace = width * 0.06;
-	radius = rectSize / 10;
-	hourRect->x = (width - 2 * rectSize - wSpace) / 2;
-	hourRect->y = (height - rectSize) / 2;
-	hourRect->w = rectSize;
-	hourRect->h = rectSize;
-	minuteRect->x = hourRect->x + hourRect->w + wSpace;
-	minuteRect->y = hourRect->y;
-	minuteRect->w = rectSize;
-	minuteRect->h = rectSize;
-	modeRect->w = rectSize / 4;
-	modeRect->h = rectSize / 8;
-	modeRect->x = (width - modeRect->w) / 2;
-	modeRect->y = (height - rectSize) / 2 + rectSize + \
-		      ((height - rectSize) / 2 - modeRect->h) / 2;
+	app->properties.rect_size = app->properties.width * 0.4;
+ 	app->properties.width_space = app->properties.width * 0.06;
+	app->properties.time_radius = app->properties.rect_size / 10;
+	app->rects.hour.x = (app->properties.width - 2 * \
+			    app->properties.rect_size - \
+			    app->properties.width_space) / 2;
+	app->rects.hour.y = (app->properties.height - \
+			    app->properties.rect_size) / 2;
+	app->rects.hour.w = app->properties.rect_size;
+	app->rects.hour.h = app->properties.rect_size;
+	app->rects.minute.x = app->rects.hour.x + app->rects.hour.w + \
+			      app->properties.width_space;
+	app->rects.minute.y = app->rects.hour.y;
+	app->rects.minute.w = app->properties.rect_size;
+	app->rects.minute.h = app->properties.rect_size;
+	app->rects.mode.w = app->properties.rect_size / 4;
+	app->rects.mode.h = app->properties.rect_size / 8;
+	app->rects.mode.x = (app->properties.width - app->rects.mode.w) / 2;
+	app->rects.mode.y = (app->properties.height - \
+			    app->properties.rect_size) / 2 + \
+			    app->properties.rect_size + \
+			    ((app->properties.height - \
+			    app->properties.rect_size) / 2 - \
+			    app->rects.mode.h) / 2;
 	// Create window.
-	Window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED, \
-				  SDL_WINDOWPOS_UNDEFINED, width, height, \
-				  (full ? SDL_WINDOW_FULLSCREEN_DESKTOP : \
-				  SDL_WINDOW_SHOWN)|
-				  SDL_WINDOW_ALLOW_HIGHDPI);
-	if (Window == NULL) {
+	app->window = SDL_CreateWindow(TITLE, \
+				       SDL_WINDOWPOS_UNDEFINED, \
+				       SDL_WINDOWPOS_UNDEFINED, \
+				       app->properties.width, \
+				       app->properties.height, \
+				       (app->properties.full ? \
+				       SDL_WINDOW_FULLSCREEN_DESKTOP : \
+				       SDL_WINDOW_SHOWN) | \
+				       SDL_WINDOW_ALLOW_HIGHDPI);
+	if (app->window == NULL) {
 		fprintf(stderr, "%s: Window could not be created! " \
-			"SDL Error: %s\n", programName, SDL_GetError());
+			"SDL Error: %s\n", app->properties.program_name, \
+			SDL_GetError());
 		return false;
 	}
 	// Create renderer.
-	Renderer = SDL_CreateRenderer(Window, -1, SDL_RENDERER_ACCELERATED | \
-				      SDL_RENDERER_TARGETTEXTURE);
-	if (Renderer == NULL) {
+	app->renderer = SDL_CreateRenderer(app->window, -1, \
+					   SDL_RENDERER_ACCELERATED | \
+					   SDL_RENDERER_TARGETTEXTURE);
+	if (app->renderer == NULL) {
 		fprintf(stderr, "%s: Renderer could not be created! " \
-			"SDL Error: %s\n", programName, SDL_GetError());
+			"SDL Error: %s\n", app->properties.program_name, \
+			SDL_GetError());
 		return false;
 	}
 	// Main screen buffer texture.
-	Texture = SDL_CreateTexture(Renderer, 0, \
-				    SDL_TEXTUREACCESS_TARGET, \
-				    width, height);
-	if (Texture == NULL) {
+	app->textures.texture = SDL_CreateTexture(app->renderer, 0, \
+						  SDL_TEXTUREACCESS_TARGET, \
+						  app->properties.width, \
+						  app->properties.height);
+	if (app->textures.texture == NULL) {
 		fprintf(stderr, "%s: Texture could not be created! " \
-			"SDL Error: %s\n", programName, SDL_GetError());
+			"SDL Error: %s\n", app->properties.program_name, \
+			SDL_GetError());
 		return false;
 	}
 	// Fill with black.
-	renderBackGround(Texture, blackColor);
+	render_background(app, app->textures.texture, \
+			  app->colors.black);
 	// Two transparent texture swap for tribuffer.
-	currTexture = SDL_CreateTexture(Renderer, 0, \
-					SDL_TEXTUREACCESS_TARGET, \
-					width, height);
-	if (currTexture == NULL) {
+	app->textures.current = SDL_CreateTexture(app->renderer, 0, \
+						  SDL_TEXTUREACCESS_TARGET, \
+						  app->properties.width, \
+						  app->properties.height);
+	if (app->textures.current == NULL) {
 		fprintf(stderr, "%s: Texture could not be created! " \
-			"SDL Error: %s\n", programName, SDL_GetError());
+			"SDL Error: %s\n", app->properties.program_name, \
+			SDL_GetError());
 		return false;
 	}
-	renderBackGround(currTexture, transparent);
-	prevTexture = SDL_CreateTexture(Renderer, 0, \
-					SDL_TEXTUREACCESS_TARGET, \
-					width, height);
-	if (currTexture == NULL) {
+	render_background(app, app->textures.current, \
+			  app->colors.transparent);
+	app->textures.previous = SDL_CreateTexture(app->renderer, 0, \
+						   SDL_TEXTUREACCESS_TARGET, \
+						   app->properties.width, \
+						   app->properties.height);
+	if (app->textures.previous == NULL) {
 		fprintf(stderr, "%s: Texture could not be created! " \
-			"SDL Error: %s\n", programName, SDL_GetError());
+			"SDL Error: %s\n", app->properties.program_name, \
+			SDL_GetError());
 		return false;
 	}
-	renderBackGround(prevTexture, transparent);
+	render_background(app, app->textures.previous, \
+			  app->colors.transparent);
 	// Init SDL_ttf.
 	if (TTF_Init() < 0) {
 		fprintf(stderr, "%s: SDL_ttf could not initialize! " \
-			"SDL_ttf Error: %s\n", programName, TTF_GetError());
+			"SDL_ttf Error: %s\n", app->properties.program_name, \
+			TTF_GetError());
 		return false;
 	}
 	// Load custom/fallback font.
-	if (fontPath != NULL) {
-		timeFont = TTF_OpenFont(fontPath, rectSize);
-		modeFont = TTF_OpenFont(fontPath, rectSize / 10);
-		if (timeFont == NULL || modeFont == NULL) {
+	if (app->properties.font_path != NULL) {
+		app->fonts.time = TTF_OpenFont(app->properties.font_path, \
+					       app->properties.rect_size);
+		app->fonts.mode = TTF_OpenFont(app->properties.font_path, \
+					       app->properties.rect_size / 10);
+		if (app->fonts.time == NULL || app->fonts.mode == NULL) {
 			fprintf(stderr, "%s: Custom font " \
 				"could not be opened! " \
 				"TTF Error: %s\n", \
-				programName, TTF_GetError());
-			timeFont = TTF_OpenFont(FALLBACKFONT, rectSize);
-			modeFont = TTF_OpenFont(FALLBACKFONT, rectSize / 10);
+				app->properties.program_name, TTF_GetError());
+			app->properties.font_path = NULL;
 		}
-		if (timeFont == NULL || modeFont == NULL) {
+	}
+	if (app->properties.font_path == NULL) {
+		app->fonts.time = TTF_OpenFont(FALLBACK_FONT, \
+					       app->properties.rect_size);
+		app->fonts.mode = TTF_OpenFont(FALLBACK_FONT, \
+					       app->properties.rect_size / 10);
+		if (app->fonts.time == NULL || app->fonts.mode == NULL) {
 			fprintf(stderr, "%s: Fallback font " \
 				"could not be opened! " \
 				"TTF Error: %s\n", \
-				programName, TTF_GetError());
-			return false;
-		}
-	} else {
-		timeFont = TTF_OpenFont(FALLBACKFONT, rectSize);
-		modeFont = TTF_OpenFont(FALLBACKFONT, rectSize / 10);
-		if (timeFont == NULL || modeFont == NULL) {
-			fprintf(stderr, "%s: Fallback font " \
-				"could not be opened! " \
-				"TTF Error: %s\n", \
-				programName,  TTF_GetError());
+				app->properties.program_name,  TTF_GetError());
 			return false;
 		}
 	}
@@ -131,61 +154,62 @@ bool appInit(void)
 }
 
 // Clear texture with color.
-void renderBackGround(SDL_Texture *targetTexture, \
-		      const SDL_Color *backGroundColor)
+void render_background(struct app_all *app, \
+		       SDL_Texture *target_texture, \
+		       SDL_Color background_color)
 {
-	SDL_SetRenderTarget(Renderer, targetTexture);
-	SDL_SetRenderDrawColor(Renderer, \
-			       backGroundColor->r, backGroundColor->g, \
-			       backGroundColor->b, backGroundColor->a);
-	SDL_RenderClear(Renderer);
+	SDL_SetRenderTarget(app->renderer, target_texture);
+	SDL_SetRenderDrawColor(app->renderer, \
+			       background_color.r, background_color.g, \
+			       background_color.b, background_color.a);
+	SDL_RenderClear(app->renderer);
 }
 
 // Bresenham's circle algorithm.
-void renderRoundedBox(SDL_Renderer *Renderer, \
-		      const SDL_Rect *targetRect, \
-		      int radius)
+void render_rounded_box(struct app_all *app, \
+			SDL_Rect target_rect, \
+			int radius)
 {
 	if (radius <= 1) {
-		SDL_RenderFillRect(Renderer, targetRect);
+		SDL_RenderFillRect(app->renderer, &target_rect);
 		return;
 	}
-	if (2 * radius > targetRect->w)
-		radius = targetRect->w / 2;
-	if (2 * radius > targetRect->h)
-		radius = targetRect->h / 2;
-
-	int x = 0, y = radius, d = 3 - 2 * radius;
-	SDL_Rect temp;
-
+	if (2 * radius > target_rect.w)
+		radius = target_rect.w / 2;
+	if (2 * radius > target_rect.h)
+		radius = target_rect.h / 2;
+	int x = 0;
+	int y = radius;
+	int d = 3 - 2 * radius;
+	SDL_Rect temp_rect;
         while (x <= y) {
-		SDL_RenderDrawLine(Renderer, \
-				   targetRect->x + radius - x, \
-				   targetRect->y + radius - y, \
-				   targetRect->x + targetRect->w - \
+		SDL_RenderDrawLine(app->renderer, \
+				   target_rect.x + radius - x, \
+				   target_rect.y + radius - y, \
+				   target_rect.x + target_rect.w - \
 				   radius + x - 1, \
-				   targetRect->y + radius - y);
-		SDL_RenderDrawLine(Renderer, \
-				   targetRect->x + radius - x, \
-				   targetRect->y + targetRect->h - \
+				   target_rect.y + radius - y);
+		SDL_RenderDrawLine(app->renderer, \
+				   target_rect.x + radius - x, \
+				   target_rect.y + target_rect.h - \
 				   radius + y, \
-				   targetRect->x + targetRect->w - \
+				   target_rect.x + target_rect.w - \
 				   radius + x - 1, \
-				   targetRect->y + targetRect->h - \
+				   target_rect.y + target_rect.h - \
 				   radius + y);
-		SDL_RenderDrawLine(Renderer, \
-				   targetRect->x + radius - y, \
-				   targetRect->y + radius - x, \
-				   targetRect->x + targetRect->w - \
+		SDL_RenderDrawLine(app->renderer, \
+				   target_rect.x + radius - y, \
+				   target_rect.y + radius - x, \
+				   target_rect.x + target_rect.w - \
 				   radius + y - 1, \
-				   targetRect->y + radius - x);
-		SDL_RenderDrawLine(Renderer, \
-				   targetRect->x + radius - y, \
-				   targetRect->y + targetRect->h - \
+				   target_rect.y + radius - x);
+		SDL_RenderDrawLine(app->renderer, \
+				   target_rect.x + radius - y, \
+				   target_rect.y + target_rect.h - \
 				   radius + x, \
-				   targetRect->x + targetRect->w - \
+				   target_rect.x + target_rect.w - \
 				   radius + y - 1, \
-				   targetRect->y + targetRect->h - \
+				   target_rect.y + target_rect.h - \
 				   radius + x);
         	if (d < 0) {
 			d = d + 4 * x + 6;
@@ -195,251 +219,241 @@ void renderRoundedBox(SDL_Renderer *Renderer, \
         	}
         	x++;
         }
-	temp.x = targetRect->x;
-	temp.y = targetRect->y + radius;
-	temp.w = targetRect->w;
-	temp.h = targetRect->h - 2 * radius;
-	SDL_RenderFillRect(Renderer, &temp);
-}
-
-// Render time background.
-void renderTimeRect(SDL_Texture *targetTexture, \
-		    const SDL_Rect *targetRect, \
-		    const int radius)
-{
-	// Use SDL2_gfx to render a roundedBox to
-	// Renderer whose target is bgTexture.
-	SDL_SetRenderTarget(Renderer, targetTexture);
-	SDL_SetRenderDrawColor(Renderer, rectColor->r, rectColor->g, \
-			       rectColor->b, rectColor->a);
-	renderRoundedBox(Renderer, targetRect, radius);
+	temp_rect.x = target_rect.x;
+	temp_rect.y = target_rect.y + radius;
+	temp_rect.w = target_rect.w;
+	temp_rect.h = target_rect.h - 2 * radius;
+	SDL_RenderFillRect(app->renderer, &temp_rect);
 }
 
 // Render time text to backend buffer.
-void renderTimeText(SDL_Texture *targetTexture, \
-		    const SDL_Rect *targetRect, \
-		    TTF_Font* font, \
-		    const char digits[], \
-		    const int radius, \
-		    const SDL_Color *fontColor)
+void render_time(struct app_all *app, \
+		 SDL_Texture *target_texture, \
+		 SDL_Rect target_rect, \
+		 TTF_Font *font, \
+		 char digits[], \
+		 int radius)
 {
-	SDL_Surface *textSurface = NULL;
-	SDL_Texture *textTexture = NULL;
-	SDL_Rect digitRects;
-
+	SDL_Surface *text_surface = NULL;
+	SDL_Texture *text_texture = NULL;
+	SDL_Rect digit_rect;
 	if (strlen(digits) != 2) {
 		fprintf(stderr, "%s: Wrong time digits!", \
-			programName);
+			app->properties.program_name);
 			return;
 	}
-
-	renderTimeRect(targetTexture, targetRect, radius);
+	SDL_SetRenderTarget(app->renderer, target_texture);
+	SDL_SetRenderDrawColor(app->renderer, \
+			       app->colors.rect.r, app->colors.rect.g, \
+			       app->colors.rect.b, app->colors.rect.a);
+	render_rounded_box(app, target_rect, radius);
 	for (int i = 0; i < 2; i++) {
-		textSurface = TTF_RenderGlyph_Blended(font, digits[i], \
-						      *fontColor);
-		if (textSurface == NULL) {
+		text_surface = TTF_RenderGlyph_Blended(font, digits[i], \
+						       app->colors.font);
+		if (text_surface == NULL) {
 			fprintf(stderr, "%s: Unable to renderer " \
 				"char into surface! " \
 				"SDL Error: %s\n", \
-				programName, SDL_GetError());
-			SDL_FreeSurface(textSurface);
+				app->properties.program_name, SDL_GetError());
+			SDL_FreeSurface(text_surface);
 			return;
 		}
-		textTexture = SDL_CreateTextureFromSurface(Renderer, \
-							   textSurface);
-		if (textTexture == NULL) {
+		text_texture = SDL_CreateTextureFromSurface(app->renderer, \
+							    text_surface);
+		if (text_texture == NULL) {
 			fprintf(stderr, "%s: Unable to renderer " \
 				"surface into texture! " \
 				"SDL Error: %s\n", \
-				programName, SDL_GetError());
-			SDL_DestroyTexture(textTexture);
+				app->properties.program_name, SDL_GetError());
+			SDL_DestroyTexture(text_texture);
 			return;
 		}
-		digitRects.x = targetRect->x + targetRect->w / 2 * i + \
-			       (targetRect->w / 2 - textSurface->w) / 2;
-		digitRects.y = targetRect->y + (targetRect->h - \
-			       textSurface->h) / 2;
-		digitRects.w = textSurface->w;
-		digitRects.h = textSurface->h;
-		SDL_FreeSurface(textSurface);
-		SDL_SetRenderTarget(Renderer, targetTexture);
-		SDL_RenderCopy(Renderer, textTexture, NULL, &digitRects);
-		SDL_DestroyTexture(textTexture);
+		digit_rect.x = target_rect.x + target_rect.w / 2 * i + \
+			       (target_rect.w / 2 - text_surface->w) / 2;
+		digit_rect.y = target_rect.y + (target_rect.h - \
+			       text_surface->h) / 2;
+		digit_rect.w = text_surface->w;
+		digit_rect.h = text_surface->h;
+		SDL_FreeSurface(text_surface);
+		SDL_SetRenderTarget(app->renderer, target_texture);
+		SDL_RenderCopy(app->renderer, text_texture, NULL, &digit_rect);
+		SDL_DestroyTexture(text_texture);
 	}
 }
 
 // Move and zoom time from back buffer to front main buffer.
 // This will make a part of a frame.
-void renderTime(const SDL_Rect *targetRect, \
-		const int step, \
-		const int maxSteps)
+void render_frame(struct app_all *app, \
+		  SDL_Rect target_rect, \
+		  int step, \
+		  int max_steps)
 {
-	SDL_Rect halfSrcRect, halfDstRect, dividerRect;
+	SDL_Rect half_source_rect, half_target_rect, divider_rect;
 	double scale;
 	// Draw the upper current digit and render it.
 	// No need to render the previous lower digit.
 	// For it will remain.
-	halfSrcRect.x = targetRect->x;
-	halfSrcRect.y = targetRect->y;
-	halfSrcRect.w = targetRect->w;
-	halfSrcRect.h = targetRect->h / 2;
-	halfDstRect.x = targetRect->x;
-	halfDstRect.y = targetRect->y;
-	halfDstRect.w = targetRect->w;
-	halfDstRect.h = targetRect->h / 2;
-	SDL_SetRenderTarget(Renderer, Texture);
-	SDL_RenderCopy(Renderer, currTexture, &halfSrcRect, &halfDstRect);
-
+	half_source_rect.x = target_rect.x;
+	half_source_rect.y = target_rect.y;
+	half_source_rect.w = target_rect.w;
+	half_source_rect.h = target_rect.h / 2;
+	half_target_rect.x = target_rect.x;
+	half_target_rect.y = target_rect.y;
+	half_target_rect.w = target_rect.w;
+	half_target_rect.h = target_rect.h / 2;
+	SDL_SetRenderTarget(app->renderer, app->textures.texture);
+	SDL_RenderCopy(app->renderer, app->textures.current, \
+		       &half_source_rect, &half_target_rect);
 	// Calculate the scale factor and the color change.
-	int halfSteps = maxSteps / 2;
-	bool upperhalf = step <= halfSteps;
-	scale = upperhalf ? 1.0 - (1.0 * step) / halfSteps : \
-		((1.0 * step) - halfSteps) / halfSteps;
-
+	int half_steps = max_steps / 2;
+	bool upper_half = step <= half_steps;
+	scale = upper_half ? 1.0 - (1.0 * step) / half_steps : \
+		((1.0 * step) - half_steps) / half_steps;
 	// Draw the flip. upper half is prev and lower half is current.
 	// Just custom the destination Rect, the Renderer will zoom
 	// automatically.
-	halfSrcRect.x = targetRect->x;
-	halfSrcRect.y = targetRect->y + (upperhalf ? 0 : targetRect->h / 2);
-	halfSrcRect.w = targetRect->w;
-	halfSrcRect.h = targetRect->h / 2;
-	halfDstRect.x = targetRect->x;
-	halfDstRect.y = targetRect->y + (upperhalf ? (targetRect->h * \
-			(1 - scale) / 2) : targetRect->h / 2);
-	halfDstRect.w = targetRect->w;
-	halfDstRect.h = targetRect->h * scale / 2;
-	SDL_SetRenderTarget(Renderer, Texture);
-	SDL_RenderCopy(Renderer, upperhalf ? prevTexture : currTexture, \
-		       &halfSrcRect, &halfDstRect);
-
+	half_source_rect.x = target_rect.x;
+	half_source_rect.y = target_rect.y + (upper_half ? 0 : target_rect.h / 2);
+	half_source_rect.w = target_rect.w;
+	half_source_rect.h = target_rect.h / 2;
+	half_target_rect.x = target_rect.x;
+	half_target_rect.y = target_rect.y + (upper_half ? (target_rect.h * \
+			     (1 - scale) / 2) : target_rect.h / 2);
+	half_target_rect.w = target_rect.w;
+	half_target_rect.h = target_rect.h * scale / 2;
+	SDL_SetRenderTarget(app->renderer, app->textures.texture);
+	SDL_RenderCopy(app->renderer, \
+		       upper_half ? app->textures.previous : \
+		       app->textures.current, \
+		       &half_source_rect, &half_target_rect);
 	// render divider
-	dividerRect.h = targetRect->h == modeRect->h ? \
-			targetRect->h / 40 : targetRect->h / 100;
-	dividerRect.w = targetRect->w;
-	dividerRect.x = targetRect->x;
-	dividerRect.y = targetRect->y + (targetRect->h - dividerRect.h) / 2;
-	SDL_SetRenderDrawColor(Renderer, transparent->r, transparent->g, \
-			       transparent->b, transparent->a);
-	SDL_SetRenderTarget(Renderer, Texture);
-	SDL_RenderFillRect(Renderer, &dividerRect);
-	SDL_SetRenderTarget(Renderer, NULL);
-}
-
-// Find which part of frame should be rendered and render them.
-// And render them to main texture then display on screen.
-void renderFrame(const int step, \
-	         const int maxSteps)
-{
-	if (ampm && ((nowTime->tm_hour / 12) != (prevTime->tm_hour / 12)))
-		renderTime(modeRect, step, maxSteps);
-	if (nowTime->tm_hour != prevTime->tm_hour)
-		renderTime(hourRect, step, maxSteps);
-	if (nowTime->tm_min != prevTime->tm_min)
-		renderTime(minuteRect, step, maxSteps);
-	SDL_SetRenderTarget(Renderer, NULL);
-	SDL_RenderCopy(Renderer, Texture, NULL, NULL);
-	SDL_RenderPresent(Renderer);
+	divider_rect.h = target_rect.h == app->rects.mode.h ? \
+			 target_rect.h / 40 : target_rect.h / 100;
+	divider_rect.w = target_rect.w;
+	divider_rect.x = target_rect.x;
+	divider_rect.y = target_rect.y + (target_rect.h - divider_rect.h) / 2;
+	SDL_SetRenderDrawColor(app->renderer, \
+			       app->colors.transparent.r, \
+			       app->colors.transparent.g, \
+			       app->colors.transparent.b, \
+			       app->colors.transparent.a);
+	SDL_SetRenderTarget(app->renderer, app->textures.texture);
+	SDL_RenderFillRect(app->renderer, &divider_rect);
+	SDL_SetRenderTarget(app->renderer, NULL);
 }
 
 // Calculate time and which frame should be render.
-void renderClock(void)
+void render_clock(struct app_all *app)
 {
-	const int DURATION = MAXSTEPS;
+	const int DURATION = MAX_STEPS;
 	int step;
 	bool done = false;
-	time_t rawTime;
-	rawTime = time(NULL);
-	nowTime = localtime(&rawTime);
-	char nowDigits[3];
-	int mRadius = modeRect->w / 10;
-
-	if (prevTime->tm_hour != nowTime->tm_hour || \
-	    prevTime->tm_min != nowTime->tm_min) {
-		SDL_Texture *swap = currTexture;
-		currTexture = prevTexture;
-		prevTexture = swap;
+	char now_digits[3];
+	app->properties.mode_radius = app->rects.mode.w / 10;
+	if (app->times.past.tm_hour != app->times.now.tm_hour || \
+	    app->times.past.tm_min != app->times.now.tm_min) {
+		SDL_Texture *swap = app->textures.current;
+		app->textures.current = app->textures.previous;
+		app->textures.previous = swap;
 	}
-	if (ampm && ((nowTime->tm_hour / 12) != (prevTime->tm_hour / 12))) {
-		snprintf(nowDigits, sizeof(nowDigits), "%cM", \
-			 nowTime->tm_hour / 12 ? 'P' : 'A');
-		renderTimeText(currTexture, modeRect, modeFont, \
-			       nowDigits, mRadius, fontColor);
+	if (app->properties.ampm && \
+	    ((app->times.now.tm_hour / 12) != \
+	    (app->times.past.tm_hour / 12))) {
+		snprintf(now_digits, sizeof(now_digits), "%cM", \
+			 app->times.now.tm_hour / 12 ? 'P' : 'A');
+		render_time(app, app->textures.current, app->rects.mode, \
+			    app->fonts.mode, now_digits, \
+			    app->properties.mode_radius);
 	}
-	if (nowTime->tm_hour != prevTime->tm_hour) {
-		ampm? strftime(nowDigits, sizeof(nowDigits), "%I", nowTime) : \
-		      strftime(nowDigits, sizeof(nowDigits), "%H", nowTime);
-		renderTimeText(currTexture, hourRect, timeFont, \
-			       nowDigits, radius, fontColor);
+	if (app->times.now.tm_hour != app->times.past.tm_hour) {
+		app->properties.ampm ? \
+		strftime(now_digits, sizeof(now_digits), \
+			 "%I", &app->times.now) : \
+		strftime(now_digits, sizeof(now_digits), \
+			 "%H", &app->times.now);
+		render_time(app, app->textures.current, app->rects.hour, \
+			    app->fonts.time, now_digits, \
+			    app->properties.time_radius);
 	}
-	if (nowTime->tm_min != prevTime->tm_min) {
-		strftime(nowDigits, sizeof(nowDigits), "%M", nowTime);
-		renderTimeText(currTexture, minuteRect, timeFont, \
-				nowDigits, radius, fontColor);
+	if (app->times.now.tm_min != app->times.past.tm_min) {
+		strftime(now_digits, sizeof(now_digits), \
+			 "%M", &app->times.now);
+		render_time(app, app->textures.current, app->rects.minute, \
+			    app->fonts.time, now_digits, \
+			    app->properties.time_radius);
 	}
-
-	int startTick = SDL_GetTicks();
-	int endTick = startTick + DURATION;
-	int currentTick;
-
+	int start_tick = SDL_GetTicks();
+	int end_tick = start_tick + DURATION;
+	int current_tick;
 	while (!done) {
-		currentTick = SDL_GetTicks();
-		if (currentTick >= endTick) {
+		current_tick = SDL_GetTicks();
+		if (current_tick >= end_tick) {
 			// Align.
-			currentTick = endTick;
+			current_tick = end_tick;
 			done = true;
 		}
-		step = MAXSTEPS * (currentTick - startTick) / \
-		       (endTick - startTick);
-		renderFrame(step, MAXSTEPS);
+		step = MAX_STEPS * (current_tick - start_tick) / \
+		       (end_tick - start_tick);
+		if (app->properties.ampm && \
+		    ((app->times.now.tm_hour / 12) != \
+		    (app->times.past.tm_hour / 12)))
+       			render_frame(app, app->rects.mode, \
+				     step, MAX_STEPS);
+       		if (app->times.now.tm_hour != app->times.past.tm_hour)
+       			render_frame(app, app->rects.hour, \
+				     step, MAX_STEPS);
+       		if (app->times.now.tm_min != app->times.past.tm_min)
+       			render_frame(app, app->rects.minute, \
+				     step, MAX_STEPS);
+       		SDL_SetRenderTarget(app->renderer, NULL);
+       		SDL_RenderCopy(app->renderer, app->textures.texture, \
+			       NULL, NULL);
+       		SDL_RenderPresent(app->renderer);
 	}
-	*prevTime = *nowTime;
+	app->times.past = app->times.now;
 }
 
 // Raise events for time update.
-Uint32 timeUpdater(Uint32 interval, \
+Uint32 update_time(Uint32 interval, \
 		   void *param)
 {
-	SDL_Event timerEvent;
-	time_t rawTime;
-	struct tm *nowTime;
-	struct tm *prevTime = (struct tm *)param;
-
-	rawTime = time(NULL);
-	nowTime = localtime(&rawTime);
-
-	if(nowTime->tm_min != prevTime->tm_min) {
-		timerEvent.type = SDL_USEREVENT;
-		timerEvent.user.code = 0;
-		timerEvent.user.data1 = NULL;
-		timerEvent.user.data2 = NULL;
-		SDL_PushEvent(&timerEvent);
-		interval = 1000 * (60 - nowTime->tm_sec) - 250;
+	SDL_Event timer_event;
+	time_t raw_time;
+	struct app_all *app = (struct app_all *)param;
+	raw_time = time(NULL);
+	app->times.now = *localtime(&raw_time);
+	if(app->times.now.tm_min != app->times.past.tm_min) {
+		timer_event.type = SDL_USEREVENT;
+		timer_event.user.code = 0;
+		timer_event.user.data1 = NULL;
+		timer_event.user.data2 = NULL;
+		SDL_PushEvent(&timer_event);
+		interval = 1000 * (60 - app->times.now.tm_sec) - 250;
 	} else {
 		interval = 250;
 	}
-
 	return interval;
 }
 
-void appQuit(void)
+void quit_app(struct app_all *app)
 {
-	TTF_CloseFont(timeFont);
-	TTF_CloseFont(modeFont);
+	TTF_CloseFont(app->fonts.time);
+	TTF_CloseFont(app->fonts.mode);
 	TTF_Quit();
-	SDL_DestroyTexture(prevTexture);
-	SDL_DestroyTexture(currTexture);
-	SDL_DestroyTexture(Texture);
-	SDL_DestroyRenderer(Renderer);
+	SDL_DestroyTexture(app->textures.previous);
+	SDL_DestroyTexture(app->textures.current);
+	SDL_DestroyTexture(app->textures.texture);
+	SDL_DestroyRenderer(app->renderer);
 	SDL_ShowCursor(SDL_ENABLE);
-	SDL_DestroyWindow(Window);
+	SDL_DestroyWindow(app->window);
 	SDL_Quit();
 }
 
-void printHelp(void)
+void print_help(char *program_name)
 {
 	printf("A simple flip clock screensaver using SDL2.\n");
 	printf("Written by AlynxZhou. Version %s.\n", VERSION);
-	printf("Usage: %s [OPTION...] <value>\n", programName);
+	printf("Usage: %s [OPTION...] <value>\n", program_name);
 	printf("Options:\n");
 	printf("\t-h\t\tDisplay this help.\n");
 	printf("\t-w\t\tRun in window.\n");

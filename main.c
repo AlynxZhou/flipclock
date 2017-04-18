@@ -52,56 +52,83 @@ int rectSize = 0;
 int wSpace = 0;
 int radius = 0;
 */
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
+	struct app_all flipclock;
+	// Init default content.
+	flipclock.window = NULL;
+	flipclock.renderer = NULL;
+	flipclock.textures.texture = NULL;
+	flipclock.textures.current = NULL;
+	flipclock.textures.previous = NULL;
+	flipclock.fonts.time = NULL;
+	flipclock.fonts.mode = NULL;
+	flipclock.colors.font.r = 0xb7;
+	flipclock.colors.font.g = 0xb7;
+	flipclock.colors.font.b = 0xb7;
+	flipclock.colors.font.a = 0xff;
+	flipclock.colors.rect.r = 0x17;
+	flipclock.colors.rect.g = 0x17;
+	flipclock.colors.rect.b = 0x17;
+	flipclock.colors.rect.a = 0xff;
+	flipclock.colors.black.r = 0x00;
+	flipclock.colors.black.g = 0x00;
+	flipclock.colors.black.b = 0x00;
+	flipclock.colors.black.a = 0xff;
+	flipclock.colors.transparent.r = 0x00;
+	flipclock.colors.transparent.g = 0x00;
+	flipclock.colors.transparent.b = 0x00;
+	flipclock.colors.transparent.a = 0x00;
+	flipclock.properties.font_path = NULL;
+	flipclock.properties.full = true;
+	flipclock.properties.ampm = false;
+	flipclock.properties.width = 1024;
+	flipclock.properties.height = 768;
+	flipclock.properties.scale = 0.0;
+	flipclock.properties.program_name = argv[0];
 	// Dealing with argument.
 	int arg;
-	while ((arg = getArg(argc, argv, OPTSTRING)) != -1) {
-		switch(arg) {
-			case 'w':
-				full = false;
-				break;
-			case 't':
-				if (strcmp(optarg, "12") == 0)
-					ampm = true;
-				break;
-			case 'f':
-				fontPath = optarg;
-				break;
-			case 's':
-				sscanf(optarg, "%lf", &scaleFactor);
-				break;
-			case 'h':
-				printHelp();
-				exit(EXIT_SUCCESS);
-				break;
-			default:
-        			break;
+	while ((arg = get_arg(argc, argv, OPT_STRING)) != -1) {
+		switch (arg) {
+		case 'w':
+			flipclock.properties.full = false;
+			break;
+		case 't':
+			if (strcmp(optarg, "12") == 0)
+				flipclock.properties.ampm = true;
+			break;
+		case 'f':
+			flipclock.properties.font_path = optarg;
+			break;
+		case 's':
+			sscanf(optarg, "%lf", \
+			       &flipclock.properties.scale);
+			break;
+		case 'h':
+			print_help(argv[0]);
+			exit(EXIT_SUCCESS);
+			break;
+		default:
+			break;
         	}
     	}
-
-	programName = argv[0];
-
 	// Try to init app.
-	if (!appInit()) {
-		appQuit();
+	if (!init_app(&flipclock)) {
+		quit_app(&flipclock);
 		exit(EXIT_FAILURE);
 	}
-
 	// This keeps a safe numbers which will let the clock init.
-	prevTime->tm_hour = -25;
-	prevTime->tm_min = -25;
-
+	flipclock.times.past.tm_hour = -25;
+	flipclock.times.past.tm_min = -25;
 	// Listen for update.
 	bool quit = false;
 	SDL_Event event;
-	SDL_TimerID timer = SDL_AddTimer(60, timeUpdater, prevTime);
-
+	SDL_TimerID timer = SDL_AddTimer(60, update_time, &flipclock);
 	while (!quit && SDL_WaitEvent(&event)) {
 		switch (event.type) {
 		case SDL_USEREVENT:
 			// Time to update.
-			renderClock();
+			render_clock(&flipclock);
 			break;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
@@ -119,10 +146,7 @@ int main(int argc, const char *argv[])
 			break;
 		}
 	}
-
 	SDL_RemoveTimer(timer);
-
-	appQuit();
-
+	quit_app(&flipclock);
 	return 0;
 }
