@@ -1,10 +1,14 @@
+# Filename: Makefile
+# Created by 请叫我喵 Alynx.
+# alynx.zhou@gmail.com, http://alynx.xyz/.
 CC ?= gcc
-CFLAGS ?= -std=c11 -lSDL2 -lSDL2_ttf
+CFLAGS ?= -std=c11
+LIBS ?= -lSDL2 -lSDL2_ttf
 OBJECTS := main.o flipclock.o getarg/getarg.o
 
 flipclock : CFLAGS += -O2
 flipclock : ${OBJECTS}
-	${CC} ${CFLAGS} -o flipclock \
+	${CC} ${CFLAGS} ${LIBS} -o flipclock \
 	   ${OBJECTS}
 
 .PHONY : install
@@ -27,7 +31,7 @@ uninstall:
 .PHONY : debug
 debug : CFLAGS += -g
 debug : clean ${OBJECTS}
-	${CC} ${CFLAGS} -o flipclock_debug ${OBJECTS}
+	${CC} ${CFLAGS} ${LIBS} -o flipclock_debug ${OBJECTS}
 
 .PHONY : clean
 clean :
