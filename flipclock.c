@@ -90,7 +90,7 @@ bool init_app(struct app_all *app)
 	}
 	/* Fill with black. */
 	clear_texture(app, app->textures.texture, app->colors.black);
-	/* Two transparent texture swap for tribuffer. */
+	/* Two transparent backend texture swap for tribuffer. */
 	app->textures.current = SDL_CreateTexture(app->renderer, 0, \
 						  SDL_TEXTUREACCESS_TARGET, \
 						  app->properties.width, \
@@ -150,7 +150,6 @@ bool init_app(struct app_all *app)
 	return true;
 }
 
-/* Clear texture with color. */
 void clear_texture(struct app_all *app, \
 		   SDL_Texture *target_texture, \
 		   SDL_Color background_color)
@@ -162,7 +161,6 @@ void clear_texture(struct app_all *app, \
 	SDL_RenderClear(app->renderer);
 }
 
-/* Bresenham's circle algorithm. */
 void draw_rounded_box(struct app_all *app, \
 		      SDL_Rect target_rect, \
 		      int radius)
@@ -223,7 +221,6 @@ void draw_rounded_box(struct app_all *app, \
 	SDL_RenderFillRect(app->renderer, &temp_rect);
 }
 
-/* Render time text to backend buffer. */
 void render_time(struct app_all *app, \
 		 SDL_Texture *target_texture, \
 		 SDL_Rect target_rect, \
@@ -280,7 +277,6 @@ void render_time(struct app_all *app, \
 	}
 }
 
-/* Copy and zoom a frame from back buffer to front main buffer. */
 void copy_frame(struct app_all *app, \
 		SDL_Rect target_rect, \
 		int step, \
@@ -345,7 +341,6 @@ void copy_frame(struct app_all *app, \
 	SDL_SetRenderTarget(app->renderer, NULL);
 }
 
-/* Calculate time and which frame should be render. */
 void animate_clock(struct app_all *app)
 {
 	/* Start tick. */
@@ -417,7 +412,6 @@ void animate_clock(struct app_all *app)
 	app->times.past = app->times.now;
 }
 
-/* Raise events for time update. */
 Uint32 update_time(Uint32 interval, \
 		   void *param)
 {
@@ -448,7 +442,8 @@ void quit_app(struct app_all *app)
 	SDL_DestroyTexture(app->textures.current);
 	SDL_DestroyTexture(app->textures.texture);
 	SDL_DestroyRenderer(app->renderer);
-	SDL_ShowCursor(SDL_ENABLE);
+	if (app->properties.full)
+		SDL_ShowCursor(SDL_ENABLE);
 	SDL_DestroyWindow(app->window);
 	SDL_Quit();
 }
