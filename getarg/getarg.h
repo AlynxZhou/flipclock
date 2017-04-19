@@ -9,7 +9,7 @@
 #	include <stdlib.h>
 #	include <string.h>
 
-	// Global optarg.
+	/* Global optarg. */
 	extern char *optarg;
 
 	int get_arg(int argc, char *argv[], char opt_string[]);

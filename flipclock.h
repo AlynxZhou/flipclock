@@ -27,11 +27,11 @@
 		char *font_path;
 		bool full;
 		bool ampm;
-		// Default width and height.
+		/* Default width and height. */
 		int width;
 		int height;
 		double scale;
-		// Varibles about time rect.
+		/* Varibles about time rect. */
 		int rect_size;
 		int width_space;
 		int time_radius;
