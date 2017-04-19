@@ -74,23 +74,23 @@
 
 
 	bool init_app(struct app_all *app);
-	void render_background(struct app_all *app, \
-			       SDL_Texture *target_texture, \
-			       SDL_Color background_color);
-	void render_rounded_box(struct app_all *app, \
-				SDL_Rect target_rect, \
-				int radius);
+	void clear_texture(struct app_all *app, \
+			   SDL_Texture *target_texture, \
+			   SDL_Color background_color);
+	void draw_rounded_box(struct app_all *app, \
+			      SDL_Rect target_rect, \
+			      int radius);
 	void render_time(struct app_all *app, \
 			 SDL_Texture *target_texture, \
 			 SDL_Rect target_rect, \
 			 TTF_Font *font, \
 			 char digits[], \
-		 	 int radius);
-	void render_frame(struct app_all *app, \
-			  SDL_Rect target_rect, \
-			  int step, \
-			  int max_steps);
-	void render_clock(struct app_all *app);
+			 int radius);
+	void copy_frame(struct app_all *app, \
+			SDL_Rect target_rect, \
+			int step, \
+			int max_steps);
+	void animate_clock(struct app_all *app);
 	Uint32 update_time(Uint32 interval, \
 			   void *param);
 	void quit_app(struct app_all *app);

@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 		quit_app(&flipclock);
 		exit(EXIT_FAILURE);
 	}
-	// This keeps a safe numbers which will let the clock init.
+	// This keeps safe numbers which will let the clock init.
 	flipclock.times.past.tm_hour = -25;
 	flipclock.times.past.tm_min = -25;
 	// Listen for update.
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 		switch (event.type) {
 		case SDL_USEREVENT:
 			// Time to update.
-			render_clock(&flipclock);
+			animate_clock(&flipclock);
 			break;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {

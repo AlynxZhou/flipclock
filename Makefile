@@ -1,7 +1,8 @@
 CC ?= gcc
-CFLAGS ?= -std=c11 -O2 -lSDL2 -lSDL2_ttf
+CFLAGS ?= -std=c11 -lSDL2 -lSDL2_ttf
 OBJECTS := main.o flipclock.o getarg/getarg.o
 
+flipclock : CFLAGS += -O2
 flipclock : ${OBJECTS}
 	${CC} ${CFLAGS} -o flipclock \
 	   ${OBJECTS}
@@ -25,7 +26,7 @@ uninstall:
 
 .PHONY : debug
 debug : CFLAGS += -g
-debug : ${OBJECTS}
+debug : clean ${OBJECTS}
 	${CC} ${CFLAGS} -o flipclock_debug ${OBJECTS}
 
 main.o : flipclock.h
