@@ -29,16 +29,16 @@ debug : CFLAGS += -g
 debug : clean ${OBJECTS}
 	${CC} ${CFLAGS} -o flipclock_debug ${OBJECTS}
 
+.PHONY : clean
+clean :
+	-rm -f flipclock flipclock_debug flipclock.o ${OBJECTS} \
+	      flipclock.h.gch getarg/getarg.h.gch a.out
+
+.PHONY : rebuild
+rebuild : clean flipclock
+
 main.o : flipclock.h
 
 flipclock.o : flipclock.h
 
 getarg/getarg.o : getarg/getarg.h
-
-.PHONY : clean
-clean :
-	-rm -f flipclock flipclock.o ${OBJECTS} flipclock.h.gch \
-	      getarg/getarg.h.gch a.out
-
-.PHONY : rebuild
-rebuild : clean flipclock
