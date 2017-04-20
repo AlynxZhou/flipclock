@@ -10,7 +10,7 @@
 #	include <string.h>
 
 	/* Global optarg. */
-	extern char *optarg;
+	extern const char *optarg;
 
 	/*
 	 * get_arg() receives an arguments counter,
@@ -22,6 +22,7 @@
 	 * and it will store a pointer to the value in global pointer optarg.
 	 * You should use a while-switch-case to deal with options.
 	 */
-	int get_arg(int argc, char *argv[], char opt_string[]);
-
+	int get_arg(const int argc, \
+ 		    const char * const argv[], \
+ 		    const char opt_string[]);
 #endif

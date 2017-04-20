@@ -7,6 +7,8 @@
 
 bool init_app(struct app_all *app)
 {
+	time_t raw_time = time(NULL);
+	app->times.now = *localtime(&raw_time);
 	/* Init SDL. */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
 		fprintf(stderr, "%s: SDL could not be inited! " \
@@ -51,8 +53,9 @@ bool init_app(struct app_all *app)
 			    ((app->properties.height - \
 			      app->properties.rect_size) / 2 - \
 			     app->rects.mode.h) / 2;
+	app->properties.mode_radius = app->rects.mode.w / 10;
 	/* Create window. */
-	app->window = SDL_CreateWindow(TITLE, \
+	app->window = SDL_CreateWindow(app->properties.title, \
 				       SDL_WINDOWPOS_UNDEFINED, \
 				       SDL_WINDOWPOS_UNDEFINED, \
 				       app->properties.width, \
@@ -135,9 +138,9 @@ bool init_app(struct app_all *app)
 		}
 	}
 	if (app->properties.font_path == NULL) {
-		app->fonts.time = TTF_OpenFont(FALLBACK_FONT, \
+		app->fonts.time = TTF_OpenFont(app->properties.fallback_font, \
 					       app->properties.rect_size);
-		app->fonts.mode = TTF_OpenFont(FALLBACK_FONT, \
+		app->fonts.mode = TTF_OpenFont(app->properties.fallback_font, \
 					       app->properties.rect_size / 10);
 		if (app->fonts.time == NULL || app->fonts.mode == NULL) {
 			fprintf(stderr, "%s: Fallback font " \
@@ -147,12 +150,14 @@ bool init_app(struct app_all *app)
 			return false;
 		}
 	}
+	/* Render init frame. */
+	animate_clock(app, MAX_STEPS);
 	return true;
 }
 
 void clear_texture(struct app_all *app, \
 		   SDL_Texture *target_texture, \
-		   SDL_Color background_color)
+		   const SDL_Color background_color)
 {
 	SDL_SetRenderTarget(app->renderer, target_texture);
 	SDL_SetRenderDrawColor(app->renderer, \
@@ -162,7 +167,7 @@ void clear_texture(struct app_all *app, \
 }
 
 void draw_rounded_box(struct app_all *app, \
-		      SDL_Rect target_rect, \
+		      const SDL_Rect target_rect, \
 		      int radius)
 {
 	if (radius <= 1) {
@@ -223,10 +228,10 @@ void draw_rounded_box(struct app_all *app, \
 
 void render_time(struct app_all *app, \
 		 SDL_Texture *target_texture, \
-		 SDL_Rect target_rect, \
+		 const SDL_Rect target_rect, \
 		 TTF_Font *font, \
-		 char digits[], \
-		 int radius)
+		 const char digits[], \
+		 const int radius)
 {
 	SDL_Surface *text_surface = NULL;
 	SDL_Texture *text_texture = NULL;
@@ -277,81 +282,9 @@ void render_time(struct app_all *app, \
 	}
 }
 
-void copy_frame(struct app_all *app, \
-		SDL_Rect target_rect, \
-		int step, \
-		int max_steps)
+void prepare_backend(struct app_all *app)
 {
-	SDL_Rect half_source_rect, half_target_rect, divider_rect;
-	double scale;
-	/*
-	 *Draw the upper current digit and render it.
-	 * No need to render the previous lower digit.
-	 * For it will remain.
-	 */
-	half_source_rect.x = target_rect.x;
-	half_source_rect.y = target_rect.y;
-	half_source_rect.w = target_rect.w;
-	half_source_rect.h = target_rect.h / 2;
-	half_target_rect.x = target_rect.x;
-	half_target_rect.y = target_rect.y;
-	half_target_rect.w = target_rect.w;
-	half_target_rect.h = target_rect.h / 2;
-	SDL_SetRenderTarget(app->renderer, app->textures.texture);
-	SDL_RenderCopy(app->renderer, app->textures.current, \
-		       &half_source_rect, &half_target_rect);
-	/* Calculate the scale factor and the color change. */
-	int half_steps = max_steps / 2;
-	bool upper_half = step <= half_steps;
-	scale = upper_half ? 1.0 - (1.0 * step) / half_steps : \
-			     ((1.0 * step) - half_steps) / half_steps;
-	/*
-	 *Draw the flip. upper half is prev and lower half is current.
-	 * Just custom the destination Rect, the Renderer will zoom
-	 * automatically.
-	 */
-	half_source_rect.x = target_rect.x;
-	half_source_rect.y = target_rect.y + \
-			     (upper_half ? 0 : target_rect.h / 2);
-	half_source_rect.w = target_rect.w;
-	half_source_rect.h = target_rect.h / 2;
-	half_target_rect.x = target_rect.x;
-	half_target_rect.y = target_rect.y + (upper_half ? (target_rect.h * \
-			     (1 - scale) / 2) : target_rect.h / 2);
-	half_target_rect.w = target_rect.w;
-	half_target_rect.h = target_rect.h * scale / 2;
-	SDL_SetRenderTarget(app->renderer, app->textures.texture);
-	SDL_RenderCopy(app->renderer, \
-		       upper_half ? app->textures.previous : \
-				    app->textures.current, \
-		       &half_source_rect, &half_target_rect);
-	/* render divider */
-	divider_rect.h = target_rect.h == app->rects.mode.h ? \
-			 target_rect.h / 40 : target_rect.h / 100;
-	divider_rect.w = target_rect.w;
-	divider_rect.x = target_rect.x;
-	divider_rect.y = target_rect.y + (target_rect.h - divider_rect.h) / 2;
-	SDL_SetRenderDrawColor(app->renderer, \
-			       app->colors.transparent.r, \
-			       app->colors.transparent.g, \
-			       app->colors.transparent.b, \
-			       app->colors.transparent.a);
-	SDL_SetRenderTarget(app->renderer, app->textures.texture);
-	SDL_RenderFillRect(app->renderer, &divider_rect);
-	SDL_SetRenderTarget(app->renderer, NULL);
-}
-
-void animate_clock(struct app_all *app)
-{
-	/* Start tick. */
-	int start_tick = SDL_GetTicks();
-	int end_tick = start_tick + MAX_STEPS;
-	int current_tick;
-	int step;
-	bool done = false;
 	char now_digits[3];
-	app->properties.mode_radius = app->rects.mode.w / 10;
-	/* Update time. */
 	if (app->times.past.tm_hour != app->times.now.tm_hour || \
 	    app->times.past.tm_min != app->times.now.tm_min) {
 		SDL_Texture *swap = app->textures.current;
@@ -384,15 +317,86 @@ void animate_clock(struct app_all *app)
 			    app->fonts.time, now_digits, \
 			    app->properties.time_radius);
 	}
+}
+
+void copy_frame(struct app_all *app, \
+		const SDL_Rect target_rect, \
+		const int step, \
+		const int max_steps)
+{
+	SDL_Rect half_source_rect, half_target_rect, divider_rect;
+	double scale;
+	/*
+	 *Draw the upper current digit and render it.
+	 * No need to render the previous lower digit.
+	 * For it will remain.
+	 */
+	half_source_rect.x = target_rect.x;
+	half_source_rect.y = target_rect.y;
+	half_source_rect.w = target_rect.w;
+	half_source_rect.h = target_rect.h / 2;
+	half_target_rect.x = target_rect.x;
+	half_target_rect.y = target_rect.y;
+	half_target_rect.w = target_rect.w;
+	half_target_rect.h = target_rect.h / 2;
+	SDL_SetRenderTarget(app->renderer, app->textures.texture);
+	SDL_RenderCopy(app->renderer, app->textures.current, \
+		       &half_source_rect, &half_target_rect);
+	/* Calculate the scale factor. */
+	int half_steps = max_steps / 2;
+	bool upper_half = step <= half_steps;
+	scale = upper_half ? 1.0 - (1.0 * step) / half_steps : \
+			     ((1.0 * step) - half_steps) / half_steps;
+	/*
+	 * Draw the flip part.
+	 * Upper half is previous and lower half is current.
+	 * Just custom the destination Rect, zoom will be done automatically.
+	 */
+	half_source_rect.x = target_rect.x;
+	half_source_rect.y = target_rect.y + \
+			     (upper_half ? 0 : target_rect.h / 2);
+	half_source_rect.w = target_rect.w;
+	half_source_rect.h = target_rect.h / 2;
+	half_target_rect.x = target_rect.x;
+	half_target_rect.y = target_rect.y + (upper_half ? (target_rect.h * \
+			     (1 - scale) / 2) : target_rect.h / 2);
+	half_target_rect.w = target_rect.w;
+	half_target_rect.h = target_rect.h * scale / 2;
+	SDL_SetRenderTarget(app->renderer, app->textures.texture);
+	SDL_RenderCopy(app->renderer, \
+		       upper_half ? app->textures.previous : \
+				    app->textures.current, \
+		       &half_source_rect, &half_target_rect);
+	/* Render divider. */
+	divider_rect.h = target_rect.h == app->rects.mode.h ? \
+			 target_rect.h / 40 : target_rect.h / 100;
+	divider_rect.w = target_rect.w;
+	divider_rect.x = target_rect.x;
+	divider_rect.y = target_rect.y + (target_rect.h - divider_rect.h) / 2;
+	SDL_SetRenderDrawColor(app->renderer, \
+			       app->colors.transparent.r, \
+			       app->colors.transparent.g, \
+			       app->colors.transparent.b, \
+			       app->colors.transparent.a);
+	SDL_SetRenderTarget(app->renderer, app->textures.texture);
+	SDL_RenderFillRect(app->renderer, &divider_rect);
+	SDL_SetRenderTarget(app->renderer, NULL);
+}
+
+void animate_clock(struct app_all *app, \
+		   int step)
+{
+	/* Start tick. */
+	Uint32 start_tick = SDL_GetTicks();
+	bool done = false;
+	prepare_backend(app);
+	SDL_SetRenderTarget(app->renderer, NULL);
 	while (!done) {
-		current_tick = SDL_GetTicks();
-		if (current_tick >= end_tick) {
-			/* Align. */
-			current_tick = end_tick;
+		if (step >= MAX_STEPS) {
+			/* Align.*/
+			step = MAX_STEPS;
 			done = true;
 		}
-		step = MAX_STEPS * (current_tick - start_tick) / \
-		       (end_tick - start_tick);
 		if (app->properties.ampm && \
 		    ((app->times.now.tm_hour / 12) != \
 		     (app->times.past.tm_hour / 12)))
@@ -404,10 +408,11 @@ void animate_clock(struct app_all *app)
        		if (app->times.now.tm_min != app->times.past.tm_min)
        			copy_frame(app, app->rects.minute, \
 				   step, MAX_STEPS);
-       		SDL_SetRenderTarget(app->renderer, NULL);
        		SDL_RenderCopy(app->renderer, app->textures.texture, \
 			       NULL, NULL);
        		SDL_RenderPresent(app->renderer);
+		/* Prevent error caused by warp. */
+		step = SDL_GetTicks() - start_tick;
 	}
 	app->times.past = app->times.now;
 }
@@ -416,9 +421,8 @@ Uint32 update_time(Uint32 interval, \
 		   void *param)
 {
 	SDL_Event timer_event;
-	time_t raw_time;
 	struct app_all *app = (struct app_all *)param;
-	raw_time = time(NULL);
+	time_t raw_time = time(NULL);
 	app->times.now = *localtime(&raw_time);
 	if (app->times.now.tm_min != app->times.past.tm_min) {
 		timer_event.type = SDL_USEREVENT;
@@ -448,11 +452,13 @@ void quit_app(struct app_all *app)
 	SDL_Quit();
 }
 
-void print_help(char *program_name)
+void print_help(const struct app_all *app)
 {
 	printf("A simple flip clock screensaver using SDL2.\n");
-	printf("Written by AlynxZhou. Version %s.\n", VERSION);
-	printf("Usage: %s [OPTION...] <value>\n", program_name);
+	printf("Written by AlynxZhou. Version %s.\n", \
+	       app->properties.version);
+	printf("Usage: %s [OPTION...] <value>\n", \
+	       app->properties.program_name);
 	printf("Options:\n");
 	printf("\t-h\t\tDisplay this help.\n");
 	printf("\t-w\t\tRun in window.\n");

@@ -5,8 +5,16 @@
  */
 #include "flipclock.h"
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
+ 	const char FALLBACK_FONT[] = "flipclock.ttf";
+	const char OPT_STRING[] = "hwt:f:s:";
+	const char TITLE[] = "FlipClock";
+	const char VERSION[] = "1.1.1";
+	int arg;
+	bool quit = false;
+	SDL_Event event;
+	SDL_TimerID timer;
 	struct app_all flipclock;
 	/* Init default content. */
 	flipclock.window = NULL;
@@ -32,7 +40,10 @@ int main(int argc, char *argv[])
 	flipclock.colors.transparent.g = 0x00;
 	flipclock.colors.transparent.b = 0x00;
 	flipclock.colors.transparent.a = 0x00;
+	flipclock.properties.title = TITLE;
+	flipclock.properties.version = VERSION;
 	flipclock.properties.font_path = NULL;
+	flipclock.properties.fallback_font = FALLBACK_FONT;
 	flipclock.properties.full = true;
 	flipclock.properties.ampm = false;
 	flipclock.properties.width = 1024;
@@ -40,7 +51,6 @@ int main(int argc, char *argv[])
 	flipclock.properties.scale = 0.0;
 	flipclock.properties.program_name = argv[0];
 	/* Dealing with argument. */
-	int arg;
 	while ((arg = get_arg(argc, argv, OPT_STRING)) != -1) {
 		switch (arg) {
 		case 'w':
@@ -58,7 +68,7 @@ int main(int argc, char *argv[])
 			       &flipclock.properties.scale);
 			break;
 		case 'h':
-			print_help(argv[0]);
+			print_help(&flipclock);
 			exit(EXIT_SUCCESS);
 			break;
 		default:
@@ -70,18 +80,13 @@ int main(int argc, char *argv[])
 		quit_app(&flipclock);
 		exit(EXIT_FAILURE);
 	}
-	/* This keeps safe numbers which will let the clock init. */
-	flipclock.times.past.tm_hour = -25;
-	flipclock.times.past.tm_min = -25;
 	/* Listen for update. */
-	bool quit = false;
-	SDL_Event event;
-	SDL_TimerID timer = SDL_AddTimer(60, update_time, &flipclock);
+	timer = SDL_AddTimer(250, update_time, &flipclock);
 	while (!quit && SDL_WaitEvent(&event)) {
 		switch (event.type) {
 		case SDL_USEREVENT:
 			/* Time to update. */
-			animate_clock(&flipclock);
+			animate_clock(&flipclock, 0);
 			break;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
