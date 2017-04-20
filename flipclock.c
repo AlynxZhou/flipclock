@@ -15,7 +15,7 @@ bool init_app(struct app_all *app)
 		return false;
 	}
 	/* Calculate numbers. */
-	if (app->properties.scale != 0.0) {
+	if (app->properties.scale > 0.0) {
 		app->properties.full = false;
 		app->properties.width *= app->properties.scale;
 		app->properties.height *= app->properties.scale;

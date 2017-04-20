@@ -113,7 +113,8 @@ int main(int argc, const char *argv[])
 				break;
 			case SDLK_t:
 				/* Press `t` to toggle type. */
-				flipclock.properties.ampm = flipclock.properties.ampm ? false : true;
+				flipclock.properties.ampm = \
+				!flipclock.properties.ampm;
 				refresh_content(&flipclock, 0);
 				break;
 			default:
@@ -122,6 +123,8 @@ int main(int argc, const char *argv[])
 			break;
 		case SDL_QUIT:
 			quit = true;
+			break;
+		default:
 			break;
 		}
 	}
