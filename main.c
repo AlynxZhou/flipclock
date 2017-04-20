@@ -10,7 +10,7 @@ int main(int argc, const char *argv[])
  	const char FALLBACK_FONT[] = "flipclock.ttf";
 	const char OPT_STRING[] = "hwt:f:s:";
 	const char TITLE[] = "FlipClock";
-	const char VERSION[] = "1.2.3";
+	const char VERSION[] = "1.3.3";
 	struct app_all flipclock;
 	/* Init default content. */
 	flipclock.window = NULL;
