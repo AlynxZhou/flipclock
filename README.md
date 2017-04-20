@@ -10,13 +10,14 @@ Usage:
 
 	1. Install sdl2, sdl2_ttf.
 
-	2. Compile it with `make`.
+	2. Clone and compile it with `make`.
 
 	3. Run `./flipclock -h` to see usage. Press `q` or `Esc` to quit.
 
 - Windows:
 
-	1. Use Visual Studio or Visual C++ to open project file in directory `Windows`. I create them with Visual Studio 2017.
+	1. Download Windows project files and static libs from [here]().
+	Use Visual Studio or Visual C++ to open project file in directory `Windows`. I create them with Visual Studio 2017.
 
 	2. Compile it with `Release`.
 
