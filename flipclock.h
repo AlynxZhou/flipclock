@@ -14,7 +14,7 @@
 
 #	include "SDL2/SDL.h"
 #	include "SDL2/SDL_ttf.h"
-#	include "getarg/getarg.h"
+#	include "getarg.h"
 
 #	define MAX_STEPS 180
 

@@ -11,10 +11,6 @@ int main(int argc, const char *argv[])
 	const char OPT_STRING[] = "hwt:f:s:";
 	const char TITLE[] = "FlipClock";
 	const char VERSION[] = "1.1.1";
-	int arg;
-	bool quit = false;
-	SDL_Event event;
-	SDL_TimerID timer;
 	struct app_all flipclock;
 	/* Init default content. */
 	flipclock.window = NULL;
@@ -51,7 +47,8 @@ int main(int argc, const char *argv[])
 	flipclock.properties.scale = 0.0;
 	flipclock.properties.program_name = argv[0];
 	/* Dealing with argument. */
-	while ((arg = get_arg(argc, argv, OPT_STRING)) != -1) {
+	int arg;
+	while ((arg = getarg(argc, argv, OPT_STRING)) != -1) {
 		switch (arg) {
 		case 'w':
 			flipclock.properties.full = false;
@@ -81,7 +78,9 @@ int main(int argc, const char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	/* Listen for update. */
-	timer = SDL_AddTimer(250, update_time, &flipclock);
+	bool quit = false;
+	SDL_Event event;
+	SDL_TimerID timer = SDL_AddTimer(250, update_time, &flipclock);
 	while (!quit && SDL_WaitEvent(&event)) {
 		switch (event.type) {
 		case SDL_USEREVENT:

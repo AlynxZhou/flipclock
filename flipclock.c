@@ -7,8 +7,6 @@
 
 bool init_app(struct app_all *app)
 {
-	time_t raw_time = time(NULL);
-	app->times.now = *localtime(&raw_time);
 	/* Init SDL. */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
 		fprintf(stderr, "%s: SDL could not be inited! " \
@@ -151,6 +149,8 @@ bool init_app(struct app_all *app)
 		}
 	}
 	/* Render init frame. */
+	time_t raw_time = time(NULL);
+	app->times.now = *localtime(&raw_time);
 	animate_clock(app, MAX_STEPS);
 	return true;
 }
@@ -181,7 +181,6 @@ void draw_rounded_box(struct app_all *app, \
 	int x = 0;
 	int y = radius;
 	int d = 3 - 2 * radius;
-	SDL_Rect temp_rect;
         while (x <= y) {
 		SDL_RenderDrawLine(app->renderer, \
 				   target_rect.x + radius - x, \
@@ -219,6 +218,7 @@ void draw_rounded_box(struct app_all *app, \
         	}
         	x++;
         }
+	SDL_Rect temp_rect;
 	temp_rect.x = target_rect.x;
 	temp_rect.y = target_rect.y + radius;
 	temp_rect.w = target_rect.w;
@@ -236,7 +236,6 @@ void render_time(struct app_all *app, \
 	SDL_Surface *text_surface = NULL;
 	SDL_Texture *text_texture = NULL;
 	SDL_Rect digit_rect;
-	int i;
 	if (strlen(digits) != 2) {
 		fprintf(stderr, "%s: Wrong time digits!", \
 			app->properties.program_name);
@@ -247,6 +246,7 @@ void render_time(struct app_all *app, \
 			       app->colors.rect.r, app->colors.rect.g, \
 			       app->colors.rect.b, app->colors.rect.a);
 	draw_rounded_box(app, target_rect, radius);
+	int i;
 	for (i = 0; i < 2; i++) {
 		text_surface = TTF_RenderGlyph_Blended(font, digits[i], \
 						       app->colors.font);
@@ -324,13 +324,12 @@ void copy_frame(struct app_all *app, \
 		const int step, \
 		const int max_steps)
 {
-	SDL_Rect half_source_rect, half_target_rect, divider_rect;
-	double scale;
 	/*
 	 *Draw the upper current digit and render it.
 	 * No need to render the previous lower digit.
 	 * For it will remain.
 	 */
+	SDL_Rect half_source_rect;
 	half_source_rect.x = target_rect.x;
 	half_source_rect.y = target_rect.y;
 	half_source_rect.w = target_rect.w;
@@ -345,13 +344,14 @@ void copy_frame(struct app_all *app, \
 	/* Calculate the scale factor. */
 	int half_steps = max_steps / 2;
 	bool upper_half = step <= half_steps;
-	scale = upper_half ? 1.0 - (1.0 * step) / half_steps : \
+	double scale = upper_half ? 1.0 - (1.0 * step) / half_steps : \
 			     ((1.0 * step) - half_steps) / half_steps;
 	/*
 	 * Draw the flip part.
 	 * Upper half is previous and lower half is current.
 	 * Just custom the destination Rect, zoom will be done automatically.
 	 */
+	SDL_Rect half_target_rect;
 	half_source_rect.x = target_rect.x;
 	half_source_rect.y = target_rect.y + \
 			     (upper_half ? 0 : target_rect.h / 2);
@@ -368,6 +368,7 @@ void copy_frame(struct app_all *app, \
 				    app->textures.current, \
 		       &half_source_rect, &half_target_rect);
 	/* Render divider. */
+	SDL_Rect divider_rect;
 	divider_rect.h = target_rect.h == app->rects.mode.h ? \
 			 target_rect.h / 40 : target_rect.h / 100;
 	divider_rect.w = target_rect.w;
@@ -387,10 +388,10 @@ void animate_clock(struct app_all *app, \
 		   int step)
 {
 	/* Start tick. */
-	Uint32 start_tick = SDL_GetTicks();
-	bool done = false;
 	prepare_backend(app);
 	SDL_SetRenderTarget(app->renderer, NULL);
+	bool done = false;
+	Uint32 start_tick = SDL_GetTicks();
 	while (!done) {
 		if (step >= MAX_STEPS) {
 			/* Align.*/

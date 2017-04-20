@@ -4,7 +4,7 @@
 CC ?= gcc
 CFLAGS ?= -std=c11
 LIBS ?= -lSDL2 -lSDL2_ttf
-OBJECTS := main.o flipclock.o getarg/getarg.o
+OBJECTS := main.o flipclock.o getarg.o
 
 flipclock : CFLAGS += -O2
 flipclock : ${OBJECTS}
@@ -36,7 +36,7 @@ debug : clean ${OBJECTS}
 .PHONY : clean
 clean :
 	-rm -f flipclock flipclock_debug flipclock.o ${OBJECTS} \
-	      flipclock.h.gch getarg/getarg.h.gch a.out
+	      flipclock.h.gch getarg.h.gch a.out
 
 .PHONY : rebuild
 rebuild : clean flipclock
@@ -45,4 +45,4 @@ main.o : flipclock.h
 
 flipclock.o : flipclock.h
 
-getarg/getarg.o : getarg/getarg.h
+getarg.o : getarg.h
