@@ -12,7 +12,6 @@ bool init_app(struct app_all *app)
 		fprintf(stderr, "%s: SDL could not be inited! " \
 			"SDL Error: %s\n", app->properties.program_name, \
 			SDL_GetError());
-		SDL_Quit();
 		return false;
 	}
 	/* Calculate numbers. */
@@ -78,7 +77,7 @@ bool init_app(struct app_all *app)
 			SDL_GetError());
 		return false;
 	}
-	/* Main screen buffer texture. */
+	/* Main black screen buffer texture. */
 	app->textures.texture = SDL_CreateTexture(app->renderer, 0, \
 						  SDL_TEXTUREACCESS_TARGET, \
 						  app->properties.width, \
@@ -89,8 +88,6 @@ bool init_app(struct app_all *app)
 			SDL_GetError());
 		return false;
 	}
-	/* Fill with black. */
-	clear_texture(app, app->textures.texture, app->colors.black);
 	/* Two transparent backend texture swap for tribuffer. */
 	app->textures.current = SDL_CreateTexture(app->renderer, 0, \
 						  SDL_TEXTUREACCESS_TARGET, \
@@ -102,7 +99,6 @@ bool init_app(struct app_all *app)
 			SDL_GetError());
 		return false;
 	}
-	clear_texture(app, app->textures.current, app->colors.transparent);
 	app->textures.previous = SDL_CreateTexture(app->renderer, 0, \
 						   SDL_TEXTUREACCESS_TARGET, \
 						   app->properties.width, \
@@ -113,7 +109,6 @@ bool init_app(struct app_all *app)
 			SDL_GetError());
 		return false;
 	}
-	clear_texture(app, app->textures.previous, app->colors.transparent);
 	/* Init SDL_ttf. */
 	if (TTF_Init() < 0) {
 		fprintf(stderr, "%s: SDL_ttf could not initialize! " \
@@ -151,19 +146,35 @@ bool init_app(struct app_all *app)
 	/* Render init frame. */
 	time_t raw_time = time(NULL);
 	app->times.now = *localtime(&raw_time);
-	animate_clock(app, MAX_STEPS);
+	refresh_content(app, MAX_STEPS);
 	return true;
 }
 
-void clear_texture(struct app_all *app, \
-		   SDL_Texture *target_texture, \
-		   const SDL_Color background_color)
+void clear_background(struct app_all *app, \
+		      SDL_Texture *target_texture, \
+		      const SDL_Color background_color)
 {
 	SDL_SetRenderTarget(app->renderer, target_texture);
 	SDL_SetRenderDrawColor(app->renderer, \
 			       background_color.r, background_color.g, \
 			       background_color.b, background_color.a);
 	SDL_RenderClear(app->renderer);
+}
+
+void refresh_content(struct app_all *app, \
+		     int step)
+{
+	clear_background(app, NULL, app->colors.black);
+	clear_background(app, app->textures.texture, \
+			 app->colors.black);
+	clear_background(app, app->textures.current, \
+			 app->colors.transparent);
+	clear_background(app, app->textures.previous, \
+			 app->colors.transparent);
+	/* Hold a safe start time to let it refresh. */
+	app->times.past.tm_hour = -25;
+	app->times.past.tm_min = -25;
+	animate_clock(app, step);
 }
 
 void draw_rounded_box(struct app_all *app, \
@@ -468,4 +479,5 @@ void print_help(const struct app_all *app)
 	printf("\t-f <font>\tCustom font.\n");
 	printf("\t-s <factor>\tCustom resolution with a scale factor.\n");
 	printf("Press `q` or `Esc` to quit.\n");
+	printf("Press `t` to toggle 12h/24h type.\n");
 }

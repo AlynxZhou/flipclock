@@ -96,8 +96,7 @@ int main(int argc, const char *argv[])
 				break;
 			case SDL_WINDOWEVENT_RESTORED:
 				wait = false;
-				/* Refresh. */
-				animate_clock(&flipclock, MAX_STEPS);
+				refresh_content(&flipclock, MAX_STEPS);
 				break;
 			case SDL_WINDOWEVENT_CLOSE:
 				quit = true;
@@ -107,10 +106,15 @@ int main(int argc, const char *argv[])
 			}
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
-			/* Press `q` or `Esc` to quit. */
 			case SDLK_ESCAPE:
 			case SDLK_q:
+				/* Press `q` or `Esc` to quit. */
 				quit = true;
+				break;
+			case SDLK_t:
+				/* Press `t` to toggle type. */
+				flipclock.properties.ampm = flipclock.properties.ampm ? false : true;
+				refresh_content(&flipclock, 0);
 				break;
 			default:
 				break;

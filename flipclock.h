@@ -76,10 +76,18 @@
 	bool init_app(struct app_all *app);
 	/*
 	 * Clear texture with given color.
+	 * Use NULL to clear renderer.
 	 */
-	void clear_texture(struct app_all *app, \
- 			   SDL_Texture *target_texture, \
- 			   const SDL_Color background_color);
+	void clear_background(struct app_all *app, \
+ 			      SDL_Texture *target_texture, \
+ 			      const SDL_Color background_color);
+	/*
+	 * Clear and refresh.
+	 * If no clear, in Windows the DirectX will
+	 * let the window content undefinded.
+	 */
+	void refresh_content(struct app_all *app, \
+			     int step);
 	/*
 	 * Draw a rounded box in given rect.
 	 * Using Bresenham's circle algorithm.
