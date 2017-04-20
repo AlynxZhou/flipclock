@@ -79,14 +79,32 @@ int main(int argc, const char *argv[])
 	}
 	/* Listen for update. */
 	bool quit = false;
+	bool wait = false;
 	SDL_Event event;
 	SDL_TimerID timer = SDL_AddTimer(250, update_time, &flipclock);
 	while (!quit && SDL_WaitEvent(&event)) {
 		switch (event.type) {
 		case SDL_USEREVENT:
 			/* Time to update. */
-			animate_clock(&flipclock, 0);
+			if (!wait)
+				animate_clock(&flipclock, 0);
 			break;
+		case SDL_WINDOWEVENT:
+			switch (event.window.event) {
+			case SDL_WINDOWEVENT_MINIMIZED:
+				wait = true;
+				break;
+			case SDL_WINDOWEVENT_RESTORED:
+				wait = false;
+				/* Refresh. */
+				animate_clock(&flipclock, MAX_STEPS);
+				break;
+			case SDL_WINDOWEVENT_CLOSE:
+				quit = true;
+				break;
+			default:
+				break;
+			}
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
 			/* Press `q` or `Esc` to quit. */
