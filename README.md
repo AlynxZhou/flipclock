@@ -16,17 +16,10 @@ Usage:
 
 - Windows:
 
-	1. Download Windows project files and static libs from [here]().
-	Use Visual Studio or Visual C++ to open project file in directory `Windows`. I create them with Visual Studio 2017.
+	1. Download Windows project files and static libs from [here](https://github.com/AlynxZhou/flipclock/archive/win32.zip) and get the master code. And take the extracted `Windows` folder into where you extracted master code.
 
-	2. Compile it with `Release`.
+	2. Use Visual Studio or Visual C++ to open project file in `Windows` folder. I create them with Visual Studio 2017. Compile it with `Release` `x86`.
 
 	3. Find `flipclock-win32.exe` in `Windows\Release`. Take it together with `flipclock.ttf`. Then run it. Press `q` or `Esc` to quit.
-
-**PS** I added SDL2, SDL2_ttf, libfreetype-6 static lib for Windows in this project, which is needed if you want to compile the exe without dll. But I am not sure whether I can release them with my code and I am not the author of them.
-
-**IF THERE ARE LICENSE SAY THAT I CANNOT DO THAT, PLEASE TELL ME, AND I AM WILLING TO REMOVE THEM.**
-
-For Windows users please visit their website first before you use these lib.
 
 **The original works of SDL2, SDL2_ttf, libfreetype was done by [SDL](https://www.libsdl.org/), [Freetype](https://www.freetype.org/), special thanks.**
