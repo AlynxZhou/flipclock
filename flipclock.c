@@ -330,6 +330,7 @@ void copy_frame(struct app_all *app, \
 	 * For it will remain.
 	 */
 	SDL_Rect half_source_rect;
+	SDL_Rect half_target_rect;
 	half_source_rect.x = target_rect.x;
 	half_source_rect.y = target_rect.y;
 	half_source_rect.w = target_rect.w;
@@ -351,7 +352,6 @@ void copy_frame(struct app_all *app, \
 	 * Upper half is previous and lower half is current.
 	 * Just custom the destination Rect, zoom will be done automatically.
 	 */
-	SDL_Rect half_target_rect;
 	half_source_rect.x = target_rect.x;
 	half_source_rect.y = target_rect.y + \
 			     (upper_half ? 0 : target_rect.h / 2);
