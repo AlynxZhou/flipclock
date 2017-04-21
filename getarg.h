@@ -9,6 +9,12 @@
 #	include <stdlib.h>
 #	include <string.h>
 
+#	ifndef WIN32
+#		define ARG_START '-'
+#	else
+#		define ARG_START '/'
+#	endif
+
 	/* Global optarg. */
 	extern const char *optarg;
 

@@ -472,12 +472,13 @@ void print_help(const struct app_all *app)
 	printf("Usage: %s [OPTION...] <value>\n", \
 	       app->properties.program_name);
 	printf("Options:\n");
-	printf("\t-h\t\tDisplay this help.\n");
-	printf("\t-w\t\tRun in window.\n");
-	printf("\t-t <12|24>\tToggle 12-hour clock format (AM/PM) " \
-	       "or 24-hour clock format.\n");
-	printf("\t-f <font>\tCustom font.\n");
-	printf("\t-s <factor>\tCustom resolution with a scale factor.\n");
+	printf("\t%ch\t\tDisplay this help.\n", ARG_START);
+	printf("\t%cw\t\tRun in window.\n", ARG_START);
+	printf("\t%ct <12|24>\tToggle 12-hour clock format (AM/PM) " \
+	       "or 24-hour clock format.\n", ARG_START);
+	printf("\t%cf <font>\tCustom font.\n", ARG_START);
+	printf("\t%cs <factor>\tCustom resolution with a scale factor.\n", \
+	        ARG_START);
 	printf("Press `q` or `Esc` to quit.\n");
 	printf("Press `t` to toggle 12h/24h type.\n");
 }
