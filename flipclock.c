@@ -150,7 +150,7 @@ bool init_app(struct app_all *app)
 	return true;
 }
 
-void fill_defaults(struct app_all *app)
+void fill_default(struct app_all *app)
 {
 	app->window = NULL;
 	app->renderer = NULL;
@@ -474,6 +474,63 @@ void update_time(struct app_all *app)
 		timer_event.user.data1 = NULL;
 		timer_event.user.data2 = NULL;
 		SDL_PushEvent(&timer_event);
+	}
+}
+
+void route_event(struct app_all *app, \
+		 const int timeout)
+{
+	bool quit = false;
+	bool wait = false;
+	SDL_Event event;
+	while (!quit) {
+		update_time(app);
+		if (SDL_WaitEventTimeout(&event, timeout)) {
+			switch (event.type) {
+			case SDL_USEREVENT:
+				/* Time to update. */
+				if (!wait)
+					animate_clock(app, 0);
+				break;
+			case SDL_WINDOWEVENT:
+				switch (event.window.event) {
+				case SDL_WINDOWEVENT_MINIMIZED:
+					wait = true;
+					break;
+				case SDL_WINDOWEVENT_RESTORED:
+					wait = false;
+					refresh_content(app, MAX_STEPS);
+					break;
+				case SDL_WINDOWEVENT_CLOSE:
+					quit = true;
+					break;
+				default:
+					break;
+				}
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.sym) {
+				case SDLK_ESCAPE:
+				case SDLK_q:
+					/* Press `q` or `Esc` to quit. */
+					quit = true;
+					break;
+				case SDLK_t:
+					/* Press `t` to toggle type. */
+					app->properties.ampm = \
+					!app->properties.ampm;
+					refresh_content(app, MAX_STEPS);
+					break;
+				default:
+					break;
+				}
+				break;
+			case SDL_QUIT:
+				quit = true;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 }
 

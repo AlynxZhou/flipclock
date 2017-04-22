@@ -13,7 +13,7 @@ int main(int argc, const char *argv[])
 	const char VERSION[] = "1.3.3";
 	struct app_all flipclock;
 	/* Fill default content. */
-	fill_defaults(&flipclock);
+	fill_default(&flipclock);
 	flipclock.properties.title = TITLE;
 	flipclock.properties.version = VERSION;
 	flipclock.properties.fallback_font = FALLBACK_FONT;
@@ -49,59 +49,9 @@ int main(int argc, const char *argv[])
 		quit_app(&flipclock);
 		exit(EXIT_FAILURE);
 	}
-	/* Listen for update. */
-	bool quit = false;
-	bool wait = false;
-	SDL_Event event;
-	while (!quit) {
-		update_time(&flipclock);
-		if (SDL_WaitEventTimeout(&event, 100)) {
-			switch (event.type) {
-			case SDL_USEREVENT:
-				/* Time to update. */
-				if (!wait)
-					animate_clock(&flipclock, 0);
-				break;
-			case SDL_WINDOWEVENT:
-				switch (event.window.event) {
-				case SDL_WINDOWEVENT_MINIMIZED:
-					wait = true;
-					break;
-				case SDL_WINDOWEVENT_RESTORED:
-					wait = false;
-					refresh_content(&flipclock, MAX_STEPS);
-					break;
-				case SDL_WINDOWEVENT_CLOSE:
-					quit = true;
-					break;
-				default:
-					break;
-				}
-			case SDL_KEYDOWN:
-				switch (event.key.keysym.sym) {
-				case SDLK_ESCAPE:
-				case SDLK_q:
-					/* Press `q` or `Esc` to quit. */
-					quit = true;
-					break;
-				case SDLK_t:
-					/* Press `t` to toggle type. */
-					flipclock.properties.ampm = \
-					!flipclock.properties.ampm;
-					refresh_content(&flipclock, MAX_STEPS);
-					break;
-				default:
-					break;
-				}
-				break;
-			case SDL_QUIT:
-				quit = true;
-				break;
-			default:
-				break;
-			}
-		}
-	}
+	/* Route and handle events. */
+	route_event(&flipclock, TIMEOUT);
+	/* Clean and quit. */
 	quit_app(&flipclock);
 	return 0;
 }

@@ -17,6 +17,7 @@
 #	include "getarg.h"
 
 #	define MAX_STEPS 180
+#	define TIMEOUT 200
 
 	struct app_properties {
 		const char *title;
@@ -77,7 +78,7 @@
 	/*
 	 * Fill default content.
 	 */
-	void fill_defaults(struct app_all *app);
+	void fill_default(struct app_all *app);
 	/*
 	 * Clear texture with given color.
 	 * Use NULL to clear renderer.
@@ -138,6 +139,11 @@
 	 * Update time and raise an event to call animate_clock().
 	 */
 	void update_time(struct app_all *app);
+	/*
+	 * Route and handle events.
+	 */
+	void route_event(struct app_all *app, \
+			 const int timeout);
 	/*
 	 * Free and quit an app.
 	 */
