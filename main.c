@@ -80,55 +80,71 @@ int main(int argc, const char *argv[])
 	/* Listen for update. */
 	bool quit = false;
 	bool wait = false;
+	time_t raw_time;
 	SDL_Event event;
-	SDL_TimerID timer = SDL_AddTimer(250, update_time, &flipclock);
-	while (!quit && SDL_WaitEvent(&event)) {
-		switch (event.type) {
-		case SDL_USEREVENT:
-			/* Time to update. */
-			if (!wait)
-				animate_clock(&flipclock, 0);
-			break;
-		case SDL_WINDOWEVENT:
-			switch (event.window.event) {
-			case SDL_WINDOWEVENT_MINIMIZED:
-				wait = true;
+	// SDL_TimerID timer = SDL_AddTimer(250, update_time, &flipclock);
+	while (!quit) {
+		raw_time = time(NULL);
+		flipclock.times.now = *localtime(&raw_time);
+		if (flipclock.times.now.tm_min != \
+		    flipclock.times.past.tm_min || \
+		    flipclock.times.now.tm_hour != \
+		    flipclock.times.past.tm_hour) {
+			SDL_Event timer_event;
+			timer_event.type = SDL_USEREVENT;
+			timer_event.user.code = 0;
+			timer_event.user.data1 = NULL;
+			timer_event.user.data2 = NULL;
+			SDL_PushEvent(&timer_event);
+		}
+		if (SDL_WaitEventTimeout(&event, 10)) {
+			switch (event.type) {
+			case SDL_USEREVENT:
+				/* Time to update. */
+				if (!wait)
+					animate_clock(&flipclock, 0);
 				break;
-			case SDL_WINDOWEVENT_RESTORED:
-				wait = false;
-				refresh_content(&flipclock, MAX_STEPS);
+			case SDL_WINDOWEVENT:
+				switch (event.window.event) {
+				case SDL_WINDOWEVENT_MINIMIZED:
+					wait = true;
+					break;
+				case SDL_WINDOWEVENT_RESTORED:
+					wait = false;
+					refresh_content(&flipclock, MAX_STEPS);
+					break;
+				case SDL_WINDOWEVENT_CLOSE:
+					quit = true;
+					break;
+				default:
+					break;
+				}
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.sym) {
+				case SDLK_ESCAPE:
+				case SDLK_q:
+					/* Press `q` or `Esc` to quit. */
+					quit = true;
+					break;
+				case SDLK_t:
+					/* Press `t` to toggle type. */
+					flipclock.properties.ampm = \
+					!flipclock.properties.ampm;
+					refresh_content(&flipclock, MAX_STEPS);
+					break;
+				default:
+					break;
+				}
 				break;
-			case SDL_WINDOWEVENT_CLOSE:
+			case SDL_QUIT:
 				quit = true;
 				break;
 			default:
 				break;
 			}
-		case SDL_KEYDOWN:
-			switch (event.key.keysym.sym) {
-			case SDLK_ESCAPE:
-			case SDLK_q:
-				/* Press `q` or `Esc` to quit. */
-				quit = true;
-				break;
-			case SDLK_t:
-				/* Press `t` to toggle type. */
-				flipclock.properties.ampm = \
-				!flipclock.properties.ampm;
-				refresh_content(&flipclock, MAX_STEPS);
-				break;
-			default:
-				break;
-			}
-			break;
-		case SDL_QUIT:
-			quit = true;
-			break;
-		default:
-			break;
 		}
 	}
-	SDL_RemoveTimer(timer);
+	// SDL_RemoveTimer(timer);
 	quit_app(&flipclock);
 	return 0;
 }
