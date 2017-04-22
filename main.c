@@ -55,7 +55,7 @@ int main(int argc, const char *argv[])
 	SDL_Event event;
 	while (!quit) {
 		update_time(&flipclock);
-		if (SDL_WaitEventTimeout(&event, 500)) {
+		if (SDL_WaitEventTimeout(&event, 100)) {
 			switch (event.type) {
 			case SDL_USEREVENT:
 				/* Time to update. */
