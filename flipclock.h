@@ -75,6 +75,10 @@
 	 */
 	bool init_app(struct app_all *app);
 	/*
+	 * Fill default content.
+	 */
+	void fill_defaults(struct app_all *app);
+	/*
 	 * Clear texture with given color.
 	 * Use NULL to clear renderer.
 	 */
@@ -132,10 +136,8 @@
  			   int step);
 	/*
 	 * Update time and raise an event to call animate_clock().
-	 * Used by a timer. Param is the app pointer.
 	 */
-	Uint32 update_time(Uint32 interval, \
-			   void *param);
+	void update_time(struct app_all *app);
 	/*
 	 * Free and quit an app.
 	 */

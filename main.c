@@ -12,39 +12,11 @@ int main(int argc, const char *argv[])
 	const char TITLE[] = "FlipClock";
 	const char VERSION[] = "1.3.3";
 	struct app_all flipclock;
-	/* Init default content. */
-	flipclock.window = NULL;
-	flipclock.renderer = NULL;
-	flipclock.textures.texture = NULL;
-	flipclock.textures.current = NULL;
-	flipclock.textures.previous = NULL;
-	flipclock.fonts.time = NULL;
-	flipclock.fonts.mode = NULL;
-	flipclock.colors.font.r = 0xb7;
-	flipclock.colors.font.g = 0xb7;
-	flipclock.colors.font.b = 0xb7;
-	flipclock.colors.font.a = 0xff;
-	flipclock.colors.rect.r = 0x17;
-	flipclock.colors.rect.g = 0x17;
-	flipclock.colors.rect.b = 0x17;
-	flipclock.colors.rect.a = 0xff;
-	flipclock.colors.black.r = 0x00;
-	flipclock.colors.black.g = 0x00;
-	flipclock.colors.black.b = 0x00;
-	flipclock.colors.black.a = 0xff;
-	flipclock.colors.transparent.r = 0x00;
-	flipclock.colors.transparent.g = 0x00;
-	flipclock.colors.transparent.b = 0x00;
-	flipclock.colors.transparent.a = 0x00;
+	/* Fill default content. */
+	fill_defaults(&flipclock);
 	flipclock.properties.title = TITLE;
 	flipclock.properties.version = VERSION;
-	flipclock.properties.font_path = NULL;
 	flipclock.properties.fallback_font = FALLBACK_FONT;
-	flipclock.properties.full = true;
-	flipclock.properties.ampm = false;
-	flipclock.properties.width = 1024;
-	flipclock.properties.height = 768;
-	flipclock.properties.scale = 0.0;
 	flipclock.properties.program_name = argv[0];
 	/* Dealing with argument. */
 	int arg;
@@ -80,24 +52,10 @@ int main(int argc, const char *argv[])
 	/* Listen for update. */
 	bool quit = false;
 	bool wait = false;
-	time_t raw_time;
 	SDL_Event event;
-	// SDL_TimerID timer = SDL_AddTimer(250, update_time, &flipclock);
 	while (!quit) {
-		raw_time = time(NULL);
-		flipclock.times.now = *localtime(&raw_time);
-		if (flipclock.times.now.tm_min != \
-		    flipclock.times.past.tm_min || \
-		    flipclock.times.now.tm_hour != \
-		    flipclock.times.past.tm_hour) {
-			SDL_Event timer_event;
-			timer_event.type = SDL_USEREVENT;
-			timer_event.user.code = 0;
-			timer_event.user.data1 = NULL;
-			timer_event.user.data2 = NULL;
-			SDL_PushEvent(&timer_event);
-		}
-		if (SDL_WaitEventTimeout(&event, 10)) {
+		update_time(&flipclock);
+		if (SDL_WaitEventTimeout(&event, 500)) {
 			switch (event.type) {
 			case SDL_USEREVENT:
 				/* Time to update. */
@@ -144,7 +102,6 @@ int main(int argc, const char *argv[])
 			}
 		}
 	}
-	// SDL_RemoveTimer(timer);
 	quit_app(&flipclock);
 	return 0;
 }

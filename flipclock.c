@@ -150,6 +150,39 @@ bool init_app(struct app_all *app)
 	return true;
 }
 
+void fill_defaults(struct app_all *app)
+{
+	app->window = NULL;
+	app->renderer = NULL;
+	app->textures.texture = NULL;
+	app->textures.current = NULL;
+	app->textures.previous = NULL;
+	app->fonts.time = NULL;
+	app->fonts.mode = NULL;
+	app->colors.font.r = 0xb7;
+	app->colors.font.g = 0xb7;
+	app->colors.font.b = 0xb7;
+	app->colors.font.a = 0xff;
+	app->colors.rect.r = 0x17;
+	app->colors.rect.g = 0x17;
+	app->colors.rect.b = 0x17;
+	app->colors.rect.a = 0xff;
+	app->colors.black.r = 0x00;
+	app->colors.black.g = 0x00;
+	app->colors.black.b = 0x00;
+	app->colors.black.a = 0xff;
+	app->colors.transparent.r = 0x00;
+	app->colors.transparent.g = 0x00;
+	app->colors.transparent.b = 0x00;
+	app->colors.transparent.a = 0x00;
+	app->properties.font_path = NULL;
+	app->properties.full = true;
+	app->properties.ampm = false;
+	app->properties.width = 1024;
+	app->properties.height = 768;
+	app->properties.scale = 0.0;
+}
+
 void clear_background(struct app_all *app, \
 		      SDL_Texture *target_texture, \
 		      const SDL_Color background_color)
@@ -429,24 +462,19 @@ void animate_clock(struct app_all *app, \
 	app->times.past = app->times.now;
 }
 
-Uint32 update_time(Uint32 interval, \
-		   void *param)
+void update_time(struct app_all *app)
 {
 	SDL_Event timer_event;
-	struct app_all *app = (struct app_all *)param;
 	time_t raw_time = time(NULL);
 	app->times.now = *localtime(&raw_time);
-	if (app->times.now.tm_min != app->times.past.tm_min) {
+	if (app->times.now.tm_hour != app->times.past.tm_hour || \
+	    app->times.now.tm_min != app->times.past.tm_min) {
 		timer_event.type = SDL_USEREVENT;
 		timer_event.user.code = 0;
 		timer_event.user.data1 = NULL;
 		timer_event.user.data2 = NULL;
 		SDL_PushEvent(&timer_event);
-		interval = 1000 * (60 - app->times.now.tm_sec) - 250;
-	} else {
-		interval = 250;
 	}
-	return interval;
 }
 
 void quit_app(struct app_all *app)
