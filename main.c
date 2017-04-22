@@ -115,7 +115,7 @@ int main(int argc, const char *argv[])
 				/* Press `t` to toggle type. */
 				flipclock.properties.ampm = \
 				!flipclock.properties.ampm;
-				refresh_content(&flipclock, 0);
+				refresh_content(&flipclock, MAX_STEPS);
 				break;
 			default:
 				break;
