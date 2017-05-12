@@ -3,8 +3,8 @@
  * Created by 请叫我喵 Alynx.
  * alynx.zhou@gmail.com, http://alynx.xyz/.
  */
-#ifndef _FLIPCLOCK_H
-#	define _FILPCLOCK_H
+#ifndef __FLIPCLOCK_H__
+#	define __FILPCLOCK_H__
 
 #	include <stdio.h>
 #	include <stdlib.h>
