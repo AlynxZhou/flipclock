@@ -29,7 +29,7 @@ extern const char *optarg;
  * You should use a while-switch-case to deal with options.
  */
 int getarg(const int argc, \
-	   const char * const argv[], \
+	   const char *const argv[], \
 	   const char opt_string[]);
 
 #endif

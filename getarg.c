@@ -8,7 +8,7 @@
 const char *optarg = NULL;
 
 int getarg(const int argc, \
-	   const char * const argv[], \
+	   const char *const argv[], \
 	   const char opt_string[])
 {
 	static int i = 0, j = 1;
@@ -27,9 +27,9 @@ int getarg(const int argc, \
 		} else if (strchr(opt_string, argv[i][j]) != NULL && \
 			   *(strchr(opt_string, argv[i][j]) + 1) != ':') {
 			/* Arguments not finished. */
-			int tempI = i;
-			int tempJ = j++;
-			return argv[tempI][tempJ];
+			int temp_i = i;
+			int temp_j = j++;
+			return argv[temp_i][temp_j];
 		} else if (*(strchr(opt_string, argv[i][j]) + 1) == ':') {
 			/* An argument followed by a value. */
 			if (i + 1 < argc && argv[i][j + 1] == '\0') {
@@ -37,11 +37,11 @@ int getarg(const int argc, \
 				 * The argument must be followed
 				 * by a value, or it will be skipped.
 				 */
-				int tempI = i++;
-				int tempJ = j;
+				int temp_i = i++;
+				int temp_j = j;
 				optarg = argv[i];
 				j = 1;
-				return argv[tempI][tempJ];
+				return argv[temp_i][temp_j];
 			} else {
 				/*
 				 * Just skip an argument with
