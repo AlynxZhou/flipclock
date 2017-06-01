@@ -1,17 +1,18 @@
 # Filename: Makefile
 # Created by 请叫我喵 Alynx.
 # alynx.zhou@gmail.com, http://alynx.xyz/.
+
 CC ?= gcc
 CFLAGS ?= -std=c11
 LIBS ?= -lSDL2 -lSDL2_ttf
 OBJECTS := main.o flipclock.o getarg.o
 
-flipclock : CFLAGS += -O2
-flipclock : ${OBJECTS}
+flipclock: CFLAGS += -O2
+flipclock: ${OBJECTS}
 	${CC} ${CFLAGS} ${LIBS} -o flipclock \
 	   ${OBJECTS}
 
-.PHONY : install
+.PHONY: install
 install:
 	install -o root -m 0755 -D flipclock /usr/bin/flipclock
 	install -o root -m 0644 -D flipclock.ttf \
@@ -21,28 +22,28 @@ install:
 	install -o root -m 0644 -D flipclock.desktop \
 		/usr/share/applications/flipclock.desktop
 
-.PHONY : uninstall
+.PHONY: uninstall
 uninstall:
 	-rm -f /usr/share/applications/flipclock.desktop \
 	       /usr/share/fonts/flipclock.ttf \
 	       /usr/share/pixmaps/flipclock.png \
 	       /usr/bin/flipclock
 
-.PHONY : debug
-debug : CFLAGS += -g
-debug : clean ${OBJECTS}
+.PHONY: debug
+debug: CFLAGS += -g
+debug: clean ${OBJECTS}
 	${CC} ${CFLAGS} ${LIBS} -o flipclock_debug ${OBJECTS}
 
-.PHONY : clean
-clean :
+.PHONY: clean
+clean:
 	-rm -f flipclock flipclock_debug flipclock.o ${OBJECTS} \
 	      flipclock.h.gch getarg.h.gch a.out
 
-.PHONY : rebuild
-rebuild : clean flipclock
+.PHONY: rebuild
+rebuild: clean flipclock
 
-main.o : flipclock.h
+main.o: flipclock.h
 
-flipclock.o : flipclock.h
+flipclock.o: flipclock.h
 
-getarg.o : getarg.h
+getarg.o: getarg.h
