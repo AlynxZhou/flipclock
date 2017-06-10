@@ -5,7 +5,7 @@
  */
 #include "getarg.h"
 
-const char *optarg = NULL;
+const char *argopt = NULL;
 
 int getarg(const int argc, \
 	   const char *const argv[], \
@@ -39,7 +39,7 @@ int getarg(const int argc, \
 				 */
 				int temp_i = i++;
 				int temp_j = j;
-				optarg = argv[i];
+				argopt = argv[i];
 				j = 1;
 				return argv[temp_i][temp_j];
 			} else {

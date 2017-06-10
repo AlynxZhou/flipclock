@@ -16,7 +16,7 @@
 #	endif
 
 /* Global optarg. */
-extern const char *optarg;
+extern const char *argopt;
 
 /*
  * get_arg() receives an arguments counter,
@@ -25,7 +25,7 @@ extern const char *optarg;
  * It only receives single-char option, and will return it.
  * In order to parse a value following the option,
  * use "x:" in the option string where 'x' is the option,
- * and it will store a pointer to the value in global pointer optarg.
+ * and it will store a pointer to the value in global pointer argopt.
  * You should use a while-switch-case to deal with options.
  */
 int getarg(const int argc, \

@@ -26,14 +26,14 @@ int main(int argc, const char *argv[])
 			flipclock.properties.full = false;
 			break;
 		case 't':
-			if (strcmp(optarg, "12") == 0)
+			if (strcmp(argopt, "12") == 0)
 				flipclock.properties.ampm = true;
 			break;
 		case 'f':
-			flipclock.properties.font_path = optarg;
+			flipclock.properties.font_path = argopt;
 			break;
 		case 's':
-			sscanf(optarg, "%lf", \
+			sscanf(argopt, "%lf", \
 			       &flipclock.properties.scale);
 			break;
 		case 'h':
