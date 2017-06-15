@@ -70,7 +70,8 @@ bool init_app(struct app_all *app)
 	/* Create renderer. */
 	app->renderer = SDL_CreateRenderer(app->window, -1, \
 					   SDL_RENDERER_ACCELERATED | \
-					   SDL_RENDERER_TARGETTEXTURE);
+					   SDL_RENDERER_TARGETTEXTURE | \
+					   SDL_RENDERER_PRESENTVSYNC);
 	if (app->renderer == NULL) {
 		fprintf(stderr, "%s: Renderer could not be created! " \
 			"SDL Error: %s\n", app->properties.program_name, \

@@ -84,8 +84,8 @@ void fill_default(struct app_all *app);
  * Use NULL to clear renderer.
  */
 void clear_background(struct app_all *app, \
-			      SDL_Texture *target_texture, \
-			      const SDL_Color background_color);
+		      SDL_Texture *target_texture, \
+		      const SDL_Color background_color);
 /*
  * Clear and refresh.
  * If no clear, in Windows the DirectX will
@@ -98,8 +98,8 @@ void refresh_content(struct app_all *app, \
  * Using Bresenham's circle algorithm.
  */
 void draw_rounded_box(struct app_all *app, \
-			      const SDL_Rect target_rect, \
-			      int radius);
+		      const SDL_Rect target_rect, \
+		      int radius);
 /*
  * Draw a rounded box in given rect as background,
  * using draw_rounded_box().
@@ -109,11 +109,11 @@ void draw_rounded_box(struct app_all *app, \
  * act as a backend.
  */
 void render_time(struct app_all *app, \
-			 SDL_Texture *target_texture, \
-			 const SDL_Rect target_rect, \
-			 TTF_Font *font, \
-			 const char digits[], \
-			 const int radius);
+		 SDL_Texture *target_texture, \
+		 const SDL_Rect target_rect, \
+		 TTF_Font *font, \
+		 const char digits[], \
+		 const int radius);
 /*
  * Prepare a updated current backend using render_time().
  * animate_clock() will copy frame from the prepared backend.
@@ -125,16 +125,16 @@ void prepare_backend(struct app_all *app);
  * when using SDL_RenderCopy() with a different rect size.
  */
 void copy_frame(struct app_all *app, \
-			const SDL_Rect target_rect, \
-			const int step, \
-			const int max_steps);
+		const SDL_Rect target_rect, \
+		const int step, \
+		const int max_steps);
 /*
  * Using prepare_backend() to prepare a backend.
  * Then animate the flip clock.
  * Using copy_frame() and present it.
  */
 void animate_clock(struct app_all *app, \
-			   int step);
+		   int step);
 /*
  * Update time and raise an event to call animate_clock().
  */
