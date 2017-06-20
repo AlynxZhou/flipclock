@@ -76,6 +76,15 @@ struct app_all {
  */
 bool init_app(struct app_all *app);
 /*
+ * Check and toggle fullscreen if needed.
+ */
+void toggle_fullscreen(struct app_all *app);
+/*
+ * Load some extras which need to calculate the size
+ * and need to reload due to window resizing.
+ */
+bool load_extra(struct app_all *app);
+/*
  * Fill default content.
  */
 void fill_default(struct app_all *app);
@@ -144,6 +153,12 @@ void update_time(struct app_all *app);
  */
 void route_event(struct app_all *app, \
 		 const int timeout);
+/*
+ * Free some extras which need to calculate the size
+ * due to window resizing. You must free them first
+ * before reload them.
+ */
+void free_extras(struct app_all *app);
 /*
  * Free and quit an app.
  */

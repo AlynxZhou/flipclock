@@ -14,19 +14,78 @@ bool init_app(struct app_all *app)
 			SDL_GetError());
 		return false;
 	}
-	/* Calculate numbers. */
+	/* Calculate scale. */
 	if (app->properties.scale > 0.0) {
 		app->properties.full = false;
 		app->properties.width *= app->properties.scale;
 		app->properties.height *= app->properties.scale;
-	} else if (app->properties.full) {
-		SDL_DisplayMode displayMode;
-		SDL_GetCurrentDisplayMode(0, &displayMode);
-		app->properties.width = displayMode.w;
-		app->properties.height = displayMode.h;
-		SDL_ShowCursor(SDL_DISABLE);
 	}
-	app->properties.rect_size = app->properties.width * 0.4;
+	/* Create window. */
+	app->window = SDL_CreateWindow(app->properties.title, \
+				       SDL_WINDOWPOS_UNDEFINED, \
+				       SDL_WINDOWPOS_UNDEFINED, \
+				       app->properties.width, \
+				       app->properties.height, \
+				       SDL_WINDOW_SHOWN | \
+				       SDL_WINDOW_RESIZABLE | \
+				       SDL_WINDOW_ALLOW_HIGHDPI);
+	if (app->window == NULL) {
+		fprintf(stderr, "%s: Window could not be created! " \
+			"SDL Error: %s\n", app->properties.program_name, \
+			SDL_GetError());
+		return false;
+	}
+	toggle_fullscreen(app);
+	/* Create renderer. */
+	app->renderer = SDL_CreateRenderer(app->window, -1, \
+					   SDL_RENDERER_ACCELERATED | \
+					   SDL_RENDERER_TARGETTEXTURE | \
+					   SDL_RENDERER_PRESENTVSYNC);
+	if (app->renderer == NULL) {
+		fprintf(stderr, "%s: Renderer could not be created! " \
+		"SDL Error: %s\n", app->properties.program_name, \
+		SDL_GetError());
+		return false;
+	}
+	/* Init SDL_ttf. */
+	if (TTF_Init() < 0) {
+		fprintf(stderr, "%s: SDL_ttf could not initialize! " \
+			"SDL_ttf Error: %s\n", app->properties.program_name, \
+			TTF_GetError());
+		return false;
+	}
+	if (!load_extra(app))
+		return false;
+	/* Render init frame. */
+	time_t raw_time = time(NULL);
+	app->times.now = *localtime(&raw_time);
+	refresh_content(app, MAX_STEPS);
+	return true;
+}
+
+void toggle_fullscreen(struct app_all *app)
+{
+	/* Check for fullscreen. */
+	if (app->properties.full) {
+		SDL_SetWindowFullscreen(app->window, \
+					SDL_WINDOW_FULLSCREEN);
+		SDL_GetWindowSize(app->window, \
+				  &app->properties.width, \
+				  &app->properties.height);
+		SDL_ShowCursor(SDL_DISABLE);
+	} else {
+		SDL_SetWindowFullscreen(app->window, 0);
+		SDL_GetWindowSize(app->window, \
+				  &app->properties.width, \
+				  &app->properties.height);
+		SDL_ShowCursor(SDL_ENABLE);
+	}
+}
+
+bool load_extra(struct app_all *app)
+{
+	/* Calculate numbers. */
+	app->properties.rect_size = app->properties.width * 0.4 > app->properties.height * 0.8? app->properties.height * 0.8 : app->properties.width * 0.4;
  	app->properties.width_space = app->properties.width * 0.06;
 	app->properties.time_radius = app->properties.rect_size / 10;
 	app->rects.hour.x = (app->properties.width - 2 * \
@@ -42,7 +101,7 @@ bool init_app(struct app_all *app)
 	app->rects.minute.w = app->properties.rect_size;
 	app->rects.minute.h = app->properties.rect_size;
 	app->rects.mode.w = app->properties.rect_size / 4;
-	app->rects.mode.h = app->properties.rect_size / 8;
+	app->rects.mode.h = app->properties.rect_size / 8 > (app->properties.height - app->properties.rect_size) / 2 ? (app->properties.height - app->properties.rect_size) / 2 * 0.8 : app->properties.rect_size / 8;
 	app->rects.mode.x = (app->properties.width - app->rects.mode.w) / 2;
 	app->rects.mode.y = (app->properties.height - \
 			     app->properties.rect_size) / 2 + \
@@ -51,33 +110,6 @@ bool init_app(struct app_all *app)
 			      app->properties.rect_size) / 2 - \
 			     app->rects.mode.h) / 2;
 	app->properties.mode_radius = app->rects.mode.w / 10;
-	/* Create window. */
-	app->window = SDL_CreateWindow(app->properties.title, \
-				       SDL_WINDOWPOS_UNDEFINED, \
-				       SDL_WINDOWPOS_UNDEFINED, \
-				       app->properties.width, \
-				       app->properties.height, \
-				       (app->properties.full ? \
-					SDL_WINDOW_FULLSCREEN_DESKTOP : \
-					SDL_WINDOW_SHOWN) | \
-				       SDL_WINDOW_ALLOW_HIGHDPI);
-	if (app->window == NULL) {
-		fprintf(stderr, "%s: Window could not be created! " \
-			"SDL Error: %s\n", app->properties.program_name, \
-			SDL_GetError());
-		return false;
-	}
-	/* Create renderer. */
-	app->renderer = SDL_CreateRenderer(app->window, -1, \
-					   SDL_RENDERER_ACCELERATED | \
-					   SDL_RENDERER_TARGETTEXTURE | \
-					   SDL_RENDERER_PRESENTVSYNC);
-	if (app->renderer == NULL) {
-		fprintf(stderr, "%s: Renderer could not be created! " \
-			"SDL Error: %s\n", app->properties.program_name, \
-			SDL_GetError());
-		return false;
-	}
 	/* Main black screen buffer texture. */
 	app->textures.texture = SDL_CreateTexture(app->renderer, 0, \
 						  SDL_TEXTUREACCESS_TARGET, \
@@ -110,19 +142,12 @@ bool init_app(struct app_all *app)
 			SDL_GetError());
 		return false;
 	}
-	/* Init SDL_ttf. */
-	if (TTF_Init() < 0) {
-		fprintf(stderr, "%s: SDL_ttf could not initialize! " \
-			"SDL_ttf Error: %s\n", app->properties.program_name, \
-			TTF_GetError());
-		return false;
-	}
 	/* Load custom/fallback font. */
 	if (app->properties.font_path != NULL) {
 		app->fonts.time = TTF_OpenFont(app->properties.font_path, \
 					       app->properties.rect_size);
 		app->fonts.mode = TTF_OpenFont(app->properties.font_path, \
-					       app->properties.rect_size / 10);
+					       app->rects.mode.h);
 		if (app->fonts.time == NULL || app->fonts.mode == NULL) {
 			fprintf(stderr, "%s: Custom font " \
 				"could not be opened! " \
@@ -135,7 +160,7 @@ bool init_app(struct app_all *app)
 		app->fonts.time = TTF_OpenFont(app->properties.fallback_font, \
 					       app->properties.rect_size);
 		app->fonts.mode = TTF_OpenFont(app->properties.fallback_font, \
-					       app->properties.rect_size / 10);
+					       app->rects.mode.h);
 		if (app->fonts.time == NULL || app->fonts.mode == NULL) {
 			fprintf(stderr, "%s: Fallback font " \
 				"could not be opened! " \
@@ -144,10 +169,6 @@ bool init_app(struct app_all *app)
 			return false;
 		}
 	}
-	/* Render init frame. */
-	time_t raw_time = time(NULL);
-	app->times.now = *localtime(&raw_time);
-	refresh_content(app, MAX_STEPS);
 	return true;
 }
 
@@ -495,6 +516,15 @@ void route_event(struct app_all *app, \
 				break;
 			case SDL_WINDOWEVENT:
 				switch (event.window.event) {
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+					free_extras(app);
+					app->properties.width = \
+					event.window.data1;
+					app->properties.height = \
+					event.window.data2;
+					load_extra(app);
+					refresh_content(app, MAX_STEPS);
+					break;
 				case SDL_WINDOWEVENT_MINIMIZED:
 					wait = true;
 					break;
@@ -521,6 +551,15 @@ void route_event(struct app_all *app, \
 					!app->properties.ampm;
 					refresh_content(app, MAX_STEPS);
 					break;
+				case SDLK_f:
+					/* Press `f` to toggle fullscreen. */
+					free_extras(app);
+					app->properties.full = \
+					!app->properties.full;
+					toggle_fullscreen(app);
+					load_extra(app);
+					refresh_content(app, MAX_STEPS);
+					break;
 				default:
 					break;
 				}
@@ -535,18 +574,23 @@ void route_event(struct app_all *app, \
 	}
 }
 
-void quit_app(struct app_all *app)
+void free_extras(struct app_all *app)
 {
 	TTF_CloseFont(app->fonts.time);
 	TTF_CloseFont(app->fonts.mode);
-	TTF_Quit();
 	SDL_DestroyTexture(app->textures.previous);
 	SDL_DestroyTexture(app->textures.current);
 	SDL_DestroyTexture(app->textures.texture);
+}
+
+void quit_app(struct app_all *app)
+{
+	free_extras(app);
+	TTF_Quit();
 	SDL_DestroyRenderer(app->renderer);
+	SDL_DestroyWindow(app->window);
 	if (app->properties.full)
 		SDL_ShowCursor(SDL_ENABLE);
-	SDL_DestroyWindow(app->window);
 	SDL_Quit();
 }
 
@@ -567,4 +611,5 @@ void print_help(const struct app_all *app)
 	        ARG_START);
 	printf("Press `q` or `Esc` to quit.\n");
 	printf("Press `t` to toggle 12h/24h type.\n");
+	printf("Press `f` to toggle fullscreen.\n");
 }
