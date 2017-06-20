@@ -68,7 +68,7 @@ void toggle_fullscreen(struct app_all *app)
 	/* Check for fullscreen. */
 	if (app->properties.full) {
 		SDL_SetWindowFullscreen(app->window, \
-					SDL_WINDOW_FULLSCREEN);
+					SDL_WINDOW_FULLSCREEN_DESKTOP);
 		SDL_GetWindowSize(app->window, \
 				  &app->properties.width, \
 				  &app->properties.height);
@@ -85,7 +85,10 @@ void toggle_fullscreen(struct app_all *app)
 bool load_extra(struct app_all *app)
 {
 	/* Calculate numbers. */
-	app->properties.rect_size = app->properties.width * 0.4 > app->properties.height * 0.8? app->properties.height * 0.8 : app->properties.width * 0.4;
+	app->properties.rect_size = app->properties.width * 0.4 > \
+				    app->properties.height * 0.8 ? \
+				    app->properties.height * 0.8 : \
+				    app->properties.width * 0.4;
  	app->properties.width_space = app->properties.width * 0.06;
 	app->properties.time_radius = app->properties.rect_size / 10;
 	app->rects.hour.x = (app->properties.width - 2 * \
@@ -101,7 +104,12 @@ bool load_extra(struct app_all *app)
 	app->rects.minute.w = app->properties.rect_size;
 	app->rects.minute.h = app->properties.rect_size;
 	app->rects.mode.w = app->properties.rect_size / 4;
-	app->rects.mode.h = app->properties.rect_size / 8 > (app->properties.height - app->properties.rect_size) / 2 ? (app->properties.height - app->properties.rect_size) / 2 * 0.8 : app->properties.rect_size / 8;
+	app->rects.mode.h = app->properties.rect_size / 8 > \
+			    (app->properties.height - \
+			     app->properties.rect_size) / 2 ? \
+			    (app->properties.height - \
+			     app->properties.rect_size) / 2 * 0.8 : \
+			    app->properties.rect_size / 8;
 	app->rects.mode.x = (app->properties.width - app->rects.mode.w) / 2;
 	app->rects.mode.y = (app->properties.height - \
 			     app->properties.rect_size) / 2 + \
