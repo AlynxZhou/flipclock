@@ -20,7 +20,11 @@ Usage:
 
 	2. Use Visual Studio or Visual C++ to open project file in `Windows` folder. I create them with Visual Studio 2017. Compile it with `Release` `x86`.
 
-	3. Find `flipclock-win32.exe` in `Windows\Release`. Take it 
+	3. Find `flipclock-win32.exe` in `Windows\Release`. Take it
 together with `flipclock.ttf`. Then run it. Press `q` or `Esc` to quit. Press `t` to toggle 12h/24h type.
 
 **The original works of SDL2, SDL2_ttf, libfreetype was done by [SDL](https://www.libsdl.org/), [Freetype](https://www.freetype.org/), special thanks.**
+
+## Known Issue
+
+On GNOME 3.24 the fullscreen toggle may not work properly and may cause system stuck.

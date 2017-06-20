@@ -19,7 +19,7 @@
 extern const char *argopt;
 
 /*
- * get_arg() receives an arguments counter,
+ * getarg() receives an arguments counter,
  * a pointer array of arguments,
  * and parse it with given option string.
  * It only receives single-char option, and will return it.
