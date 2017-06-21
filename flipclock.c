@@ -8,7 +8,7 @@
 bool init_app(struct app_all *app)
 {
 	/* Init SDL. */
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "%s: SDL could not be inited! " \
 			"SDL Error: %s\n", app->properties.program_name, \
 			SDL_GetError());
