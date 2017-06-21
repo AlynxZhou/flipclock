@@ -525,7 +525,7 @@ void route_event(struct app_all *app, \
 			case SDL_WINDOWEVENT:
 				switch (event.window.event) {
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
-					free_extras(app);
+					free_extra(app);
 					app->properties.width = \
 					event.window.data1;
 					app->properties.height = \
@@ -561,7 +561,7 @@ void route_event(struct app_all *app, \
 					break;
 				case SDLK_f:
 					/* Press `f` to toggle fullscreen. */
-					free_extras(app);
+					free_extra(app);
 					app->properties.full = \
 					!app->properties.full;
 					toggle_fullscreen(app);
@@ -582,7 +582,7 @@ void route_event(struct app_all *app, \
 	}
 }
 
-void free_extras(struct app_all *app)
+void free_extra(struct app_all *app)
 {
 	TTF_CloseFont(app->fonts.time);
 	TTF_CloseFont(app->fonts.mode);
@@ -593,7 +593,7 @@ void free_extras(struct app_all *app)
 
 void quit_app(struct app_all *app)
 {
-	free_extras(app);
+	free_extra(app);
 	TTF_Quit();
 	SDL_DestroyRenderer(app->renderer);
 	SDL_DestroyWindow(app->window);
