@@ -158,7 +158,7 @@ void route_event(struct app_all *app, \
  * due to window resizing. You must free them first
  * before reload them.
  */
-void free_extras(struct app_all *app);
+void free_extra(struct app_all *app);
 /*
  * Free and quit an app.
  */
