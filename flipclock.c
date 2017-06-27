@@ -536,7 +536,8 @@ void route_event(struct app_all *app, \
 				case SDL_WINDOWEVENT_MINIMIZED:
 					wait = true;
 					break;
-				case SDL_WINDOWEVENT_RESTORED:
+				/* Dealing with EXPOSED to repaint. */
+				case SDL_WINDOWEVENT_EXPOSED:
 					wait = false;
 					refresh_content(app, MAX_STEPS);
 					break;
