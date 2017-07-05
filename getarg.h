@@ -6,13 +6,12 @@
 #ifndef __GETARG_H__
 #	define __GETARG_H__
 #	include <stdio.h>
-#	include <stdlib.h>
 #	include <string.h>
 
 #	ifndef WIN32
-#		define ARG_START '-'
+#		define OPT_START '-'
 #	else
-#		define ARG_START '/'
+#		define OPT_START '/'
 #	endif
 
 /* Global optarg. */
@@ -27,6 +26,8 @@ extern const char *argopt;
  * use "x:" in the option string where 'x' is the option,
  * and it will store a pointer to the value in global pointer argopt.
  * You should use a while-switch-case to deal with options.
+ * If you have a single value not leading by an option, it will return 0
+ * and store the pointer in the argopt.
  */
 int getarg(const int argc, \
 	   const char *const argv[], \

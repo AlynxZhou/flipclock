@@ -11,40 +11,58 @@ int getarg(const int argc, \
 	   const char *const argv[], \
 	   const char opt_string[])
 {
-	static int i = 0, j = 1;
-	/* Always init j with 1, because 0 is ARG_START. */
+	static int i = 1;
+	/* Always init i with 1, because 0 is the program name. */
+	static int j = 1;
+	/* Always init j with 1, because 0 is OPT_START. */
+	int temp_i = 0;
+	int temp_j = 0;
+	/* Temp i and j for an option followed by a value. */
 	while (i < argc) {
-		if (argv[i][0] != ARG_START || argv[i][j] == '\0') {
-			/* Arguments begin with ARG_START and end with '\0'. */
+		argopt = NULL;
+		if (argv[i][0] != OPT_START) {
+			/*
+			 * If there is a single value not leading by
+			 * an option, then argopt will be pointed to
+			 * it and return 0.
+			 */
+			argopt = argv[i++];
+			return 0;
+		} else if (argv[i][j] == '\0') {
+			/*
+			 * All options must begin with OPT_START
+			 * and end with '\0'.
+			 */
 			i++;
 			j = 1;
 			continue;
 		} else if (strchr(opt_string, argv[i][j]) == NULL) {
-			/* Not a valid argument. */
-			fprintf(stderr, "%s: Invalid argument `%c%c`.\n", \
-				argv[0], ARG_START, argv[i][j]);
-			exit(EXIT_FAILURE);
-		} else if (strchr(opt_string, argv[i][j]) != NULL && \
-			   *(strchr(opt_string, argv[i][j]) + 1) != ':') {
-			/* Arguments not finished. */
-			int temp_i = i;
-			int temp_j = j++;
-			return argv[temp_i][temp_j];
+			/* Not a valid option. But just return it. */
+			/*
+			fprintf(stderr, "%s: Invalid option `%c%c`.\n", \
+				argv[0], OPT_START, argv[i][j]);
+			*/
+			return argv[i][j++];
+		} else if (*(strchr(opt_string, argv[i][j]) + 1) != ':') {
+			/* Options not finished. */
+			return argv[i][j++];
 		} else if (*(strchr(opt_string, argv[i][j]) + 1) == ':') {
-			/* An argument followed by a value. */
+			/* An option followed by a value. */
 			if (i + 1 < argc && argv[i][j + 1] == '\0') {
 				/*
-				 * The argument must be followed
+				 * The option must be followed
 				 * by a value, or it will be skipped.
 				 */
-				int temp_i = i++;
-				int temp_j = j;
-				argopt = argv[i];
-				j = 1;
-				return argv[temp_i][temp_j];
+				temp_i = i;
+ 				temp_j = j;
+				argopt = argv[++i];
+				i++;
+				/* Increase i to skip value in next loop. */
+ 				j = 1;
+ 				return argv[temp_i][temp_j];
 			} else {
 				/*
-				 * Just skip an argument with
+				 * Just skip an option with
 				 * ':' but no value.
 				 */
 				j++;
