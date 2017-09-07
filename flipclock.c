@@ -222,6 +222,7 @@ void clear_background(struct app_all *app, \
 			       background_color.r, background_color.g, \
 			       background_color.b, background_color.a);
 	SDL_RenderClear(app->renderer);
+	SDL_SetRenderTarget(app->renderer, NULL);
 }
 
 void refresh_content(struct app_all *app, \
