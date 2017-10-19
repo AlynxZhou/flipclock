@@ -4,7 +4,7 @@
  * alynx.zhou@gmail.com, http://alynx.xyz/.
  */
 #ifndef __FLIPCLOCK_H__
-#	define __FILPCLOCK_H__
+#	define __FLIPCLOCK_H__
 
 #	include <stdio.h>
 #	include <stdlib.h>
