@@ -3,6 +3,8 @@
  * Created by 请叫我喵 Alynx.
  * alynx.zhou@gmail.com, http://alynx.xyz/.
  */
+#include <string.h>
+
 #include "getarg.h"
 
 const char *argopt = NULL;
@@ -38,10 +40,6 @@ int getarg(const int argc, \
 			continue;
 		} else if (strchr(opt_string, argv[i][j]) == NULL) {
 			/* Not a valid option. But just return it. */
-			/*
-			fprintf(stderr, "%s: Invalid option `%c%c`.\n", \
-				argv[0], OPT_START, argv[i][j]);
-			*/
 			return argv[i][j++];
 		} else if (*(strchr(opt_string, argv[i][j]) + 1) != ':') {
 			/* Options not finished. */

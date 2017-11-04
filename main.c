@@ -3,6 +3,12 @@
  * Created by 请叫我喵 Alynx.
  * alynx.zhou@gmail.com, http://alynx.xyz/.
  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "getarg.h"
 #include "flipclock.h"
 
 int main(int argc, const char *argv[])

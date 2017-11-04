@@ -5,8 +5,6 @@
  */
 #ifndef __GETARG_H__
 #	define __GETARG_H__
-#	include <stdio.h>
-#	include <string.h>
 
 #	ifndef WIN32
 #		define OPT_START '-'
