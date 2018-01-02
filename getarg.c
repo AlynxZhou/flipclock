@@ -1,7 +1,7 @@
 /*
  * Filename: getarg.c
  * Created by 请叫我喵 Alynx.
- * alynx.zhou@gmail.com, http://alynx.xyz/.
+ * alynx.zhou@gmail.com, https://alynx.xyz/.
  */
 #include <string.h>
 

@@ -1,7 +1,7 @@
 /*
  * Filename: getarg.h
  * Created by 请叫我喵 Alynx.
- * alynx.zhou@gmail.com, http://alynx.xyz/.
+ * alynx.zhou@gmail.com, https://alynx.xyz/.
  */
 #ifndef __GETARG_H__
 #	define __GETARG_H__
