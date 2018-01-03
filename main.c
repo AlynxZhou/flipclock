@@ -18,6 +18,7 @@ int main(int argc, const char *argv[])
 	const char TITLE[] = "FlipClock";
 	const char VERSION[] = "2.3.3";
 	struct app_all flipclock;
+        int opt = 0;
 	/* Fill default content. */
 	fill_default(&flipclock);
 	flipclock.properties.title = TITLE;
@@ -25,7 +26,6 @@ int main(int argc, const char *argv[])
 	flipclock.properties.fallback_font = FALLBACK_FONT;
 	flipclock.properties.program_name = argv[0];
 	/* Dealing with arguments. */
-	int opt;
 	while ((opt = getarg(argc, argv, OPT_STRING)) != -1) {
 		switch (opt) {
 		case 'w':

@@ -250,6 +250,9 @@ void draw_rounded_box(struct app_all *app, \
 		      const SDL_Rect target_rect, \
 		      int radius)
 {
+	int x = 0;
+	int y = 0;
+	int d = 0;
 	if (radius <= 1) {
 		SDL_RenderFillRect(app->renderer, &target_rect);
 		return;
@@ -258,9 +261,9 @@ void draw_rounded_box(struct app_all *app, \
 		radius = target_rect.w / 2;
 	if (2 * radius > target_rect.h)
 		radius = target_rect.h / 2;
-	int x = 0;
-	int y = radius;
-	int d = 3 - 2 * radius;
+	x = 0;
+	y = radius;
+	d = 3 - 2 * radius;
         while (x <= y) {
 		SDL_RenderDrawLine(app->renderer, \
 				   target_rect.x + radius - x, \
@@ -316,6 +319,7 @@ void render_time(struct app_all *app, \
 	SDL_Surface *text_surface = NULL;
 	SDL_Texture *text_texture = NULL;
 	SDL_Rect digit_rect;
+	int i = 0;
 	if (strlen(digits) != 2) {
 		fprintf(stderr, "%s: Wrong time digits!", \
 			app->properties.program_name);
@@ -326,7 +330,6 @@ void render_time(struct app_all *app, \
 			       app->colors.rect.r, app->colors.rect.g, \
 			       app->colors.rect.b, app->colors.rect.a);
 	draw_rounded_box(app, target_rect, radius);
-	int i;
 	for (i = 0; i < 2; i++) {
 		text_surface = TTF_RenderGlyph_Blended(font, digits[i], \
 						       app->colors.font);
@@ -411,6 +414,10 @@ void copy_frame(struct app_all *app, \
 	 */
 	SDL_Rect half_source_rect;
 	SDL_Rect half_target_rect;
+	SDL_Rect divider_rect;
+	int half_steps = 0;
+	bool upper_half = false;
+	double scale = 0.0;
 	half_source_rect.x = target_rect.x;
 	half_source_rect.y = target_rect.y;
 	half_source_rect.w = target_rect.w;
@@ -423,9 +430,9 @@ void copy_frame(struct app_all *app, \
 	SDL_RenderCopy(app->renderer, app->textures.current, \
 		       &half_source_rect, &half_target_rect);
 	/* Calculate the scale factor. */
-	int half_steps = max_steps / 2;
-	bool upper_half = step <= half_steps;
-	double scale = upper_half ? 1.0 - (1.0 * step) / half_steps : \
+	half_steps = max_steps / 2;
+	upper_half = step <= half_steps;
+	scale = upper_half ? 1.0 - (1.0 * step) / half_steps : \
 			     ((1.0 * step) - half_steps) / half_steps;
 	/*
 	 * Draw the flip part.
@@ -448,7 +455,6 @@ void copy_frame(struct app_all *app, \
 				    app->textures.current, \
 		       &half_source_rect, &half_target_rect);
 	/* Render divider. */
-	SDL_Rect divider_rect;
 	divider_rect.h = target_rect.h == app->rects.mode.h ? \
 			 target_rect.h / 40 : target_rect.h / 100;
 	divider_rect.w = target_rect.w;
@@ -468,10 +474,10 @@ void animate_clock(struct app_all *app, \
 		   int step)
 {
 	/* Start tick. */
-	prepare_backend(app);
-	SDL_SetRenderTarget(app->renderer, NULL);
 	bool done = false;
 	Uint32 start_tick = SDL_GetTicks();
+	prepare_backend(app);
+	SDL_SetRenderTarget(app->renderer, NULL);
 	while (!done) {
 		if (step >= MAX_STEPS) {
 			/* Align.*/
