@@ -1,5 +1,5 @@
 # Filename: Makefile
-# Created by 请叫我喵 Alynx.
+# Created by 喵Alynx.
 # alynx.zhou@gmail.com, https://alynx.xyz/.
 
 CC ?= gcc

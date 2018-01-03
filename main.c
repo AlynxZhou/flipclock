@@ -1,6 +1,6 @@
 /*
  * Filename: main.c
- * Created by 请叫我喵 Alynx.
+ * Created by 喵Alynx.
  * alynx.zhou@gmail.com, https://alynx.xyz/.
  */
 
