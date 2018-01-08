@@ -40,7 +40,7 @@ bool init_app(struct app_all *app)
 			SDL_GetError());
 		return false;
 	}
-	// toggle_fullscreen(app);
+	toggle_fullscreen(app);
 	/* Create renderer. */
 	app->renderer = SDL_CreateRenderer(app->window, -1, \
 					   SDL_RENDERER_ACCELERATED | \
