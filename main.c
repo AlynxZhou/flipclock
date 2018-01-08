@@ -18,7 +18,7 @@ int main(int argc, const char *argv[])
 	const char TITLE[] = "FlipClock";
 	const char VERSION[] = "2.3.3";
 	struct app_all flipclock;
-        int opt = 0;
+	int opt = 0;
 	/* Fill default content. */
 	fill_default(&flipclock);
 	flipclock.properties.title = TITLE;
@@ -56,7 +56,7 @@ int main(int argc, const char *argv[])
 				argv[0], OPT_START, opt);
 			exit(EXIT_FAILURE);
 			break;
-        	}
+		}
     	}
 	/* Try to init app. */
 	if (!init_app(&flipclock)) {

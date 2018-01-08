@@ -40,7 +40,7 @@ bool init_app(struct app_all *app)
 			SDL_GetError());
 		return false;
 	}
-	toggle_fullscreen(app);
+	// toggle_fullscreen(app);
 	/* Create renderer. */
 	app->renderer = SDL_CreateRenderer(app->window, -1, \
 					   SDL_RENDERER_ACCELERATED | \
@@ -264,7 +264,7 @@ void draw_rounded_box(struct app_all *app, \
 	x = 0;
 	y = radius;
 	d = 3 - 2 * radius;
-        while (x <= y) {
+	while (x <= y) {
 		SDL_RenderDrawLine(app->renderer, \
 				   target_rect.x + radius - x, \
 				   target_rect.y + radius - y, \
@@ -293,14 +293,14 @@ void draw_rounded_box(struct app_all *app, \
 				   radius + y - 1, \
 				   target_rect.y + target_rect.h - \
 				   radius + x);
-        	if (d < 0) {
+		if (d < 0) {
 			d = d + 4 * x + 6;
-        	} else {
+		} else {
 			d = d + 4 * (x - y) + 10;
-        		y--;
-        	}
-        	x++;
-        }
+			y--;
+		}
+		x++;
+	}
 	SDL_Rect temp_rect;
 	temp_rect.x = target_rect.x;
 	temp_rect.y = target_rect.y + radius;
@@ -629,7 +629,7 @@ void print_help(const struct app_all *app)
 	       "or 24-hour clock format.\n", OPT_START);
 	printf("\t%cf <font>\tCustom font.\n", OPT_START);
 	printf("\t%cs <factor>\tCustom resolution with a scale factor.\n", \
-	        OPT_START);
+		OPT_START);
 	printf("Press `q` or `Esc` to quit.\n");
 	printf("Press `t` to toggle 12h/24h type.\n");
 	printf("Press `f` to toggle fullscreen.\n");
