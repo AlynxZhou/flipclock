@@ -1,0 +1,8 @@
+# Driver
+/usr/bin/clang
+
+# Language
+-std=c11
+
+# Includes
+# -I
