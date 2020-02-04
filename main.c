@@ -1,9 +1,6 @@
 /*
- * Filename: main.c
- * Created by 喵Alynx.
- * alynx.zhou@gmail.com, https://alynx.xyz/.
+ * Author: Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

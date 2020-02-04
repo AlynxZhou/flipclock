@@ -1,7 +1,5 @@
 /*
- * Filename: flipclock.h
- * Created by 喵Alynx.
- * alynx.zhou@gmail.com, https://alynx.xyz/.
+ * Author: Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
  */
 #ifndef __FLIPCLOCK_H__
 #	define __FLIPCLOCK_H__
