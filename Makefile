@@ -1,6 +1,4 @@
-# Filename: Makefile
-# Created by 喵Alynx.
-# alynx.zhou@gmail.com, https://alynx.xyz/.
+# Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
 
 CC ?= gcc
 CFLAGS ?= -std=c11
@@ -14,20 +12,20 @@ flipclock: ${OBJECTS}
 
 .PHONY: install
 install:
-	install -o root -m 0755 -D flipclock /usr/bin/flipclock
+	install -o root -m 0755 -D flipclock ${DESTDIR}/usr/bin/flipclock
 	install -o root -m 0644 -D flipclock.ttf \
-		/usr/share/fonts/flipclock.ttf
+		${DESTDIR}/usr/share/fonts/flipclock.ttf
 	install -o root -m 0644 -D flipclock.png \
-		/usr/share/pixmaps/flipclock.png
+		${DESTDIR}/usr/share/pixmaps/flipclock.png
 	install -o root -m 0644 -D flipclock.desktop \
-		/usr/share/applications/flipclock.desktop
+		${DESTDIR}/usr/share/applications/flipclock.desktop
 
 .PHONY: uninstall
 uninstall:
-	-rm -f /usr/share/applications/flipclock.desktop \
-	       /usr/share/fonts/flipclock.ttf \
-	       /usr/share/pixmaps/flipclock.png \
-	       /usr/bin/flipclock
+	-rm -f ${DESTDIR}/usr/share/applications/flipclock.desktop \
+	       ${DESTDIR}/usr/share/fonts/flipclock.ttf \
+	       ${DESTDIR}/usr/share/pixmaps/flipclock.png \
+	       ${DESTDIR}/usr/bin/flipclock
 
 .PHONY: debug
 debug: CFLAGS += -g
