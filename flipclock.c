@@ -616,8 +616,6 @@ void quit_app(struct app_all *app)
 void print_help(const struct app_all *app)
 {
 	printf("A simple flip clock screensaver using SDL2.\n");
-	printf("Written by AlynxZhou. Version %s.\n", \
-	       app->properties.version);
 	printf("Usage: %s [OPTION...] <value>\n", \
 	       app->properties.program_name);
 	printf("Options:\n");

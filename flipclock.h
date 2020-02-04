@@ -15,7 +15,6 @@
 
 struct app_properties {
 	const char *title;
-	const char *version;
 	const char *program_name;
 	const char *font_path;
 	const char *fallback_font;
