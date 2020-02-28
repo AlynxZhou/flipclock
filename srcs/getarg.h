@@ -1,17 +1,17 @@
 /*
- * Author: Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
+ * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
  */
 #ifndef __GETARG_H__
-#	define __GETARG_H__
+#define __GETARG_H__
 
-#	ifndef WIN32
-#		define OPT_START '-'
-#	else
-#		define OPT_START '/'
-#	endif
+#ifndef WIN32
+#	define OPT_START '-'
+#else
+#	define OPT_START '/'
+#endif
 
 /* Global optarg. */
-extern const char *argopt;
+extern char *argopt;
 
 /*
  * getarg() receives an arguments counter,
@@ -25,8 +25,6 @@ extern const char *argopt;
  * If you have a single value not leading by an option, it will return 0
  * and store the pointer in the argopt.
  */
-int getarg(const int argc, \
-	   const char *const argv[], \
-	   const char opt_string[]);
+int getarg(int argc, char *argv[], const char opt_string[]);
 
 #endif

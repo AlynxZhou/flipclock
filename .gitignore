@@ -32,9 +32,4 @@
 *.dSYM/
 *.su
 
-# Custom files
-flipclock
-.tags
-Windows/Release
-Windows/.vs
-flipclock_debug
+build/

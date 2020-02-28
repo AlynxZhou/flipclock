@@ -1,15 +1,13 @@
 /*
- * Author: Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
+ * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
  */
 #include <string.h>
 
 #include "getarg.h"
 
-const char *argopt = NULL;
+char *argopt = NULL;
 
-int getarg(const int argc, \
-	   const char *const argv[], \
-	   const char opt_string[])
+int getarg(int argc, char *argv[], const char opt_string[])
 {
 	static int i = 1;
 	/* Always init i with 1, because 0 is the program name. */
@@ -50,12 +48,12 @@ int getarg(const int argc, \
 				 * by a value, or it will be skipped.
 				 */
 				temp_i = i;
- 				temp_j = j;
+				temp_j = j;
 				argopt = argv[++i];
 				i++;
 				/* Increase i to skip value in next loop. */
- 				j = 1;
- 				return argv[temp_i][temp_j];
+				j = 1;
+				return argv[temp_i][temp_j];
 			} else {
 				/*
 				 * Just skip an option with
