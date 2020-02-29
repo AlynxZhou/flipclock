@@ -79,7 +79,8 @@ int main(int argc, char *argv[])
 	}
 
 #ifdef _WIN32
-	if (!silly_windows_run_screensaver_with_this_option)
+	if (!silly_windows_run_screensaver_with_this_option &&
+	    !app->properties.preview)
 		goto win32_bye;
 #endif
 
