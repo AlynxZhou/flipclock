@@ -65,38 +65,44 @@ void flipclock_create_window(struct flipclock *app)
 #ifdef WIN32
 	if (app->properties.preview) {
 		/* Create window from native window when in preview. */
-		app->window = SDL_CreateWindowFrom(app->properties.preview_window);
-		SDL_GetWindowSize(app->window, &(app->properties.width), &(app->properties.height));
+		app->window =
+			SDL_CreateWindowFrom(app->properties.preview_window);
+		SDL_GetWindowSize(app->window, &(app->properties.width),
+				  &(app->properties.height));
 	} else {
-		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+			       SDL_WINDOW_ALLOW_HIGHDPI;
 		if (app->properties.full) {
-			flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_ALLOW_HIGHDPI;
+			flags = SDL_WINDOW_SHOWN |
+				SDL_WINDOW_FULLSCREEN_DESKTOP |
+				SDL_WINDOW_ALLOW_HIGHDPI;
 			SDL_ShowCursor(SDL_DISABLE);
 		}
 		app->window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED,
-					SDL_WINDOWPOS_UNDEFINED,
-					app->properties.width,
-					app->properties.height,
-					flags);
+					       SDL_WINDOWPOS_UNDEFINED,
+					       app->properties.width,
+					       app->properties.height, flags);
 	}
 #else
-	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+		       SDL_WINDOW_ALLOW_HIGHDPI;
 	if (app->properties.full) {
-		flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_ALLOW_HIGHDPI;
+		flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP |
+			SDL_WINDOW_ALLOW_HIGHDPI;
 		SDL_ShowCursor(SDL_DISABLE);
 	}
 	app->window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED,
 				       SDL_WINDOWPOS_UNDEFINED,
 				       app->properties.width,
-				       app->properties.height,
-				       flags);
+				       app->properties.height, flags);
 #endif
 	if (app->window == NULL) {
 		fprintf(stderr, "%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 	/* Init window size after create it. */
-	SDL_GetWindowSize(app->window, &app->properties.width, &app->properties.height);
+	SDL_GetWindowSize(app->window, &app->properties.width,
+			  &app->properties.height);
 	app->renderer = SDL_CreateRenderer(app->window, -1,
 					   SDL_RENDERER_ACCELERATED |
 						   SDL_RENDERER_TARGETTEXTURE |
@@ -498,7 +504,8 @@ void flipclock_run_mainloop(struct flipclock *app)
 	while (!quit) {
 #ifdef WIN32
 		/* Quit when preview window closed. */
-		if (app->properties.preview && !IsWindow(app->properties.preview_window))
+		if (app->properties.preview &&
+		    !IsWindow(app->properties.preview_window))
 			quit = true;
 #endif
 		if (SDL_WaitEventTimeout(&event, 1000 / FPS)) {

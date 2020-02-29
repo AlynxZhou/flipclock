@@ -52,7 +52,10 @@ int main(int argc, char *argv[])
 		 * in Windows. So just tell user and exit.
 		 */
 		case 'c':
-			MessageBox(NULL, "Configuration should NOT be here, silly Windows!", "FlipClock", MB_OK);
+			MessageBox(
+				NULL,
+				"Configuration should NOT be here, silly Windows!",
+				"FlipClock", MB_OK);
 			exit(EXIT_SUCCESS);
 			break;
 		case 's':

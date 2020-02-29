@@ -11,8 +11,8 @@
 #include <SDL2/SDL_ttf.h>
 
 #ifdef WIN32
-#include <SDL2/SDL_syswm.h>
-#include <windows.h>
+#	include <SDL2/SDL_syswm.h>
+#	include <windows.h>
 #endif
 
 struct properties {
