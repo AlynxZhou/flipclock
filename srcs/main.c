@@ -10,7 +10,9 @@
 
 int main(int argc, char *argv[])
 {
-#ifdef WIN32
+#ifdef _WIN32
+	/* This is one of the most silly requirement I've seen. */
+	bool silly_windows_run_screensaver_with_this_option = false;
 	char OPT_STRING[] = "hwcst:f:p:";
 #else
 	char OPT_STRING[] = "hwt:f:";
@@ -25,10 +27,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	struct flipclock *app = flipclock_create();
-#ifdef WIN32
-	/* This is one of the most silly requirement I've seen. */
-	bool silly_windows_run_screensaver_with_this_option = false;
-#endif
 	/* Dealing with arguments. */
 	while ((opt = getarg(argc, argv, OPT_STRING)) != -1) {
 		switch (opt) {
@@ -46,7 +44,7 @@ int main(int argc, char *argv[])
 			flipclock_print_help(app, argv[0]);
 			exit(EXIT_SUCCESS);
 			break;
-#ifdef WIN32
+#ifdef _WIN32
 		/*
 		 * I have no idea about how to configure it without arguments
 		 * in Windows. So just tell user and exit.
@@ -79,7 +77,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-#ifdef WIN32
+#ifdef _WIN32
 	if (!silly_windows_run_screensaver_with_this_option)
 		goto win32_bye;
 #endif
@@ -95,7 +93,7 @@ int main(int argc, char *argv[])
 	flipclock_close_fonts(app);
 	flipclock_destroy_window(app);
 
-#ifdef WIN32
+#ifdef _WIN32
 win32_bye:
 #endif
 	flipclock_destroy(app);

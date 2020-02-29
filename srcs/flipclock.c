@@ -51,7 +51,7 @@ struct flipclock *flipclock_create(void)
 	app->properties.ampm = true;
 	app->properties.full = true;
 	app->properties.font_path = NULL;
-#ifdef WIN32
+#ifdef _WIN32
 	app->properties.preview = false;
 #endif
 	time_t raw_time = time(NULL);
@@ -62,7 +62,7 @@ struct flipclock *flipclock_create(void)
 
 void flipclock_create_window(struct flipclock *app)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	if (app->properties.preview) {
 		/* Create window from native window when in preview. */
 		app->window =
@@ -502,7 +502,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 	flipclock_render_texture(app);
 	flipclock_animate(app, MAX_PROGRESS);
 	while (!quit) {
-#ifdef WIN32
+#ifdef _WIN32
 		/* Quit when preview window closed. */
 		if (app->properties.preview &&
 		    !IsWindow(app->properties.preview_window))
@@ -540,7 +540,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 				break;
 			case SDL_KEYDOWN:
 			case SDL_MOUSEBUTTONDOWN:
-#ifdef WIN32
+#ifdef _WIN32
 				if (!app->properties.preview)
 					quit = true;
 #else

@@ -4,10 +4,10 @@
 #ifndef __GETARG_H__
 #define __GETARG_H__
 
-#ifndef WIN32
-#	define OPT_START '-'
-#else
+#ifdef _WIN32
 #	define OPT_START '/'
+#else
+#	define OPT_START '-'
 #endif
 
 /* Global optarg. */

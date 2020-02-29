@@ -10,7 +10,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #	include <SDL_syswm.h>
 #	include <windows.h>
 #endif
@@ -26,7 +26,7 @@ struct properties {
 	int width_space;
 	int time_radius;
 	int mode_radius;
-#ifdef WIN32
+#ifdef _WIN32
 	HWND preview_window;
 	bool preview;
 #endif
