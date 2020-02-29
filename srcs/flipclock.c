@@ -221,7 +221,7 @@ void flipclock_open_fonts(struct flipclock *app)
 					       app->rects.mode.h);
 	} else {
 #ifdef _WIN32
-		char *system_root = getenv("%SystemRoot%");
+		char *system_root = getenv("SystemRoot");
 		int path_size = strlen(system_root) + strlen("\\Fonts\\flipclock.ttf") + 1;
 		char *font_path = malloc(path_size * sizeof(*font_path));
 		if (font_path == NULL) {
