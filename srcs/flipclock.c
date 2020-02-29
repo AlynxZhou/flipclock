@@ -62,6 +62,7 @@ struct flipclock *flipclock_create(void)
 
 void flipclock_create_window(struct flipclock *app)
 {
+	SDL_DisableScreenSaver();
 #ifdef _WIN32
 	if (app->properties.preview) {
 		/* Don't set fullscreen if in preview. */
@@ -606,6 +607,7 @@ void flipclock_destroy_window(struct flipclock *app)
 	SDL_DestroyWindow(app->window);
 	if (app->properties.full)
 		SDL_ShowCursor(SDL_ENABLE);
+	SDL_EnableScreenSaver();
 }
 
 void flipclock_destroy(struct flipclock *app)
