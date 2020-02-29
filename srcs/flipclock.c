@@ -48,7 +48,7 @@ struct flipclock *flipclock_create(void)
 	app->colors.transparent.a = 0x00;
 	app->properties.width = WINDOW_WIDTH;
 	app->properties.height = WINDOW_HEIGHT;
-	app->properties.ampm = true;
+	app->properties.ampm = false;
 	app->properties.full = true;
 	app->properties.font_path = NULL;
 #ifdef _WIN32

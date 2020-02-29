@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
 			app->properties.full = false;
 			break;
 		case 't':
-			if (strcmp(argopt, "24") == 0)
-				app->properties.ampm = false;
+			if (strcmp(argopt, "12") == 0)
+				app->properties.ampm = true;
 			break;
 		case 'f':
 			app->properties.font_path = argopt;
