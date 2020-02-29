@@ -123,7 +123,5 @@ set(SDL2_INCLUDE_DIRS ${SDL2_INCLUDE_DIR})
 include(FindPackageHandleStandardArgs)
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2
-                                  REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR
+                                  REQUIRED_VARS SDL2_LIBRARIES SDL2_INCLUDE_DIRS
                                   VERSION_VAR SDL2_VERSION_STRING)
-
-mark_as_advanced(SDL2_LIBRARY SDL2_INCLUDE_DIR)
