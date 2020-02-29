@@ -15,7 +15,6 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 #define TITLE "FlipClock"
-#define FONT_PATH "flipclock.ttf"
 
 struct flipclock *flipclock_create(void)
 {
@@ -221,9 +220,25 @@ void flipclock_open_fonts(struct flipclock *app)
 		app->fonts.mode = TTF_OpenFont(app->properties.font_path,
 					       app->rects.mode.h);
 	} else {
+#ifdef _WIN32
+		char *system_root = getenv("%SystemRoot%");
+		int path_size = strlen(system_root) + strlen("\\Fonts\\flipclock.ttf") + 1;
+		char *font_path = malloc(path_size * sizeof(*font_path));
+		if (font_path == NULL) {
+			fprintf(stderr, "Load font path failed!\n");
+			exit(EXIT_FAILURE);
+		}
+		strncpy(font_path, system_root, strlen(system_root) + 1);
+		strncat(font_path, "\\Fonts\\flipclock.ttf", strlen("\\Fonts\\flipclock.ttf") + 1);
+#else
+		char font_path[] = "/usr/share/fonts/flipclock.ttf";
+#endif
 		app->fonts.time =
-			TTF_OpenFont(FONT_PATH, app->properties.rect_size);
-		app->fonts.mode = TTF_OpenFont(FONT_PATH, app->rects.mode.h);
+			TTF_OpenFont(font_path, app->properties.rect_size);
+		app->fonts.mode = TTF_OpenFont(font_path, app->rects.mode.h);
+#ifdef _WIN32
+		free(font_path);
+#endif
 	}
 	if (app->fonts.time == NULL || app->fonts.mode == NULL) {
 		fprintf(stderr, "%s\n", TTF_GetError());
