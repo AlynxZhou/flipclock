@@ -65,11 +65,11 @@ void flipclock_create_window(struct flipclock *app)
 {
 #ifdef _WIN32
 	if (app->properties.preview) {
+		/* Don't set fullscreen if in preview. */
+		app->properties.full = false;
 		/* Create window from native window when in preview. */
 		app->window =
 			SDL_CreateWindowFrom(app->properties.preview_window);
-		SDL_GetWindowSize(app->window, &(app->properties.width),
-				  &(app->properties.height));
 	} else {
 		unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
 				     SDL_WINDOW_ALLOW_HIGHDPI;
@@ -102,8 +102,8 @@ void flipclock_create_window(struct flipclock *app)
 		exit(EXIT_FAILURE);
 	}
 	/* Init window size after create it. */
-	SDL_GetWindowSize(app->window, &app->properties.width,
-			  &app->properties.height);
+	SDL_GetWindowSize(app->window, &(app->properties.width),
+			  &(app->properties.height));
 	app->renderer = SDL_CreateRenderer(app->window, -1,
 					   SDL_RENDERER_ACCELERATED |
 						   SDL_RENDERER_TARGETTEXTURE |

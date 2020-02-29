@@ -12,8 +12,6 @@
 int main(int argc, char *argv[])
 {
 #ifdef _WIN32
-	/* This is one of the most silly requirement I've seen. */
-	bool silly_windows_run_screensaver_with_this_option = false;
 	char OPT_STRING[] = "hwcst:f:p:";
 #else
 	char OPT_STRING[] = "hwt:f:";
@@ -58,7 +56,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_SUCCESS);
 			break;
 		case 's':
-			silly_windows_run_screensaver_with_this_option = true;
+			/* One of the most silly requirement I've seen. */
 			break;
 		case 'p':
 			app->properties.preview = true;
@@ -78,12 +76,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-#ifdef _WIN32
-	if (!silly_windows_run_screensaver_with_this_option &&
-	    !app->properties.preview)
-		goto win32_bye;
-#endif
-
 	flipclock_create_window(app);
 	flipclock_refresh(app);
 	flipclock_open_fonts(app);
@@ -95,9 +87,6 @@ int main(int argc, char *argv[])
 	flipclock_close_fonts(app);
 	flipclock_destroy_window(app);
 
-#ifdef _WIN32
-win32_bye:
-#endif
 	flipclock_destroy(app);
 	TTF_Quit();
 	SDL_Quit();
