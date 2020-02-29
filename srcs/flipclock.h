@@ -92,6 +92,6 @@ void flipclock_animate(struct flipclock *app, int progress);
 void flipclock_run_mainloop(struct flipclock *app);
 void flipclock_destroy(struct flipclock *app);
 void flipclock_destroy_window(struct flipclock *app);
-void flipclock_print_help(struct flipclock *app, char program_name[]);
+void flipclock_print_help(char program_name[]);
 
 #endif

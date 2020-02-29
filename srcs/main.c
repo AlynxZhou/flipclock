@@ -3,6 +3,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "getarg.h"
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
 			app->properties.font_path = argopt;
 			break;
 		case 'h':
-			flipclock_print_help(app, argv[0]);
+			flipclock_print_help(argv[0]);
 			exit(EXIT_SUCCESS);
 			break;
 #ifdef _WIN32

@@ -3,6 +3,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "getarg.h"
@@ -70,8 +71,8 @@ void flipclock_create_window(struct flipclock *app)
 		SDL_GetWindowSize(app->window, &(app->properties.width),
 				  &(app->properties.height));
 	} else {
-		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-			       SDL_WINDOW_ALLOW_HIGHDPI;
+		unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+				     SDL_WINDOW_ALLOW_HIGHDPI;
 		if (app->properties.full) {
 			flags = SDL_WINDOW_SHOWN |
 				SDL_WINDOW_FULLSCREEN_DESKTOP |
@@ -84,8 +85,8 @@ void flipclock_create_window(struct flipclock *app)
 					       app->properties.height, flags);
 	}
 #else
-	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-		       SDL_WINDOW_ALLOW_HIGHDPI;
+	unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+			     SDL_WINDOW_ALLOW_HIGHDPI;
 	if (app->properties.full) {
 		flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP |
 			SDL_WINDOW_ALLOW_HIGHDPI;
@@ -496,7 +497,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 	bool wait = false;
 	bool animating = false;
 	int progress = MAX_PROGRESS;
-	Uint32 start_tick = SDL_GetTicks();
+	unsigned int start_tick = SDL_GetTicks();
 	SDL_Event event;
 	/* First frame when app starts. */
 	flipclock_render_texture(app);
@@ -599,7 +600,7 @@ void flipclock_destroy(struct flipclock *app)
 	free(app);
 }
 
-void flipclock_print_help(struct flipclock *app, char program_name[])
+void flipclock_print_help(char program_name[])
 {
 	printf("A simple flip clock screensaver using SDL2.\n");
 	printf("Usage: %s [OPTION...] <value>\n", program_name);
