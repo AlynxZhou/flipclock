@@ -10,6 +10,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+#ifdef WIN32
+#include <SDL2/SDL_syswm.h>
+#include <windows.h>
+#endif
+
 struct properties {
 	const char *title;
 	const char *font_path;
@@ -21,6 +26,10 @@ struct properties {
 	int width_space;
 	int time_radius;
 	int mode_radius;
+#ifdef WIN32
+	HWND preview_window;
+	bool preview;
+#endif
 };
 struct colors {
 	SDL_Color font;
@@ -59,6 +68,7 @@ struct flipclock {
 };
 
 struct flipclock *flipclock_create(void);
+void flipclock_create_window(struct flipclock *app);
 void flipclock_set_fullscreen(struct flipclock *app, bool full);
 void flipclock_refresh(struct flipclock *app);
 void flipclock_create_textures(struct flipclock *app);
@@ -81,6 +91,7 @@ void flipclock_copy_rect(struct flipclock *app, SDL_Rect target_rect,
 void flipclock_animate(struct flipclock *app, int progress);
 void flipclock_run_mainloop(struct flipclock *app);
 void flipclock_destroy(struct flipclock *app);
+void flipclock_destroy_window(struct flipclock *app);
 void flipclock_print_help(struct flipclock *app, char program_name[]);
 
 #endif

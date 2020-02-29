@@ -51,16 +51,52 @@ struct flipclock *flipclock_create(void)
 	app->properties.ampm = true;
 	app->properties.full = true;
 	app->properties.font_path = NULL;
+#ifdef WIN32
+	app->properties.preview = false;
+#endif
+	time_t raw_time = time(NULL);
+	app->times.past = *localtime(&raw_time);
+	app->times.now = *localtime(&raw_time);
+	return app;
+}
+
+void flipclock_create_window(struct flipclock *app)
+{
+#ifdef WIN32
+	if (app->properties.preview) {
+		/* Create window from native window when in preview. */
+		app->window = SDL_CreateWindowFrom(app->properties.preview_window);
+		SDL_GetWindowSize(app->window, &(app->properties.width), &(app->properties.height));
+	} else {
+		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+		if (app->properties.full) {
+			flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_ALLOW_HIGHDPI;
+			SDL_ShowCursor(SDL_DISABLE);
+		}
+		app->window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED,
+					SDL_WINDOWPOS_UNDEFINED,
+					app->properties.width,
+					app->properties.height,
+					flags);
+	}
+#else
+	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	if (app->properties.full) {
+		flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_ALLOW_HIGHDPI;
+		SDL_ShowCursor(SDL_DISABLE);
+	}
 	app->window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED,
 				       SDL_WINDOWPOS_UNDEFINED,
 				       app->properties.width,
 				       app->properties.height,
-				       SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-					       SDL_WINDOW_ALLOW_HIGHDPI);
+				       flags);
+#endif
 	if (app->window == NULL) {
 		fprintf(stderr, "%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+	/* Init window size after create it. */
+	SDL_GetWindowSize(app->window, &app->properties.width, &app->properties.height);
 	app->renderer = SDL_CreateRenderer(app->window, -1,
 					   SDL_RENDERER_ACCELERATED |
 						   SDL_RENDERER_TARGETTEXTURE |
@@ -69,10 +105,6 @@ struct flipclock *flipclock_create(void)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-	time_t raw_time = time(NULL);
-	app->times.past = *localtime(&raw_time);
-	app->times.now = *localtime(&raw_time);
-	return app;
 }
 
 void flipclock_set_fullscreen(struct flipclock *app, bool full)
@@ -464,6 +496,11 @@ void flipclock_run_mainloop(struct flipclock *app)
 	flipclock_render_texture(app);
 	flipclock_animate(app, MAX_PROGRESS);
 	while (!quit) {
+#ifdef WIN32
+		/* Quit when preview window closed. */
+		if (app->properties.preview && !IsWindow(app->properties.preview_window))
+			quit = true;
+#endif
 		if (SDL_WaitEventTimeout(&event, 1000 / FPS)) {
 			switch (event.type) {
 			case SDL_WINDOWEVENT:
@@ -496,6 +533,13 @@ void flipclock_run_mainloop(struct flipclock *app)
 				break;
 			case SDL_KEYDOWN:
 			case SDL_MOUSEBUTTONDOWN:
+#ifdef WIN32
+				if (!app->properties.preview)
+					quit = true;
+#else
+				quit = true;
+#endif
+				break;
 			case SDL_QUIT:
 				quit = true;
 				break;
@@ -533,14 +577,18 @@ void flipclock_run_mainloop(struct flipclock *app)
 	}
 }
 
-void flipclock_destroy(struct flipclock *app)
+void flipclock_destroy_window(struct flipclock *app)
 {
-	if (app == NULL)
-		return;
 	SDL_DestroyRenderer(app->renderer);
 	SDL_DestroyWindow(app->window);
 	if (app->properties.full)
 		SDL_ShowCursor(SDL_ENABLE);
+}
+
+void flipclock_destroy(struct flipclock *app)
+{
+	if (app == NULL)
+		return;
 	free(app);
 }
 
