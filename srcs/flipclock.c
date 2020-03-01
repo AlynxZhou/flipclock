@@ -289,6 +289,7 @@ void flipclock_render_rounded_box(struct flipclock *app,
 				       app->colors.rect.g, app->colors.rect.b,
 				       app->colors.rect.a);
 		SDL_RenderFillRect(app->renderer, &target_rect);
+		SDL_SetRenderTarget(app->renderer, NULL);
 		return;
 	}
 
