@@ -26,7 +26,7 @@ target_link_libraries(
 )
 
 if(WIN32)
-install(TARGETS "flipclock" DESTINATION "flipclock")
+install(TARGETS "flipclock" DESTINATION "flipclock" RENAME "flipclock.scr")
 install(FILES "${CMAKE_BINARY_DIR}/flipclock.ttf" DESTINATION "flipclock")
 install(
 	FILES "${SDL2_DIR}/${VC_LIB_PATH_SUFFIX}/SDL2.dll"
