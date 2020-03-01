@@ -9,6 +9,8 @@
 #include "getarg.h"
 #include "flipclock.h"
 
+#include "config.h"
+
 #define FPS 60
 #define MAX_PROGRESS 300
 #define HALF_PROGRESS (MAX_PROGRESS / 2)
@@ -232,7 +234,7 @@ void flipclock_open_fonts(struct flipclock *app)
 		strncpy(font_path, system_root, strlen(system_root) + 1);
 		strncat(font_path, "\\Fonts\\flipclock.ttf", strlen("\\Fonts\\flipclock.ttf") + 1);
 #else
-		char font_path[] = "/usr/share/fonts/flipclock.ttf";
+		char font_path[] = CMAKE_INSTALL_PREFIX"/share/fonts/flipclock.ttf";
 #endif
 		app->fonts.time =
 			TTF_OpenFont(font_path, app->properties.rect_size);

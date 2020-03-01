@@ -1,0 +1,5 @@
+#ifndef __CONFIG_H__
+
+#cmakedefine CMAKE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
+
+#endif
