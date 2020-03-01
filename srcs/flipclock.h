@@ -23,9 +23,7 @@ struct properties {
 	int width;
 	int height;
 	int rect_size;
-	int width_space;
-	int time_radius;
-	int mode_radius;
+	int radius;
 #ifdef _WIN32
 	HWND preview_window;
 	bool preview;

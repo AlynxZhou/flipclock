@@ -135,44 +135,61 @@ void flipclock_set_fullscreen(struct flipclock *app, bool full)
 
 void flipclock_refresh(struct flipclock *app)
 {
-	app->properties.rect_size =
-		app->properties.width * 0.4 > app->properties.height * 0.8 ?
-			app->properties.height * 0.8 :
-			app->properties.width * 0.4;
-	app->properties.width_space = app->properties.width * 0.06;
-	app->properties.time_radius = app->properties.rect_size / 10;
+	if (app->properties.width < app->properties.height) {
+		/* Some user do love portrait. */
+		app->properties.rect_size =
+			app->properties.height * 0.4 >
+					app->properties.width * 0.8 ?
+				app->properties.width * 0.8 :
+				app->properties.height * 0.4;
+		int space = app->properties.height * 0.06;
+		app->properties.radius = app->properties.rect_size / 10;
 
-	app->rects.hour.x =
-		(app->properties.width - 2 * app->properties.rect_size -
-		 app->properties.width_space) /
-		2;
-	app->rects.hour.y =
-		(app->properties.height - app->properties.rect_size) / 2;
-	app->rects.hour.w = app->properties.rect_size;
-	app->rects.hour.h = app->properties.rect_size;
+		app->rects.hour.y = (app->properties.height -
+				     2 * app->properties.rect_size - space) /
+				    2;
+		app->rects.hour.x =
+			(app->properties.width - app->properties.rect_size) / 2;
+		app->rects.hour.w = app->properties.rect_size;
+		app->rects.hour.h = app->properties.rect_size;
 
-	app->rects.minute.x = app->rects.hour.x + app->rects.hour.w +
-			      app->properties.width_space;
-	app->rects.minute.y = app->rects.hour.y;
-	app->rects.minute.w = app->properties.rect_size;
-	app->rects.minute.h = app->properties.rect_size;
+		app->rects.minute.y =
+			app->rects.hour.y + app->rects.hour.h + space;
+		app->rects.minute.x = app->rects.hour.x;
+		app->rects.minute.w = app->properties.rect_size;
+		app->rects.minute.h = app->properties.rect_size;
+	} else {
+		/* But others love landscape. */
+		app->properties.rect_size =
+			app->properties.width * 0.4 >
+					app->properties.height * 0.8 ?
+				app->properties.height * 0.8 :
+				app->properties.width * 0.4;
+		int space = app->properties.width * 0.06;
+		app->properties.radius = app->properties.rect_size / 10;
 
-	app->rects.mode.w = app->properties.rect_size / 4;
-	app->rects.mode.h =
-		app->properties.rect_size / 8 > (app->properties.height -
-						 app->properties.rect_size) /
-							2 ?
+		app->rects.hour.x = (app->properties.width -
+				     2 * app->properties.rect_size - space) /
+				    2;
+		app->rects.hour.y =
 			(app->properties.height - app->properties.rect_size) /
-				2 * 0.8 :
-			app->properties.rect_size / 8;
-	app->rects.mode.x = (app->properties.width - app->rects.mode.w) / 2;
-	app->rects.mode.y =
-		(app->properties.height - app->properties.rect_size) / 2 +
-		app->properties.rect_size +
-		((app->properties.height - app->properties.rect_size) / 2 -
-		 app->rects.mode.h) /
 			2;
-	app->properties.mode_radius = app->rects.mode.w / 10;
+		app->rects.hour.w = app->properties.rect_size;
+		app->rects.hour.h = app->properties.rect_size;
+
+		app->rects.minute.x =
+			app->rects.hour.x + app->rects.hour.w + space;
+		app->rects.minute.y = app->rects.hour.y;
+		app->rects.minute.w = app->properties.rect_size;
+		app->rects.minute.h = app->properties.rect_size;
+	}
+
+	/* How do I get those numbers? Test. */
+	app->rects.mode.w = app->properties.rect_size / 5;
+	app->rects.mode.h = app->properties.rect_size / 10;
+	app->rects.mode.x = app->rects.hour.x + app->properties.rect_size / 50;
+	app->rects.mode.y = app->rects.hour.y + app->properties.rect_size -
+			    app->rects.mode.h - app->properties.rect_size / 35;
 }
 
 void flipclock_create_textures(struct flipclock *app)
@@ -225,16 +242,19 @@ void flipclock_open_fonts(struct flipclock *app)
 	} else {
 #ifdef _WIN32
 		char *system_root = getenv("SystemRoot");
-		int path_size = strlen(system_root) + strlen("\\Fonts\\flipclock.ttf") + 1;
+		int path_size = strlen(system_root) +
+				strlen("\\Fonts\\flipclock.ttf") + 1;
 		char *font_path = malloc(path_size * sizeof(*font_path));
 		if (font_path == NULL) {
 			fprintf(stderr, "Load font path failed!\n");
 			exit(EXIT_FAILURE);
 		}
 		strncpy(font_path, system_root, strlen(system_root) + 1);
-		strncat(font_path, "\\Fonts\\flipclock.ttf", strlen("\\Fonts\\flipclock.ttf") + 1);
+		strncat(font_path, "\\Fonts\\flipclock.ttf",
+			strlen("\\Fonts\\flipclock.ttf") + 1);
 #else
-		char font_path[] = CMAKE_INSTALL_PREFIX"/share/fonts/flipclock.ttf";
+		char font_path[] = CMAKE_INSTALL_PREFIX
+			"/share/fonts/flipclock.ttf";
 #endif
 		app->fonts.time =
 			TTF_OpenFont(font_path, app->properties.rect_size);
@@ -328,12 +348,13 @@ void flipclock_render_rounded_box(struct flipclock *app,
 void flipclock_render_text(struct flipclock *app, SDL_Texture *target_texture,
 			   SDL_Rect target_rect, TTF_Font *font, char text[])
 {
-	if (strlen(text) != 2) {
-		fprintf(stderr, "Wrong text length!");
+	int len = strlen(text);
+	if (len > 2) {
+		/* We can handle text longer than 2 chars, though. */
+		fprintf(stderr, "Text length must be less than 3!");
 		exit(EXIT_FAILURE);
 	}
-
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < len; i++) {
 		SDL_Surface *text_surface = TTF_RenderGlyph_Blended(
 			font, text[i], app->colors.font);
 		if (text_surface == NULL) {
@@ -349,8 +370,8 @@ void flipclock_render_text(struct flipclock *app, SDL_Texture *target_texture,
 			exit(EXIT_FAILURE);
 		}
 		SDL_Rect text_rect;
-		text_rect.x = target_rect.x + target_rect.w / 2 * i +
-			      (target_rect.w / 2 - text_surface->w) / 2;
+		text_rect.x = target_rect.x + target_rect.w / len * i +
+			      (target_rect.w / len - text_surface->w) / 2;
 		text_rect.y =
 			target_rect.y + (target_rect.h - text_surface->h) / 2;
 		text_rect.w = text_surface->w;
@@ -385,28 +406,23 @@ void flipclock_render_texture(struct flipclock *app)
 				app->colors.transparent);
 
 	char text[3];
-	snprintf(text, sizeof(text), "%cM",
-		 app->times.now.tm_hour / 12 ? 'P' : 'A');
-	flipclock_render_rounded_box(app, app->textures.current,
-				     app->rects.mode,
-				     app->properties.mode_radius);
-	flipclock_render_text(app, app->textures.current, app->rects.mode,
-			      app->fonts.mode, text);
 	SDL_Rect divider_rect;
-	divider_rect.h = app->rects.mode.h / 40;
-	divider_rect.w = app->rects.mode.w;
-	divider_rect.x = app->rects.mode.x;
-	divider_rect.y =
-		app->rects.mode.y + (app->rects.mode.h - divider_rect.h) / 2;
-	flipclock_render_divider(app, app->textures.current, divider_rect);
 
-	strftime(text, sizeof(text), app->properties.ampm ? "%I" : "%H",
-		 &app->times.now);
+	/* Let's draw hour! */
+	/* Background. */
 	flipclock_render_rounded_box(app, app->textures.current,
-				     app->rects.hour,
-				     app->properties.time_radius);
+				     app->rects.hour, app->properties.radius);
+	/* Text. */
+	strftime(text, sizeof(text), app->properties.ampm ? "%l" : "%H",
+		 &app->times.now);
+	/* Trim space when using 12-hour clock. */
+	if (isspace(text[0])) {
+		text[0] = text[1];
+		text[1] = text[2];
+	}
 	flipclock_render_text(app, app->textures.current, app->rects.hour,
 			      app->fonts.time, text);
+	/* And cut the card! */
 	divider_rect.h = app->rects.hour.h / 100;
 	divider_rect.w = app->rects.hour.w;
 	divider_rect.x = app->rects.hour.x;
@@ -414,18 +430,33 @@ void flipclock_render_texture(struct flipclock *app)
 		app->rects.hour.y + (app->rects.hour.h - divider_rect.h) / 2;
 	flipclock_render_divider(app, app->textures.current, divider_rect);
 
-	strftime(text, sizeof(text), "%M", &app->times.now);
+	/* Let's draw minute! */
+	/* Background. */
 	flipclock_render_rounded_box(app, app->textures.current,
-				     app->rects.minute,
-				     app->properties.time_radius);
+				     app->rects.minute, app->properties.radius);
+	/* Text. */
+	strftime(text, sizeof(text), "%M", &app->times.now);
 	flipclock_render_text(app, app->textures.current, app->rects.minute,
 			      app->fonts.time, text);
+	/* And cut the card! */
 	divider_rect.h = app->rects.minute.h / 100;
 	divider_rect.w = app->rects.minute.w;
 	divider_rect.x = app->rects.minute.x;
 	divider_rect.y = app->rects.minute.y +
 			 (app->rects.minute.h - divider_rect.h) / 2;
 	flipclock_render_divider(app, app->textures.current, divider_rect);
+
+	if (app->properties.ampm) {
+		/* Just draw AM/PM text on hour card. */
+		/*
+		 * Don't use strftime() here,
+		 * because font only have `A`, `P`, `M`.
+		 */
+		snprintf(text, sizeof(text), "%cM",
+			 app->times.now.tm_hour / 12 ? 'P' : 'A');
+		flipclock_render_text(app, app->textures.current,
+				      app->rects.mode, app->fonts.mode, text);
+	}
 }
 
 void flipclock_copy_rect(struct flipclock *app, SDL_Rect target_rect,
@@ -490,13 +521,6 @@ void flipclock_copy_rect(struct flipclock *app, SDL_Rect target_rect,
 void flipclock_animate(struct flipclock *app, int progress)
 {
 	flipclock_clear_texture(app, app->textures.texture, app->colors.black);
-	if (app->properties.ampm)
-		flipclock_copy_rect(app, app->rects.mode,
-				    app->times.now.tm_hour / 12 !=
-						    app->times.past.tm_hour /
-							    12 ?
-					    progress :
-					    MAX_PROGRESS);
 	flipclock_copy_rect(app, app->rects.hour,
 			    app->times.now.tm_hour != app->times.past.tm_hour ?
 				    progress :
