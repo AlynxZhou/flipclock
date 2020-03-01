@@ -12,7 +12,7 @@
 #include "config.h"
 
 #define FPS 60
-#define MAX_PROGRESS 300
+#define MAX_PROGRESS 6000
 #define HALF_PROGRESS (MAX_PROGRESS / 2)
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -27,7 +27,6 @@ struct flipclock *flipclock_create(void)
 	}
 	app->window = NULL;
 	app->renderer = NULL;
-	app->textures.texture = NULL;
 	app->textures.current = NULL;
 	app->textures.previous = NULL;
 	app->fonts.time = NULL;
@@ -114,6 +113,7 @@ void flipclock_create_window(struct flipclock *app)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+	SDL_SetRenderDrawBlendMode(app->renderer, SDL_BLENDMODE_BLEND);
 }
 
 void flipclock_set_fullscreen(struct flipclock *app, bool full)
@@ -194,15 +194,6 @@ void flipclock_refresh(struct flipclock *app)
 
 void flipclock_create_textures(struct flipclock *app)
 {
-	/* Main black screen buffer texture. */
-	app->textures.texture = SDL_CreateTexture(app->renderer, 0,
-						  SDL_TEXTUREACCESS_TARGET,
-						  app->properties.width,
-						  app->properties.height);
-	if (app->textures.texture == NULL) {
-		fprintf(stderr, "%s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
 	/* Two transparent backend texture swap for tribuffer. */
 	app->textures.current = SDL_CreateTexture(app->renderer, 0,
 						  SDL_TEXTUREACCESS_TARGET,
@@ -212,6 +203,7 @@ void flipclock_create_textures(struct flipclock *app)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+	SDL_SetTextureBlendMode(app->textures.current, SDL_BLENDMODE_BLEND);
 	app->textures.previous = SDL_CreateTexture(app->renderer, 0,
 						   SDL_TEXTUREACCESS_TARGET,
 						   app->properties.width,
@@ -220,12 +212,11 @@ void flipclock_create_textures(struct flipclock *app)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+	SDL_SetTextureBlendMode(app->textures.previous, SDL_BLENDMODE_BLEND);
 }
 
 void flipclock_destroy_textures(struct flipclock *app)
 {
-	if (app->textures.texture != NULL)
-		SDL_DestroyTexture(app->textures.texture);
 	if (app->textures.current != NULL)
 		SDL_DestroyTexture(app->textures.current);
 	if (app->textures.previous != NULL)
@@ -354,9 +345,10 @@ void flipclock_render_text(struct flipclock *app, SDL_Texture *target_texture,
 		fprintf(stderr, "Text length must be less than 3!");
 		exit(EXIT_FAILURE);
 	}
+	SDL_SetRenderTarget(app->renderer, target_texture);
 	for (int i = 0; i < len; i++) {
-		SDL_Surface *text_surface = TTF_RenderGlyph_Blended(
-			font, text[i], app->colors.font);
+		SDL_Surface *text_surface = TTF_RenderGlyph_Shaded(
+			font, text[i], app->colors.font, app->colors.rect);
 		if (text_surface == NULL) {
 			fprintf(stderr, "%s\n", SDL_GetError());
 			SDL_FreeSurface(text_surface);
@@ -377,21 +369,20 @@ void flipclock_render_text(struct flipclock *app, SDL_Texture *target_texture,
 		text_rect.w = text_surface->w;
 		text_rect.h = text_surface->h;
 		SDL_FreeSurface(text_surface);
-		SDL_SetRenderTarget(app->renderer, target_texture);
 		SDL_RenderCopy(app->renderer, text_texture, NULL, &text_rect);
-		SDL_SetRenderTarget(app->renderer, NULL);
 		SDL_DestroyTexture(text_texture);
 	}
+	SDL_SetRenderTarget(app->renderer, NULL);
 }
 
 void flipclock_render_divider(struct flipclock *app,
 			      SDL_Texture *target_texture, SDL_Rect target_rect)
 {
 	SDL_SetRenderTarget(app->renderer, target_texture);
-	SDL_SetRenderDrawColor(app->renderer, app->colors.transparent.r,
-			       app->colors.transparent.g,
-			       app->colors.transparent.b,
-			       app->colors.transparent.a);
+	/* Don't be transparent, or you will not see divider. */
+	SDL_SetRenderDrawColor(app->renderer, app->colors.black.r,
+			       app->colors.black.g, app->colors.black.b,
+			       app->colors.black.a);
 	SDL_RenderFillRect(app->renderer, &target_rect);
 	SDL_SetRenderTarget(app->renderer, NULL);
 }
@@ -462,7 +453,12 @@ void flipclock_render_texture(struct flipclock *app)
 void flipclock_copy_rect(struct flipclock *app, SDL_Rect target_rect,
 			 int progress)
 {
-	SDL_SetRenderTarget(app->renderer, app->textures.texture);
+	if (progress >= MAX_PROGRESS) {
+		/* It finished flipping, so we don't draw flipping. */
+		SDL_RenderCopy(app->renderer, app->textures.current,
+			       &target_rect, &target_rect);
+		return;
+	}
 
 	/* Draw the upper current digit and render it. */
 	SDL_Rect half_source_rect;
@@ -514,13 +510,14 @@ void flipclock_copy_rect(struct flipclock *app, SDL_Rect target_rect,
 		       upper_half ? app->textures.previous :
 				    app->textures.current,
 		       &half_source_rect, &half_target_rect);
-
-	SDL_SetRenderTarget(app->renderer, NULL);
 }
 
 void flipclock_animate(struct flipclock *app, int progress)
 {
-	flipclock_clear_texture(app, app->textures.texture, app->colors.black);
+	SDL_SetRenderDrawColor(app->renderer, app->colors.black.r,
+			       app->colors.black.g, app->colors.black.b,
+			       app->colors.black.a);
+	SDL_RenderClear(app->renderer);
 	flipclock_copy_rect(app, app->rects.hour,
 			    app->times.now.tm_hour != app->times.past.tm_hour ?
 				    progress :
@@ -529,13 +526,12 @@ void flipclock_animate(struct flipclock *app, int progress)
 			    app->times.now.tm_min != app->times.past.tm_min ?
 				    progress :
 				    MAX_PROGRESS);
-	SDL_RenderCopy(app->renderer, app->textures.texture, NULL, NULL);
 	SDL_RenderPresent(app->renderer);
 }
 
 void flipclock_run_mainloop(struct flipclock *app)
 {
-	bool quit = false;
+	bool exit = false;
 	bool wait = false;
 	bool animating = false;
 	int progress = MAX_PROGRESS;
@@ -544,12 +540,12 @@ void flipclock_run_mainloop(struct flipclock *app)
 	/* First frame when app starts. */
 	flipclock_render_texture(app);
 	flipclock_animate(app, MAX_PROGRESS);
-	while (!quit) {
+	while (!exit) {
 #ifdef _WIN32
-		/* Quit when preview window closed. */
+		/* Exit when preview window closed. */
 		if (app->properties.preview &&
 		    !IsWindow(app->properties.preview_window))
-			quit = true;
+			exit = true;
 #endif
 		if (SDL_WaitEventTimeout(&event, 1000 / FPS)) {
 			switch (event.type) {
@@ -575,7 +571,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 					wait = false;
 					break;
 				case SDL_WINDOWEVENT_CLOSE:
-					quit = true;
+					exit = true;
 					break;
 				default:
 					break;
@@ -585,13 +581,13 @@ void flipclock_run_mainloop(struct flipclock *app)
 			case SDL_MOUSEBUTTONDOWN:
 #ifdef _WIN32
 				if (!app->properties.preview)
-					quit = true;
+					exit = true;
 #else
-				quit = true;
+				exit = true;
 #endif
 				break;
 			case SDL_QUIT:
-				quit = true;
+				exit = true;
 				break;
 			default:
 				break;
@@ -662,5 +658,5 @@ void flipclock_print_help(char program_name[])
 	       "or 24-hour clock format.\n",
 	       OPT_START);
 	printf("\t%cf <font>\tCustom font path.\n", OPT_START);
-	printf("Press any key to quit.\n");
+	printf("Press any key to exit.\n");
 }

@@ -49,7 +49,6 @@ struct rects {
 	SDL_Rect mode;
 };
 struct textures {
-	SDL_Texture *texture;
 	SDL_Texture *current;
 	SDL_Texture *previous;
 };
