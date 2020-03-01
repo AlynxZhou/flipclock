@@ -12,7 +12,7 @@
 #include "config.h"
 
 #define FPS 60
-#define MAX_PROGRESS 6000
+#define MAX_PROGRESS 300
 #define HALF_PROGRESS (MAX_PROGRESS / 2)
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -283,14 +283,19 @@ void flipclock_render_rounded_box(struct flipclock *app,
 				  SDL_Texture *target_texture,
 				  SDL_Rect target_rect, int radius)
 {
+	if (radius <= 1) {
+		SDL_SetRenderTarget(app->renderer, target_texture);
+		SDL_SetRenderDrawColor(app->renderer, app->colors.rect.r,
+				       app->colors.rect.g, app->colors.rect.b,
+				       app->colors.rect.a);
+		SDL_RenderFillRect(app->renderer, &target_rect);
+		return;
+	}
+
 	SDL_SetRenderTarget(app->renderer, target_texture);
 	SDL_SetRenderDrawColor(app->renderer, app->colors.rect.r,
 			       app->colors.rect.g, app->colors.rect.b,
 			       app->colors.rect.a);
-	if (radius <= 1) {
-		SDL_RenderFillRect(app->renderer, &target_rect);
-		return;
-	}
 	if (2 * radius > target_rect.w)
 		radius = target_rect.w / 2;
 	if (2 * radius > target_rect.h)
@@ -552,16 +557,26 @@ void flipclock_run_mainloop(struct flipclock *app)
 			case SDL_WINDOWEVENT:
 				switch (event.window.event) {
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
-					app->properties.width =
-						event.window.data1;
-					app->properties.height =
-						event.window.data2;
-					flipclock_destroy_textures(app);
-					flipclock_close_fonts(app);
-					flipclock_refresh(app);
-					flipclock_open_fonts(app);
-					flipclock_create_textures(app);
-					flipclock_render_texture(app);
+					/*
+					 * Only re-render when size changed.
+					 * Windows may send event when size
+					 * not changed, and cause strange bugs.
+					 */
+					if (event.window.data1 !=
+						    app->properties.width ||
+					    event.window.data2 !=
+						    app->properties.height) {
+						app->properties.width =
+							event.window.data1;
+						app->properties.height =
+							event.window.data2;
+						flipclock_destroy_textures(app);
+						flipclock_close_fonts(app);
+						flipclock_refresh(app);
+						flipclock_open_fonts(app);
+						flipclock_create_textures(app);
+						flipclock_render_texture(app);
+					}
 					break;
 				case SDL_WINDOWEVENT_MINIMIZED:
 					wait = true;
