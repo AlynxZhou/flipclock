@@ -403,44 +403,24 @@ void flipclock_render_texture(struct flipclock *app)
 	char text[3];
 	SDL_Rect divider_rect;
 
-	/* Let's draw hour! */
+	/*
+	 * Don't draw one card after another!
+	 * I don't know why, but it seems SDL2 under Windows has a bug.
+	 * If I draw text for one card, then draw background for another card.
+	 * The background will be black. I've tested a lot and my code was
+	 * correct. They just works under Linux! So I don't know why,
+	 * but if I draw all backgrounds, then texts, and dividers,
+	 * that is, in layer sequence, it just works.
+	 */
+
 	/* Background. */
 	flipclock_render_rounded_box(app, app->textures.current,
 				     app->rects.hour, app->properties.radius);
-	/* Text. */
-	strftime(text, sizeof(text), app->properties.ampm ? "%l" : "%H",
-		 &app->times.now);
-	/* Trim space when using 12-hour clock. */
-	if (isspace(text[0])) {
-		text[0] = text[1];
-		text[1] = text[2];
-	}
-	flipclock_render_text(app, app->textures.current, app->rects.hour,
-			      app->fonts.time, text);
-	/* And cut the card! */
-	divider_rect.h = app->rects.hour.h / 100;
-	divider_rect.w = app->rects.hour.w;
-	divider_rect.x = app->rects.hour.x;
-	divider_rect.y =
-		app->rects.hour.y + (app->rects.hour.h - divider_rect.h) / 2;
-	flipclock_render_divider(app, app->textures.current, divider_rect);
 
-	/* Let's draw minute! */
-	/* Background. */
 	flipclock_render_rounded_box(app, app->textures.current,
 				     app->rects.minute, app->properties.radius);
-	/* Text. */
-	strftime(text, sizeof(text), "%M", &app->times.now);
-	flipclock_render_text(app, app->textures.current, app->rects.minute,
-			      app->fonts.time, text);
-	/* And cut the card! */
-	divider_rect.h = app->rects.minute.h / 100;
-	divider_rect.w = app->rects.minute.w;
-	divider_rect.x = app->rects.minute.x;
-	divider_rect.y = app->rects.minute.y +
-			 (app->rects.minute.h - divider_rect.h) / 2;
-	flipclock_render_divider(app, app->textures.current, divider_rect);
 
+	/* Text. */
 	if (app->properties.ampm) {
 		/* Just draw AM/PM text on hour card. */
 		/*
@@ -452,6 +432,35 @@ void flipclock_render_texture(struct flipclock *app)
 		flipclock_render_text(app, app->textures.current,
 				      app->rects.mode, app->fonts.mode, text);
 	}
+
+	strftime(text, sizeof(text), app->properties.ampm ? "%l" : "%H",
+		 &app->times.now);
+	/* Trim space when using 12-hour clock. */
+	if (isspace(text[0])) {
+		text[0] = text[1];
+		text[1] = text[2];
+	}
+	flipclock_render_text(app, app->textures.current, app->rects.hour,
+			      app->fonts.time, text);
+
+	strftime(text, sizeof(text), "%M", &app->times.now);
+	flipclock_render_text(app, app->textures.current, app->rects.minute,
+			      app->fonts.time, text);
+
+	/* And cut the card! */
+	divider_rect.h = app->rects.hour.h / 100;
+	divider_rect.w = app->rects.hour.w;
+	divider_rect.x = app->rects.hour.x;
+	divider_rect.y =
+		app->rects.hour.y + (app->rects.hour.h - divider_rect.h) / 2;
+	flipclock_render_divider(app, app->textures.current, divider_rect);
+
+	divider_rect.h = app->rects.minute.h / 100;
+	divider_rect.w = app->rects.minute.w;
+	divider_rect.x = app->rects.minute.x;
+	divider_rect.y = app->rects.minute.y +
+			 (app->rects.minute.h - divider_rect.h) / 2;
+	flipclock_render_divider(app, app->textures.current, divider_rect);
 }
 
 void flipclock_copy_rect(struct flipclock *app, SDL_Rect target_rect,

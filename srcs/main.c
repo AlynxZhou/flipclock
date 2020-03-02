@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 			app->properties.full = false;
 			break;
 		case 't':
-			if (strcmp(argopt, "12") == 0)
+			if (atoi(argopt) == 12)
 				app->properties.ampm = true;
 			break;
 		case 'f':
