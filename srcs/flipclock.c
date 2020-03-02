@@ -357,14 +357,12 @@ void flipclock_render_text(struct flipclock *app, SDL_Texture *target_texture,
 			font, text[i], app->colors.font, app->colors.rect);
 		if (text_surface == NULL) {
 			fprintf(stderr, "%s\n", SDL_GetError());
-			SDL_FreeSurface(text_surface);
 			exit(EXIT_FAILURE);
 		}
 		SDL_Texture *text_texture = SDL_CreateTextureFromSurface(
 			app->renderer, text_surface);
 		if (text_texture == NULL) {
 			fprintf(stderr, "%s\n", SDL_GetError());
-			SDL_DestroyTexture(text_texture);
 			exit(EXIT_FAILURE);
 		}
 		SDL_Rect text_rect;
