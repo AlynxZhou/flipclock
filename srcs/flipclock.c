@@ -353,6 +353,7 @@ void flipclock_render_text(struct flipclock *app, SDL_Texture *target_texture,
 	}
 	SDL_SetRenderTarget(app->renderer, target_texture);
 	for (int i = 0; i < len; i++) {
+		/* We render text every minute, so we don't need cache. */
 		SDL_Surface *text_surface = TTF_RenderGlyph_Shaded(
 			font, text[i], app->colors.font, app->colors.rect);
 		if (text_surface == NULL) {
@@ -433,10 +434,14 @@ void flipclock_render_texture(struct flipclock *app)
 				      app->rects.mode, app->fonts.mode, text);
 	}
 
-	strftime(text, sizeof(text), app->properties.ampm ? "%l" : "%H",
+	/*
+	 * MSVC does not support `%l` (` 1` - `12`),
+	 * so we have to use `%I` (`01` - `12`), and trim zero.
+	 */
+	strftime(text, sizeof(text), app->properties.ampm ? "%I" : "%H",
 		 &app->times.now);
-	/* Trim space when using 12-hour clock. */
-	if (isspace(text[0])) {
+	/* Trim zero when using 12-hour clock. */
+	if (app->properties.ampm && text[0] == '0') {
 		text[0] = text[1];
 		text[1] = text[2];
 	}
