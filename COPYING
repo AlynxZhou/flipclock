@@ -1,0 +1,15 @@
+FlipClock is distributed under the terms of the Apache-2.0 License.
+
+FlipClock depends on SDL2 and SDL2_ttf, which are distributed under the terms of the Zlib License.
+
+SDL2_ttf depends on Zlib, which is distributed under the terms of the Zlib License.
+
+SDL2_ttf also depends on FreeType, which is distributed under the terms of the FreeType License.
+
+Please visit those links if you need more info about those licenses:
+
+https://www.apache.org/licenses/LICENSE-2.0
+
+https://www.freetype.org/license.html
+
+http://www.zlib.net/zlib_license.html
