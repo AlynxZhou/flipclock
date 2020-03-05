@@ -16,7 +16,6 @@
 #define HALF_PROGRESS (MAX_PROGRESS / 2)
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
-#define TITLE "FlipClock"
 
 struct flipclock *flipclock_create(void)
 {
@@ -81,7 +80,8 @@ void flipclock_create_window(struct flipclock *app)
 				SDL_WINDOW_ALLOW_HIGHDPI;
 			SDL_ShowCursor(SDL_DISABLE);
 		}
-		app->window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED,
+		app->window = SDL_CreateWindow(PROGRAM_TITLE,
+					       SDL_WINDOWPOS_UNDEFINED,
 					       SDL_WINDOWPOS_UNDEFINED,
 					       app->properties.width,
 					       app->properties.height, flags);
@@ -94,7 +94,7 @@ void flipclock_create_window(struct flipclock *app)
 			SDL_WINDOW_ALLOW_HIGHDPI;
 		SDL_ShowCursor(SDL_DISABLE);
 	}
-	app->window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED,
+	app->window = SDL_CreateWindow(PROGRAM_TITLE, SDL_WINDOWPOS_UNDEFINED,
 				       SDL_WINDOWPOS_UNDEFINED,
 				       app->properties.width,
 				       app->properties.height, flags);
@@ -571,6 +571,25 @@ void flipclock_run_mainloop(struct flipclock *app)
 #endif
 		if (SDL_WaitEventTimeout(&event, 1000 / FPS)) {
 			switch (event.type) {
+#ifdef _WIN32
+			/*
+			 * There are a silly design in Windows' screensaver
+			 * chooser. When you choose one screensaver, it will
+			 * run the program with `/p HWND`, but if you changed
+			 * to another, the former will not receive close
+			 * event (yes, any kind of close event is not sent),
+			 * and if you choose the former again, it will run
+			 * the program with the same HWND again! To prevent
+			 * this as a workaround, SDL sends
+			 * SDL_RENDER_TARGETS_RESET when preview changes to
+			 * another. I don't know why, but it works, and I
+			 * don't know why no close event is sent.
+			 */
+			case SDL_RENDER_TARGETS_RESET:
+				if (app->properties.preview)
+					exit = true;
+				break;
+#endif
 			case SDL_WINDOWEVENT:
 				switch (event.window.event) {
 				case SDL_WINDOWEVENT_SIZE_CHANGED:

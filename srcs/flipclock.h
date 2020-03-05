@@ -11,9 +11,10 @@
 #include <SDL_ttf.h>
 
 #ifdef _WIN32
-#	include <SDL_syswm.h>
 #	include <windows.h>
 #endif
+
+#define PROGRAM_TITLE "FlipClock"
 
 struct properties {
 	const char *title;

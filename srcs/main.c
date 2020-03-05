@@ -49,11 +49,12 @@ int main(int argc, char *argv[])
 		 * in Windows. So just tell user and exit.
 		 */
 		case 'c':
-			MessageBox(
-				NULL,
-				"Configuration should NOT be here, "
-				"silly Windows!",
-				"FlipClock", MB_OK);
+			MessageBox(NULL,
+				   "I am just a UNIX program that "
+				   "happens to support Windows, "
+				   "and I think registry table is ugly, "
+				   "so configuration shoule not be here!",
+				   PROGRAM_TITLE, MB_OK);
 			exit(EXIT_SUCCESS);
 			break;
 		case 's':
