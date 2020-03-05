@@ -556,6 +556,9 @@ void flipclock_run_mainloop(struct flipclock *app)
 	int progress = MAX_PROGRESS;
 	unsigned int start_tick = SDL_GetTicks();
 	SDL_Event event;
+	// Clear event queue before running.
+	while (SDL_PollEvent(&event))
+		;
 	/* First frame when app starts. */
 	flipclock_render_texture(app);
 	flipclock_animate(app, MAX_PROGRESS);
