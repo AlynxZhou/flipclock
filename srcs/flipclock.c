@@ -130,6 +130,9 @@ void flipclock_set_fullscreen(struct flipclock *app, bool full)
 		SDL_SetWindowFullscreen(app->window, 0);
 		SDL_GetWindowSize(app->window, &app->properties.width,
 				  &app->properties.height);
+		/* Move mouse back into center. */
+		SDL_WarpMouseInWindow(app->window, app->properties.width / 2,
+				      app->properties.height / 2);
 		SDL_ShowCursor(SDL_ENABLE);
 	}
 }
