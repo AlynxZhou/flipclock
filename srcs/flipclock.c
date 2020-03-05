@@ -54,6 +54,7 @@ struct flipclock *flipclock_create(void)
 	app->properties.font_path = NULL;
 #ifdef _WIN32
 	app->properties.preview = false;
+	app->properties.screensaver = false;
 #endif
 	time_t raw_time = time(NULL);
 	app->times.past = *localtime(&raw_time);
@@ -605,13 +606,86 @@ void flipclock_run_mainloop(struct flipclock *app)
 					break;
 				}
 				break;
-			case SDL_KEYDOWN:
-			case SDL_MOUSEBUTTONDOWN:
 #ifdef _WIN32
-				if (!app->properties.preview)
+			/*
+			 * If under Windows, and not in preview window,
+			 * and it was called as a screensaver,
+			 * just exit when user press mouse button or move it,
+			 * or interactive with touch screen.
+			 */
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEMOTION:
+			case SDL_MOUSEWHEEL:
+			case SDL_FINGERDOWN:
+				if (!app->properties.preview &&
+				    app->properties.screensaver)
 					exit = true;
+				break;
+#endif
+			case SDL_KEYDOWN:
+#ifdef _WIN32
+				/*
+				 * If under Windows, and not in preview window,
+				 * and it was called as a screensaver.
+				 * just exit when user press any key.
+				 * But if it was not called as a screensaver,
+				 * it only handles some special keys.
+				 * Also, we do nothing when in preview.
+				 */
+				if (!app->properties.preview &&
+				    app->properties.screensaver) {
+					exit = true;
+				} else if (!app->properties.preview) {
+					switch (event.key.keysym.sym) {
+					case SDLK_ESCAPE:
+					case SDLK_q:
+						exit = true;
+						break;
+					case SDLK_t:
+						app->properties.ampm =
+							!app->properties.ampm;
+						flipclock_render_texture(app);
+						break;
+					case SDLK_f:
+						flipclock_destroy_textures(app);
+						flipclock_close_fonts(app);
+						flipclock_set_fullscreen(
+							app,
+							!app->properties.full);
+						flipclock_refresh(app);
+						flipclock_open_fonts(app);
+						flipclock_create_textures(app);
+						flipclock_render_texture(app);
+						break;
+					default:
+						break;
+					}
+				}
 #else
-				exit = true;
+				/* It's simple under Linux. */
+				switch (event.key.keysym.sym) {
+				case SDLK_ESCAPE:
+				case SDLK_q:
+					exit = true;
+					break;
+				case SDLK_t:
+					app->properties.ampm =
+						!app->properties.ampm;
+					flipclock_render_texture(app);
+					break;
+				case SDLK_f:
+					flipclock_destroy_textures(app);
+					flipclock_close_fonts(app);
+					flipclock_set_fullscreen(
+						app, !app->properties.full);
+					flipclock_refresh(app);
+					flipclock_open_fonts(app);
+					flipclock_create_textures(app);
+					flipclock_render_texture(app);
+					break;
+				default:
+					break;
+				}
 #endif
 				break;
 			case SDL_QUIT:
@@ -686,5 +760,7 @@ void flipclock_print_help(char program_name[])
 	       "or 24-hour clock format.\n",
 	       OPT_START);
 	printf("\t%cf <font>\tCustom font path.\n", OPT_START);
-	printf("Press any key to exit.\n");
+	printf("Press `Esc` or `q` to exit.\n");
+	printf("Press `f` to toggle fullscreen.\n");
+	printf("Press `t` to toggle 12/24-hour clock format.\n");
 }

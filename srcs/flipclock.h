@@ -27,6 +27,7 @@ struct properties {
 #ifdef _WIN32
 	HWND preview_window;
 	bool preview;
+	bool screensaver;
 #endif
 };
 struct colors {

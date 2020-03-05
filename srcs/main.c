@@ -51,12 +51,17 @@ int main(int argc, char *argv[])
 		case 'c':
 			MessageBox(
 				NULL,
-				"Configuration should NOT be here, silly Windows!",
+				"Configuration should NOT be here, "
+				"silly Windows!",
 				"FlipClock", MB_OK);
 			exit(EXIT_SUCCESS);
 			break;
 		case 's':
-			/* One of the most silly requirement I've seen. */
+			/*
+			 * One of the most silly requirement I've seen.
+			 * But it seems I can use it to handle key press.
+			 */
+			app->properties.screensaver = true;
 			break;
 		case 'p':
 			app->properties.preview = true;
