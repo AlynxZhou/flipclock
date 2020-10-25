@@ -1,7 +1,6 @@
 /*
- * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
+ * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -9,7 +8,18 @@
 #include "getarg.h"
 #include "flipclock.h"
 
-#include "config.h"
+/* Android APP does not generate `config.h` and use its own logger. */
+#ifdef __ANDROID__
+#	include <android/log.h>
+#	define LOG_TAG "FlipClock"
+#	define LOG_DEBUG(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#	define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#else
+#	include <stdio.h>
+#	define LOG_DEBUG(...) fprintf(stdout, __VA_ARGS__)
+#	define LOG_ERROR(...) fprintf(stderr, __VA_ARGS__)
+#	include "config.h"
+#endif
 
 #define FPS 60
 #define MAX_PROGRESS 300
@@ -21,7 +31,7 @@ struct flipclock *flipclock_create(void)
 {
 	struct flipclock *app = malloc(sizeof(*app));
 	if (app == NULL) {
-		fprintf(stderr, "Failed to create app!\n");
+		LOG_ERROR("Failed to create app!\n");
 		exit(EXIT_FAILURE);
 	}
 	app->window = NULL;
@@ -64,7 +74,7 @@ struct flipclock *flipclock_create(void)
 void flipclock_create_window(struct flipclock *app)
 {
 	SDL_DisableScreenSaver();
-#ifdef _WIN32
+#if defined(_WIN32)
 	if (app->properties.preview) {
 		/* Don't set fullscreen if in preview. */
 		app->properties.full = false;
@@ -86,6 +96,15 @@ void flipclock_create_window(struct flipclock *app)
 					       app->properties.width,
 					       app->properties.height, flags);
 	}
+#elif defined(__ANDROID__)
+	/* We need `SDL_WINDOW_RESIZABLE` for auto-rotate while fullscreen. */
+	unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+			     SDL_WINDOW_FULLSCREEN_DESKTOP |
+			     SDL_WINDOW_ALLOW_HIGHDPI;
+	app->window = SDL_CreateWindow(PROGRAM_TITLE, SDL_WINDOWPOS_UNDEFINED,
+				       SDL_WINDOWPOS_UNDEFINED,
+				       app->properties.width,
+				       app->properties.height, flags);
 #else
 	unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
 			     SDL_WINDOW_ALLOW_HIGHDPI;
@@ -100,7 +119,7 @@ void flipclock_create_window(struct flipclock *app)
 				       app->properties.height, flags);
 #endif
 	if (app->window == NULL) {
-		fprintf(stderr, "%s\n", SDL_GetError());
+		LOG_ERROR("%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 	/* Init window size after create it. */
@@ -111,7 +130,7 @@ void flipclock_create_window(struct flipclock *app)
 						   SDL_RENDERER_TARGETTEXTURE |
 						   SDL_RENDERER_PRESENTVSYNC);
 	if (app->renderer == NULL) {
-		fprintf(stderr, "%s\n", SDL_GetError());
+		LOG_ERROR("%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetRenderDrawBlendMode(app->renderer, SDL_BLENDMODE_BLEND);
@@ -204,7 +223,7 @@ void flipclock_create_textures(struct flipclock *app)
 						  app->properties.width,
 						  app->properties.height);
 	if (app->textures.current == NULL) {
-		fprintf(stderr, "%s\n", SDL_GetError());
+		LOG_ERROR("%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetTextureBlendMode(app->textures.current, SDL_BLENDMODE_BLEND);
@@ -213,7 +232,7 @@ void flipclock_create_textures(struct flipclock *app)
 						   app->properties.width,
 						   app->properties.height);
 	if (app->textures.previous == NULL) {
-		fprintf(stderr, "%s\n", SDL_GetError());
+		LOG_ERROR("%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetTextureBlendMode(app->textures.previous, SDL_BLENDMODE_BLEND);
@@ -235,18 +254,21 @@ void flipclock_open_fonts(struct flipclock *app)
 		app->fonts.mode = TTF_OpenFont(app->properties.font_path,
 					       app->rects.mode.h);
 	} else {
-#ifdef _WIN32
+#if defined(_WIN32)
 		char *system_root = getenv("SystemRoot");
 		int path_size = strlen(system_root) +
 				strlen("\\Fonts\\flipclock.ttf") + 1;
 		char *font_path = malloc(path_size * sizeof(*font_path));
 		if (font_path == NULL) {
-			fprintf(stderr, "Load font path failed!\n");
+			LOG_ERROR("Load font path failed!\n");
 			exit(EXIT_FAILURE);
 		}
 		strncpy(font_path, system_root, strlen(system_root) + 1);
 		strncat(font_path, "\\Fonts\\flipclock.ttf",
 			strlen("\\Fonts\\flipclock.ttf") + 1);
+#elif defined(__ANDROID__)
+		/* Directly under `app/src/main/assets` for Android APP. */
+		char font_path[] = "flipclock.ttf";
 #else
 		char font_path[] = CMAKE_INSTALL_PREFIX
 			"/share/fonts/flipclock.ttf";
@@ -259,7 +281,7 @@ void flipclock_open_fonts(struct flipclock *app)
 #endif
 	}
 	if (app->fonts.time == NULL || app->fonts.mode == NULL) {
-		fprintf(stderr, "%s\n", TTF_GetError());
+		LOG_ERROR("%s\n", TTF_GetError());
 		exit(EXIT_FAILURE);
 	}
 }
@@ -352,7 +374,7 @@ void flipclock_render_text(struct flipclock *app, SDL_Texture *target_texture,
 	int len = strlen(text);
 	if (len > 2) {
 		/* We can handle text longer than 2 chars, though. */
-		fprintf(stderr, "Text length must be less than 3!");
+		LOG_ERROR("Text length must be less than 3!");
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetRenderTarget(app->renderer, target_texture);
@@ -361,13 +383,13 @@ void flipclock_render_text(struct flipclock *app, SDL_Texture *target_texture,
 		SDL_Surface *text_surface = TTF_RenderGlyph_Shaded(
 			font, text[i], app->colors.font, app->colors.rect);
 		if (text_surface == NULL) {
-			fprintf(stderr, "%s\n", SDL_GetError());
+			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
 		}
 		SDL_Texture *text_texture = SDL_CreateTextureFromSurface(
 			app->renderer, text_surface);
 		if (text_texture == NULL) {
-			fprintf(stderr, "%s\n", SDL_GetError());
+			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
 		}
 		SDL_Rect text_rect;
@@ -620,8 +642,8 @@ void flipclock_run_mainloop(struct flipclock *app)
 				case SDL_WINDOWEVENT_MINIMIZED:
 					wait = true;
 					break;
-				/* Dealing with EXPOSED to repaint. */
-				case SDL_WINDOWEVENT_EXPOSED:
+				/* `RESTORED` is emitted after `MINIMIZED`. */
+				case SDL_WINDOWEVENT_RESTORED:
 					wait = false;
 					break;
 				case SDL_WINDOWEVENT_CLOSE:
@@ -687,10 +709,11 @@ void flipclock_run_mainloop(struct flipclock *app)
 					}
 				}
 #else
-				/* It's simple under Linux. */
+				/* It's simple under Linux and Android. */
 				switch (event.key.keysym.sym) {
 				case SDLK_ESCAPE:
 				case SDLK_q:
+				case SDLK_AC_BACK:
 					exit = true;
 					break;
 				case SDLK_t:

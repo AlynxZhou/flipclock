@@ -1,5 +1,5 @@
 /*
- * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
+ * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
 #ifndef __GETARG_H__
 #define __GETARG_H__

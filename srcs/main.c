@@ -1,5 +1,5 @@
 /*
- * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
+ * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
 #include <stdio.h>
 #include <stdlib.h>
