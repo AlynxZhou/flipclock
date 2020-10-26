@@ -38,6 +38,10 @@ Just download file with `win` in its name from [lastest release page](https://gi
 8. Go to `flipclock` dir under your `CMAKE_INSTALL_PREFIX` and right click `flipclock.ttf` to "install it for all users", or just copy it into `C:\Windows\Fonts`.
 9. You can now rename `flipclock.exe` to `flipclock.scr` and right click it to install it as a screensaver.
 
+## Android
+
+See [flipclock-android](https://github.com/AlynxZhou/flipclock-android/).
+
 # License
 
 [Apache-2.0](./LICENSE)
