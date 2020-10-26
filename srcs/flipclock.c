@@ -1,4 +1,4 @@
-/*
+/**
  * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
 #include <stdlib.h>
@@ -433,7 +433,7 @@ void flipclock_render_texture(struct flipclock *app)
 	char text[3];
 	SDL_Rect divider_rect;
 
-	/*
+	/**
 	 * Don't draw one card after another!
 	 * I don't know why, but it seems SDL2 under Windows has a bug.
 	 * If I draw text for one card, then draw background for another card.
@@ -453,7 +453,7 @@ void flipclock_render_texture(struct flipclock *app)
 	/* Text. */
 	if (app->properties.ampm) {
 		/* Just draw AM/PM text on hour card. */
-		/*
+		/**
 		 * Don't use strftime() here,
 		 * because font only have `A`, `P`, `M`.
 		 */
@@ -463,7 +463,7 @@ void flipclock_render_texture(struct flipclock *app)
 				      app->rects.mode, app->fonts.mode, text);
 	}
 
-	/*
+	/**
 	 * MSVC does not support `%l` (` 1` - `12`),
 	 * so we have to use `%I` (`01` - `12`), and trim zero.
 	 */
@@ -533,7 +533,7 @@ void flipclock_copy_rect(struct flipclock *app, SDL_Rect target_rect,
 	SDL_RenderCopy(app->renderer, app->textures.previous, &half_source_rect,
 		       &half_target_rect);
 
-	/*
+	/**
 	 * Draw the flip part.
 	 * Upper half is previous and lower half is current.
 	 * Just custom the destination Rect, zoom will be done automatically.
@@ -601,7 +601,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 		if (SDL_WaitEventTimeout(&event, 1000 / FPS)) {
 			switch (event.type) {
 #ifdef _WIN32
-			/*
+			/**
 			 * There are a silly design in Windows' screensaver
 			 * chooser. When you choose one screensaver, it will
 			 * run the program with `/p HWND`, but if you changed
@@ -622,7 +622,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 			case SDL_WINDOWEVENT:
 				switch (event.window.event) {
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
-					/*
+					/**
 					 * Only re-render when size changed.
 					 * Windows may send event when size
 					 * not changed, and cause strange bugs.
@@ -658,7 +658,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 				}
 				break;
 #ifdef _WIN32
-			/*
+			/**
 			 * If under Windows, and not in preview window,
 			 * and it was called as a screensaver,
 			 * just exit when user press mouse button or move it,
@@ -673,7 +673,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 					exit = true;
 				break;
 #endif
-			/*
+			/**
 			 * For touch devices, the most used function is
 			 * changing type, so we use double tap for it,
 			 * instead of toggling fullscreen.
@@ -690,7 +690,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 				break;
 			case SDL_KEYDOWN:
 #ifdef _WIN32
-				/*
+				/**
 				 * If under Windows, and not in preview window,
 				 * and it was called as a screensaver.
 				 * just exit when user press any key.
@@ -764,7 +764,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 		}
 		time_t raw_time = time(NULL);
 		app->times.now = *localtime(&raw_time);
-		/*
+		/**
 		 * Start animation when time changes.
 		 * But don't sync time here!
 		 * We need it to decide which part needs animation.

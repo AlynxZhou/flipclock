@@ -1,4 +1,4 @@
-/*
+/**
  * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
 #ifndef __GETARG_H__
@@ -13,7 +13,7 @@
 /* Global optarg. */
 extern char *argopt;
 
-/*
+/**
  * getarg() receives an arguments counter,
  * a pointer array of arguments,
  * and parse it with given option string.

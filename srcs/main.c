@@ -1,4 +1,4 @@
-/*
+/**
  * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
 #include <stdio.h>
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_SUCCESS);
 			break;
 #ifdef _WIN32
-		/*
+		/**
 		 * I have no idea about how to configure it without arguments
 		 * in Windows. So just tell user and exit.
 		 */
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_SUCCESS);
 			break;
 		case 's':
-			/*
+			/**
 			 * One of the most silly requirement I've seen.
 			 * But it seems I can use it to handle key press.
 			 */
