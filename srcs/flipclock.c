@@ -680,8 +680,8 @@ void flipclock_run_mainloop(struct flipclock *app)
 			 * Double tap (less then 300ms) changes type.
 			 */
 			case SDL_FINGERUP:
-				if (event.tfinger.timestamp - last_touch <
-				    DOUBLE_TAP_INTERVAL_MS) {
+				if (event.tfinger.timestamp <
+				    last_touch + DOUBLE_TAP_INTERVAL_MS) {
 					app->properties.ampm =
 						!app->properties.ampm;
 					flipclock_render_texture(app);
