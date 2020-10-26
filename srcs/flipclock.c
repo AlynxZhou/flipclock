@@ -12,8 +12,10 @@
 #ifdef __ANDROID__
 #	include <android/log.h>
 #	define LOG_TAG "FlipClock"
-#	define LOG_DEBUG(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#	define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#	define LOG_DEBUG(...) \
+		__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#	define LOG_ERROR(...) \
+		__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #else
 #	include <stdio.h>
 #	define LOG_DEBUG(...) fprintf(stdout, __VA_ARGS__)
@@ -26,6 +28,7 @@
 #define HALF_PROGRESS (MAX_PROGRESS / 2)
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+#define DOUBLE_TAP_INTERVAL_MS 300
 
 struct flipclock *flipclock_create(void)
 {
@@ -580,6 +583,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 	bool animating = false;
 	int progress = MAX_PROGRESS;
 	unsigned int start_tick = SDL_GetTicks();
+	unsigned int last_touch = 0;
 	SDL_Event event;
 	/* Clear event queue before running. */
 	while (SDL_PollEvent(&event))
@@ -669,6 +673,21 @@ void flipclock_run_mainloop(struct flipclock *app)
 					exit = true;
 				break;
 #endif
+			/*
+			 * For touch devices, the most used function is
+			 * changing type, so we use double tap for it,
+			 * instead of toggling fullscreen.
+			 * Double tap (less then 300ms) changes type.
+			 */
+			case SDL_FINGERUP:
+				if (event.tfinger.timestamp - last_touch <
+				    DOUBLE_TAP_INTERVAL_MS) {
+					app->properties.ampm =
+						!app->properties.ampm;
+					flipclock_render_texture(app);
+				}
+				last_touch = event.tfinger.timestamp;
+				break;
 			case SDL_KEYDOWN:
 #ifdef _WIN32
 				/*

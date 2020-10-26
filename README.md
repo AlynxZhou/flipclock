@@ -4,7 +4,7 @@ FlipClock
 A flip clock screensaver supported by SDL2.
 -------------------------------------------
 
-![flipclock.png](flipclock.png)
+![Screenshot](screenshot.png)
 
 # Usage
 
