@@ -90,7 +90,7 @@ void flipclock_create_clocks(struct flipclock *app)
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
 		}
-		app->clocks[i].renderer = SDL_CreateRenderer(
+		app->clocks[0].renderer = SDL_CreateRenderer(
 			app->clocks[0].window, -1,
 			SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE |
 				SDL_RENDERER_PRESENTVSYNC);
@@ -840,7 +840,7 @@ void flipclock_handle_event(struct flipclock *app, SDL_Event event)
 					flipclock_destroy_textures(app, i);
 					flipclock_close_fonts(app, i);
 					flipclock_set_fullscreen(
-						app, !app->properties.full);
+						app, i, app->properties.full);
 					flipclock_refresh(app, i);
 					flipclock_open_fonts(app, i);
 					flipclock_create_textures(app, i);
