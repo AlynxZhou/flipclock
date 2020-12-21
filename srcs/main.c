@@ -96,7 +96,6 @@ int main(int argc, char *argv[])
 		flipclock_destroy_textures(app, i);
 		flipclock_close_fonts(app, i);
 	}
-
 	flipclock_destroy_clocks(app);
 
 	flipclock_destroy(app);

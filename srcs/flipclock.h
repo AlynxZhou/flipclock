@@ -76,25 +76,28 @@ struct flipclock {
 
 struct flipclock *flipclock_create(void);
 void flipclock_create_clocks(struct flipclock *app);
-void flipclock_set_fullscreen(struct flipclock *app, int clock_index, bool full);
+void flipclock_set_fullscreen(struct flipclock *app, int clock_index,
+			      bool full);
 void flipclock_refresh(struct flipclock *app, int clock_index);
 void flipclock_create_textures(struct flipclock *app, int clock_index);
 void flipclock_destroy_textures(struct flipclock *app, int clock_index);
 void flipclock_open_fonts(struct flipclock *app, int clock_index);
 void flipclock_close_fonts(struct flipclock *app, int clock_index);
-void flipclock_clear_texture(struct flipclock *app, int clock_index, SDL_Texture *target_texture,
+void flipclock_clear_texture(struct flipclock *app, int clock_index,
+			     SDL_Texture *target_texture,
 			     SDL_Color background_color);
-void flipclock_render_rounded_box(struct flipclock *app,
-     				  int clock_index,
-     				  SDL_Texture *target_texture,
-     				  SDL_Rect target_rect, int radius);
-void flipclock_render_text(struct flipclock *app, int clock_index, SDL_Texture *target_texture,
-  			   SDL_Rect target_rect, TTF_Font *font, char text[]);
+void flipclock_render_rounded_box(struct flipclock *app, int clock_index,
+				  SDL_Texture *target_texture,
+				  SDL_Rect target_rect, int radius);
+void flipclock_render_text(struct flipclock *app, int clock_index,
+			   SDL_Texture *target_texture, SDL_Rect target_rect,
+			   TTF_Font *font, char text[]);
 void flipclock_render_divider(struct flipclock *app, int clock_index,
-   			      SDL_Texture *target_texture, SDL_Rect target_rect);
+			      SDL_Texture *target_texture,
+			      SDL_Rect target_rect);
 void flipclock_render_texture(struct flipclock *app, int clock_index);
-void flipclock_copy_rect(struct flipclock *app, int clock_index, SDL_Rect target_rect,
-			 int progress);
+void flipclock_copy_rect(struct flipclock *app, int clock_index,
+			 SDL_Rect target_rect, int progress);
 void flipclock_animate(struct flipclock *app, int clock_index, int progress);
 void flipclock_run_mainloop(struct flipclock *app);
 void flipclock_destroy_clocks(struct flipclock *app);

@@ -84,19 +84,20 @@ void flipclock_create_clocks(struct flipclock *app)
 		/* Init window size after create it. */
 		SDL_GetWindowSize(app->clocks[0].window, &app->clocks[0].width,
 				  &app->clocks[0].height);
-	  	if (app->clocks[0].window == NULL) {
+		if (app->clocks[0].window == NULL) {
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
 		}
-		app->clocks[i].renderer = SDL_CreateRenderer(app->clocks[0].window, -1,
-							   SDL_RENDERER_ACCELERATED |
-								   SDL_RENDERER_TARGETTEXTURE |
-								   SDL_RENDERER_PRESENTVSYNC);
+		app->clocks[i].renderer = SDL_CreateRenderer(
+			app->clocks[0].window, -1,
+			SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE |
+				SDL_RENDERER_PRESENTVSYNC);
 		if (app->clocks[0].renderer == NULL) {
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
 		}
-		SDL_SetRenderDrawBlendMode(app->clocks[0].renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawBlendMode(app->clocks[0].renderer,
+					   SDL_BLENDMODE_BLEND);
 	} else {
 		unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
 				     SDL_WINDOW_ALLOW_HIGHDPI;
@@ -108,7 +109,8 @@ void flipclock_create_clocks(struct flipclock *app)
 			 */
 			app->clocks_length = SDL_GetNumVideoDisplays();
 			flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-				SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_FULLSCREEN_DESKTOP;
+				SDL_WINDOW_ALLOW_HIGHDPI |
+				SDL_WINDOW_FULLSCREEN_DESKTOP;
 			SDL_ShowCursor(SDL_DISABLE);
 		}
 		app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
@@ -120,27 +122,29 @@ void flipclock_create_clocks(struct flipclock *app)
 			app->clocks[i].wait = false;
 			SDL_Rect display_bounds;
 			SDL_GetDisplayBounds(i, &display_bounds);
-			app->clocks[i].window = SDL_CreateWindow(PROGRAM_TITLE,
-				display_bounds.x,
-				display_bounds.y,
-				display_bounds.w,
+			app->clocks[i].window = SDL_CreateWindow(
+				PROGRAM_TITLE, display_bounds.x,
+				display_bounds.y, display_bounds.w,
 				display_bounds.h, flags);
 			if (app->clocks[i].window == NULL) {
 				LOG_ERROR("%s\n", SDL_GetError());
 				exit(EXIT_FAILURE);
 			}
 			/* Init window size after create it. */
-			SDL_GetWindowSize(app->clocks[i].window, &app->clocks[i].width,
+			SDL_GetWindowSize(app->clocks[i].window,
+					  &app->clocks[i].width,
 					  &app->clocks[i].height);
-			app->clocks[i].renderer = SDL_CreateRenderer(app->clocks[i].window, -1,
-								   SDL_RENDERER_ACCELERATED |
-									   SDL_RENDERER_TARGETTEXTURE |
-									   SDL_RENDERER_PRESENTVSYNC);
+			app->clocks[i].renderer = SDL_CreateRenderer(
+				app->clocks[i].window, -1,
+				SDL_RENDERER_ACCELERATED |
+					SDL_RENDERER_TARGETTEXTURE |
+					SDL_RENDERER_PRESENTVSYNC);
 			if (app->clocks[i].renderer == NULL) {
 				LOG_ERROR("%s\n", SDL_GetError());
 				exit(EXIT_FAILURE);
 			}
-			SDL_SetRenderDrawBlendMode(app->clocks[i].renderer, SDL_BLENDMODE_BLEND);
+			SDL_SetRenderDrawBlendMode(app->clocks[i].renderer,
+						   SDL_BLENDMODE_BLEND);
 		}
 	}
 #else
@@ -160,7 +164,8 @@ void flipclock_create_clocks(struct flipclock *app)
 		 */
 		app->clocks_length = SDL_GetNumVideoDisplays();
 		flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-			SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_FULLSCREEN_DESKTOP;
+			SDL_WINDOW_ALLOW_HIGHDPI |
+			SDL_WINDOW_FULLSCREEN_DESKTOP;
 		SDL_ShowCursor(SDL_DISABLE);
 	}
 	app->clocks = malloc(sizeof(*(app->clocks)) * app->clocks_length);
@@ -172,11 +177,9 @@ void flipclock_create_clocks(struct flipclock *app)
 		app->clocks[i].wait = false;
 		SDL_Rect display_bounds;
 		SDL_GetDisplayBounds(i, &display_bounds);
-		app->clocks[i].window = SDL_CreateWindow(PROGRAM_TITLE,
-			display_bounds.x,
-			display_bounds.y,
-			display_bounds.w,
-			display_bounds.h, flags);
+		app->clocks[i].window = SDL_CreateWindow(
+			PROGRAM_TITLE, display_bounds.x, display_bounds.y,
+			display_bounds.w, display_bounds.h, flags);
 		if (app->clocks[i].window == NULL) {
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
@@ -184,15 +187,16 @@ void flipclock_create_clocks(struct flipclock *app)
 		/* Init window size after create it. */
 		SDL_GetWindowSize(app->clocks[i].window, &app->clocks[i].width,
 				  &app->clocks[i].height);
-		app->clocks[i].renderer = SDL_CreateRenderer(app->clocks[i].window, -1,
-							   SDL_RENDERER_ACCELERATED |
-								   SDL_RENDERER_TARGETTEXTURE |
-								   SDL_RENDERER_PRESENTVSYNC);
+		app->clocks[i].renderer = SDL_CreateRenderer(
+			app->clocks[i].window, -1,
+			SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE |
+				SDL_RENDERER_PRESENTVSYNC);
 		if (app->clocks[i].renderer == NULL) {
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
 		}
-		SDL_SetRenderDrawBlendMode(app->clocks[i].renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawBlendMode(app->clocks[i].renderer,
+					   SDL_BLENDMODE_BLEND);
 	}
 #endif
 }
@@ -201,22 +205,26 @@ void flipclock_set_fullscreen(struct flipclock *app, int clock_index, bool full)
 {
 	app->properties.full = full;
 	if (full) {
-		/* Move clock to their attached display. */
+		/* Move clocks to their attached displays. */
 		SDL_Rect display_bounds;
 		SDL_GetDisplayBounds(clock_index, &display_bounds);
-		SDL_SetWindowPosition(app->clocks[clock_index].window, display_bounds.x, display_bounds.y);
+		SDL_SetWindowPosition(app->clocks[clock_index].window,
+				      display_bounds.x, display_bounds.y);
 		SDL_SetWindowFullscreen(app->clocks[clock_index].window,
-			SDL_WINDOW_FULLSCREEN_DESKTOP);
-		SDL_GetWindowSize(app->clocks[clock_index].window, &app->clocks[clock_index].width,
-			&app->clocks[clock_index].height);
+					SDL_WINDOW_FULLSCREEN_DESKTOP);
+		SDL_GetWindowSize(app->clocks[clock_index].window,
+				  &app->clocks[clock_index].width,
+				  &app->clocks[clock_index].height);
 		SDL_ShowCursor(SDL_DISABLE);
 	} else {
 		SDL_SetWindowFullscreen(app->clocks[clock_index].window, 0);
-		SDL_GetWindowSize(app->clocks[clock_index].window, &app->clocks[clock_index].width,
-			&app->clocks[clock_index].height);
+		SDL_GetWindowSize(app->clocks[clock_index].window,
+				  &app->clocks[clock_index].width,
+				  &app->clocks[clock_index].height);
 		/* Move mouse back into center. */
-		SDL_WarpMouseInWindow(app->clocks[clock_index].window, app->clocks[clock_index].width / 2,
-			app->clocks[clock_index].height / 2);
+		SDL_WarpMouseInWindow(app->clocks[clock_index].window,
+				      app->clocks[clock_index].width / 2,
+				      app->clocks[clock_index].height / 2);
 		SDL_ShowCursor(SDL_ENABLE);
 	}
 }
@@ -231,21 +239,31 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 				app->clocks[clock_index].width * 0.8 :
 				app->clocks[clock_index].height * 0.4;
 		int space = app->clocks[clock_index].height * 0.06;
-		app->clocks[clock_index].radius = app->clocks[clock_index].rect_size / 10;
+		app->clocks[clock_index].radius =
+			app->clocks[clock_index].rect_size / 10;
 
-		app->clocks[clock_index].rects.hour.y = (app->clocks[clock_index].height -
-				     2 * app->clocks[clock_index].rect_size - space) /
-				    2;
+		app->clocks[clock_index].rects.hour.y =
+			(app->clocks[clock_index].height -
+			 2 * app->clocks[clock_index].rect_size - space) /
+			2;
 		app->clocks[clock_index].rects.hour.x =
-			(app->clocks[clock_index].width - app->clocks[clock_index].rect_size) / 2;
-		app->clocks[clock_index].rects.hour.w = app->clocks[clock_index].rect_size;
-		app->clocks[clock_index].rects.hour.h = app->clocks[clock_index].rect_size;
+			(app->clocks[clock_index].width -
+			 app->clocks[clock_index].rect_size) /
+			2;
+		app->clocks[clock_index].rects.hour.w =
+			app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].rects.hour.h =
+			app->clocks[clock_index].rect_size;
 
 		app->clocks[clock_index].rects.minute.y =
-			app->clocks[clock_index].rects.hour.y + app->clocks[clock_index].rects.hour.h + space;
-		app->clocks[clock_index].rects.minute.x = app->clocks[clock_index].rects.hour.x;
-		app->clocks[clock_index].rects.minute.w = app->clocks[clock_index].rect_size;
-		app->clocks[clock_index].rects.minute.h = app->clocks[clock_index].rect_size;
+			app->clocks[clock_index].rects.hour.y +
+			app->clocks[clock_index].rects.hour.h + space;
+		app->clocks[clock_index].rects.minute.x =
+			app->clocks[clock_index].rects.hour.x;
+		app->clocks[clock_index].rects.minute.w =
+			app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].rects.minute.h =
+			app->clocks[clock_index].rect_size;
 	} else {
 		/* But others love landscape. */
 		app->clocks[clock_index].rect_size =
@@ -254,53 +272,71 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 				app->clocks[clock_index].height * 0.8 :
 				app->clocks[clock_index].width * 0.4;
 		int space = app->clocks[clock_index].width * 0.06;
-		app->clocks[clock_index].radius = app->clocks[clock_index].rect_size / 10;
+		app->clocks[clock_index].radius =
+			app->clocks[clock_index].rect_size / 10;
 
-		app->clocks[clock_index].rects.hour.x = (app->clocks[clock_index].width -
-				     2 * app->clocks[clock_index].rect_size - space) /
-				    2;
-		app->clocks[clock_index].rects.hour.y =
-			(app->clocks[clock_index].height - app->clocks[clock_index].rect_size) /
+		app->clocks[clock_index].rects.hour.x =
+			(app->clocks[clock_index].width -
+			 2 * app->clocks[clock_index].rect_size - space) /
 			2;
-		app->clocks[clock_index].rects.hour.w = app->clocks[clock_index].rect_size;
-		app->clocks[clock_index].rects.hour.h = app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].rects.hour.y =
+			(app->clocks[clock_index].height -
+			 app->clocks[clock_index].rect_size) /
+			2;
+		app->clocks[clock_index].rects.hour.w =
+			app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].rects.hour.h =
+			app->clocks[clock_index].rect_size;
 
 		app->clocks[clock_index].rects.minute.x =
-			app->clocks[clock_index].rects.hour.x + app->clocks[clock_index].rects.hour.w + space;
-		app->clocks[clock_index].rects.minute.y = app->clocks[clock_index].rects.hour.y;
-		app->clocks[clock_index].rects.minute.w = app->clocks[clock_index].rect_size;
-		app->clocks[clock_index].rects.minute.h = app->clocks[clock_index].rect_size;
+			app->clocks[clock_index].rects.hour.x +
+			app->clocks[clock_index].rects.hour.w + space;
+		app->clocks[clock_index].rects.minute.y =
+			app->clocks[clock_index].rects.hour.y;
+		app->clocks[clock_index].rects.minute.w =
+			app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].rects.minute.h =
+			app->clocks[clock_index].rect_size;
 	}
 
 	/* How do I get those numbers? Test. */
-	app->clocks[clock_index].rects.mode.w = app->clocks[clock_index].rect_size / 5;
-	app->clocks[clock_index].rects.mode.h = app->clocks[clock_index].rect_size / 10;
-	app->clocks[clock_index].rects.mode.x = app->clocks[clock_index].rects.hour.x + app->clocks[clock_index].rect_size / 50;
-	app->clocks[clock_index].rects.mode.y = app->clocks[clock_index].rects.hour.y + app->clocks[clock_index].rect_size -
-			    app->clocks[clock_index].rects.mode.h - app->clocks[clock_index].rect_size / 35;
+	app->clocks[clock_index].rects.mode.w =
+		app->clocks[clock_index].rect_size / 5;
+	app->clocks[clock_index].rects.mode.h =
+		app->clocks[clock_index].rect_size / 10;
+	app->clocks[clock_index].rects.mode.x =
+		app->clocks[clock_index].rects.hour.x +
+		app->clocks[clock_index].rect_size / 50;
+	app->clocks[clock_index].rects.mode.y =
+		app->clocks[clock_index].rects.hour.y +
+		app->clocks[clock_index].rect_size -
+		app->clocks[clock_index].rects.mode.h -
+		app->clocks[clock_index].rect_size / 35;
 }
 
 void flipclock_create_textures(struct flipclock *app, int clock_index)
 {
 	/* Two transparent backend texture swap for tribuffer. */
-	app->clocks[clock_index].textures.current = SDL_CreateTexture(app->clocks[clock_index].renderer, 0,
-						  SDL_TEXTUREACCESS_TARGET,
-						  app->clocks[clock_index].width,
-						  app->clocks[clock_index].height);
+	app->clocks[clock_index].textures.current = SDL_CreateTexture(
+		app->clocks[clock_index].renderer, 0, SDL_TEXTUREACCESS_TARGET,
+		app->clocks[clock_index].width,
+		app->clocks[clock_index].height);
 	if (app->clocks[clock_index].textures.current == NULL) {
 		LOG_ERROR("%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-	SDL_SetTextureBlendMode(app->clocks[clock_index].textures.current, SDL_BLENDMODE_BLEND);
-	app->clocks[clock_index].textures.previous = SDL_CreateTexture(app->clocks[clock_index].renderer, 0,
-						   SDL_TEXTUREACCESS_TARGET,
-						   app->clocks[clock_index].width,
-						   app->clocks[clock_index].height);
+	SDL_SetTextureBlendMode(app->clocks[clock_index].textures.current,
+				SDL_BLENDMODE_BLEND);
+	app->clocks[clock_index].textures.previous = SDL_CreateTexture(
+		app->clocks[clock_index].renderer, 0, SDL_TEXTUREACCESS_TARGET,
+		app->clocks[clock_index].width,
+		app->clocks[clock_index].height);
 	if (app->clocks[clock_index].textures.previous == NULL) {
 		LOG_ERROR("%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-	SDL_SetTextureBlendMode(app->clocks[clock_index].textures.previous, SDL_BLENDMODE_BLEND);
+	SDL_SetTextureBlendMode(app->clocks[clock_index].textures.previous,
+				SDL_BLENDMODE_BLEND);
 }
 
 void flipclock_destroy_textures(struct flipclock *app, int clock_index)
@@ -314,10 +350,12 @@ void flipclock_destroy_textures(struct flipclock *app, int clock_index)
 void flipclock_open_fonts(struct flipclock *app, int clock_index)
 {
 	if (app->properties.font_path != NULL) {
-		app->clocks[clock_index].fonts.time = TTF_OpenFont(app->properties.font_path,
-					       app->clocks[clock_index].rect_size);
-		app->clocks[clock_index].fonts.mode = TTF_OpenFont(app->properties.font_path,
-					       app->clocks[clock_index].rects.mode.h);
+		app->clocks[clock_index].fonts.time =
+			TTF_OpenFont(app->properties.font_path,
+				     app->clocks[clock_index].rect_size);
+		app->clocks[clock_index].fonts.mode =
+			TTF_OpenFont(app->properties.font_path,
+				     app->clocks[clock_index].rects.mode.h);
 	} else {
 #if defined(_WIN32)
 		char *system_root = getenv("SystemRoot");
@@ -338,14 +376,16 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 		char font_path[] = CMAKE_INSTALL_PREFIX
 			"/share/fonts/flipclock.ttf";
 #endif
-		app->clocks[clock_index].fonts.time =
-			TTF_OpenFont(font_path, app->clocks[clock_index].rect_size);
-		app->clocks[clock_index].fonts.mode = TTF_OpenFont(font_path, app->clocks[clock_index].rects.mode.h);
+		app->clocks[clock_index].fonts.time = TTF_OpenFont(
+			font_path, app->clocks[clock_index].rect_size);
+		app->clocks[clock_index].fonts.mode = TTF_OpenFont(
+			font_path, app->clocks[clock_index].rects.mode.h);
 #ifdef _WIN32
 		free(font_path);
 #endif
 	}
-	if (app->clocks[clock_index].fonts.time == NULL || app->clocks[clock_index].fonts.mode == NULL) {
+	if (app->clocks[clock_index].fonts.time == NULL ||
+	    app->clocks[clock_index].fonts.mode == NULL) {
 		LOG_ERROR("%s\n", TTF_GetError());
 		exit(EXIT_FAILURE);
 	}
@@ -359,36 +399,38 @@ void flipclock_close_fonts(struct flipclock *app, int clock_index)
 		TTF_CloseFont(app->clocks[clock_index].fonts.mode);
 }
 
-void flipclock_clear_texture(struct flipclock *app, int clock_index, SDL_Texture *target_texture,
+void flipclock_clear_texture(struct flipclock *app, int clock_index,
+			     SDL_Texture *target_texture,
 			     SDL_Color background_color)
 {
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
-	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer, background_color.r,
-			       background_color.g, background_color.b,
-			       background_color.a);
+	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
+			       background_color.r, background_color.g,
+			       background_color.b, background_color.a);
 	SDL_RenderClear(app->clocks[clock_index].renderer);
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void flipclock_render_rounded_box(struct flipclock *app,
-				  int clock_index,
+void flipclock_render_rounded_box(struct flipclock *app, int clock_index,
 				  SDL_Texture *target_texture,
 				  SDL_Rect target_rect, int radius)
 {
 	if (radius <= 1) {
-		SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
-		SDL_SetRenderDrawColor(app->clocks[clock_index].renderer, app->colors.rect.r,
-				       app->colors.rect.g, app->colors.rect.b,
-				       app->colors.rect.a);
-		SDL_RenderFillRect(app->clocks[clock_index].renderer, &target_rect);
+		SDL_SetRenderTarget(app->clocks[clock_index].renderer,
+				    target_texture);
+		SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
+				       app->colors.rect.r, app->colors.rect.g,
+				       app->colors.rect.b, app->colors.rect.a);
+		SDL_RenderFillRect(app->clocks[clock_index].renderer,
+				   &target_rect);
 		SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 		return;
 	}
 
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
-	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer, app->colors.rect.r,
-			       app->colors.rect.g, app->colors.rect.b,
-			       app->colors.rect.a);
+	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
+			       app->colors.rect.r, app->colors.rect.g,
+			       app->colors.rect.b, app->colors.rect.a);
 	if (2 * radius > target_rect.w)
 		radius = target_rect.w / 2;
 	if (2 * radius > target_rect.h)
@@ -397,22 +439,24 @@ void flipclock_render_rounded_box(struct flipclock *app,
 	int y = radius;
 	int d = 3 - 2 * radius;
 	while (x <= y) {
-		SDL_RenderDrawLine(app->clocks[clock_index].renderer, target_rect.x + radius - x,
-				   target_rect.y + radius - y,
-				   target_rect.x + target_rect.w - radius + x -
-					   1,
-				   target_rect.y + radius - y);
-		SDL_RenderDrawLine(app->clocks[clock_index].renderer, target_rect.x + radius - x,
+		SDL_RenderDrawLine(
+			app->clocks[clock_index].renderer,
+			target_rect.x + radius - x, target_rect.y + radius - y,
+			target_rect.x + target_rect.w - radius + x - 1,
+			target_rect.y + radius - y);
+		SDL_RenderDrawLine(app->clocks[clock_index].renderer,
+				   target_rect.x + radius - x,
 				   target_rect.y + target_rect.h - radius + y,
 				   target_rect.x + target_rect.w - radius + x -
 					   1,
 				   target_rect.y + target_rect.h - radius + y);
-		SDL_RenderDrawLine(app->clocks[clock_index].renderer, target_rect.x + radius - y,
-				   target_rect.y + radius - x,
-				   target_rect.x + target_rect.w - radius + y -
-					   1,
-				   target_rect.y + radius - x);
-		SDL_RenderDrawLine(app->clocks[clock_index].renderer, target_rect.x + radius - y,
+		SDL_RenderDrawLine(
+			app->clocks[clock_index].renderer,
+			target_rect.x + radius - y, target_rect.y + radius - x,
+			target_rect.x + target_rect.w - radius + y - 1,
+			target_rect.y + radius - x);
+		SDL_RenderDrawLine(app->clocks[clock_index].renderer,
+				   target_rect.x + radius - y,
 				   target_rect.y + target_rect.h - radius + x,
 				   target_rect.x + target_rect.w - radius + y -
 					   1,
@@ -434,8 +478,9 @@ void flipclock_render_rounded_box(struct flipclock *app,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void flipclock_render_text(struct flipclock *app, int clock_index, SDL_Texture *target_texture,
-			   SDL_Rect target_rect, TTF_Font *font, char text[])
+void flipclock_render_text(struct flipclock *app, int clock_index,
+			   SDL_Texture *target_texture, SDL_Rect target_rect,
+			   TTF_Font *font, char text[])
 {
 	int len = strlen(text);
 	if (len > 2) {
@@ -466,7 +511,8 @@ void flipclock_render_text(struct flipclock *app, int clock_index, SDL_Texture *
 		text_rect.w = text_surface->w;
 		text_rect.h = text_surface->h;
 		SDL_FreeSurface(text_surface);
-		SDL_RenderCopy(app->clocks[clock_index].renderer, text_texture, NULL, &text_rect);
+		SDL_RenderCopy(app->clocks[clock_index].renderer, text_texture,
+			       NULL, &text_rect);
 		SDL_DestroyTexture(text_texture);
 	}
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
@@ -477,9 +523,9 @@ void flipclock_render_divider(struct flipclock *app, int clock_index,
 {
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
 	/* Don't be transparent, or you will not see divider. */
-	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer, app->colors.black.r,
-			       app->colors.black.g, app->colors.black.b,
-			       app->colors.black.a);
+	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
+			       app->colors.black.r, app->colors.black.g,
+			       app->colors.black.b, app->colors.black.a);
 	SDL_RenderFillRect(app->clocks[clock_index].renderer, &target_rect);
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
@@ -487,10 +533,12 @@ void flipclock_render_divider(struct flipclock *app, int clock_index,
 void flipclock_render_texture(struct flipclock *app, int clock_index)
 {
 	SDL_Texture *swap = app->clocks[clock_index].textures.current;
-	app->clocks[clock_index].textures.current = app->clocks[clock_index].textures.previous;
+	app->clocks[clock_index].textures.current =
+		app->clocks[clock_index].textures.previous;
 	app->clocks[clock_index].textures.previous = swap;
 
-	flipclock_clear_texture(app, clock_index, app->clocks[clock_index].textures.current,
+	flipclock_clear_texture(app, clock_index,
+				app->clocks[clock_index].textures.current,
 				app->colors.transparent);
 
 	char text[3];
@@ -507,11 +555,15 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 	 */
 
 	/* Background. */
-	flipclock_render_rounded_box(app, clock_index, app->clocks[clock_index].textures.current,
-				     app->clocks[clock_index].rects.hour, app->clocks[clock_index].radius);
+	flipclock_render_rounded_box(app, clock_index,
+				     app->clocks[clock_index].textures.current,
+				     app->clocks[clock_index].rects.hour,
+				     app->clocks[clock_index].radius);
 
-	flipclock_render_rounded_box(app, clock_index, app->clocks[clock_index].textures.current,
-				     app->clocks[clock_index].rects.minute, app->clocks[clock_index].radius);
+	flipclock_render_rounded_box(app, clock_index,
+				     app->clocks[clock_index].textures.current,
+				     app->clocks[clock_index].rects.minute,
+				     app->clocks[clock_index].radius);
 
 	/* Text. */
 	if (app->properties.ampm) {
@@ -522,8 +574,11 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 		 */
 		snprintf(text, sizeof(text), "%cM",
 			 app->times.now.tm_hour / 12 ? 'P' : 'A');
-		flipclock_render_text(app, clock_index, app->clocks[clock_index].textures.current,
-				      app->clocks[clock_index].rects.mode, app->clocks[clock_index].fonts.mode, text);
+		flipclock_render_text(app, clock_index,
+				      app->clocks[clock_index].textures.current,
+				      app->clocks[clock_index].rects.mode,
+				      app->clocks[clock_index].fonts.mode,
+				      text);
 	}
 
 	/**
@@ -537,11 +592,15 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 		text[0] = text[1];
 		text[1] = text[2];
 	}
-	flipclock_render_text(app, clock_index, app->clocks[clock_index].textures.current, app->clocks[clock_index].rects.hour,
+	flipclock_render_text(app, clock_index,
+			      app->clocks[clock_index].textures.current,
+			      app->clocks[clock_index].rects.hour,
 			      app->clocks[clock_index].fonts.time, text);
 
 	strftime(text, sizeof(text), "%M", &app->times.now);
-	flipclock_render_text(app, clock_index, app->clocks[clock_index].textures.current, app->clocks[clock_index].rects.minute,
+	flipclock_render_text(app, clock_index,
+			      app->clocks[clock_index].textures.current,
+			      app->clocks[clock_index].rects.minute,
 			      app->clocks[clock_index].fonts.time, text);
 
 	/* And cut the card! */
@@ -549,23 +608,30 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 	divider_rect.w = app->clocks[clock_index].rects.hour.w;
 	divider_rect.x = app->clocks[clock_index].rects.hour.x;
 	divider_rect.y =
-		app->clocks[clock_index].rects.hour.y + (app->clocks[clock_index].rects.hour.h - divider_rect.h) / 2;
-	flipclock_render_divider(app, clock_index, app->clocks[clock_index].textures.current, divider_rect);
+		app->clocks[clock_index].rects.hour.y +
+		(app->clocks[clock_index].rects.hour.h - divider_rect.h) / 2;
+	flipclock_render_divider(app, clock_index,
+				 app->clocks[clock_index].textures.current,
+				 divider_rect);
 
 	divider_rect.h = app->clocks[clock_index].rects.minute.h / 100;
 	divider_rect.w = app->clocks[clock_index].rects.minute.w;
 	divider_rect.x = app->clocks[clock_index].rects.minute.x;
-	divider_rect.y = app->clocks[clock_index].rects.minute.y +
-			 (app->clocks[clock_index].rects.minute.h - divider_rect.h) / 2;
-	flipclock_render_divider(app, clock_index, app->clocks[clock_index].textures.current, divider_rect);
+	divider_rect.y =
+		app->clocks[clock_index].rects.minute.y +
+		(app->clocks[clock_index].rects.minute.h - divider_rect.h) / 2;
+	flipclock_render_divider(app, clock_index,
+				 app->clocks[clock_index].textures.current,
+				 divider_rect);
 }
 
-void flipclock_copy_rect(struct flipclock *app, int clock_index, SDL_Rect target_rect,
-			 int progress)
+void flipclock_copy_rect(struct flipclock *app, int clock_index,
+			 SDL_Rect target_rect, int progress)
 {
 	if (progress >= MAX_PROGRESS) {
 		/* It finished flipping, so we don't draw flipping. */
-		SDL_RenderCopy(app->clocks[clock_index].renderer, app->clocks[clock_index].textures.current,
+		SDL_RenderCopy(app->clocks[clock_index].renderer,
+			       app->clocks[clock_index].textures.current,
 			       &target_rect, &target_rect);
 		return;
 	}
@@ -581,8 +647,9 @@ void flipclock_copy_rect(struct flipclock *app, int clock_index, SDL_Rect target
 	half_target_rect.y = target_rect.y;
 	half_target_rect.w = target_rect.w;
 	half_target_rect.h = target_rect.h / 2;
-	SDL_RenderCopy(app->clocks[clock_index].renderer, app->clocks[clock_index].textures.current, &half_source_rect,
-		       &half_target_rect);
+	SDL_RenderCopy(app->clocks[clock_index].renderer,
+		       app->clocks[clock_index].textures.current,
+		       &half_source_rect, &half_target_rect);
 
 	/* Draw the lower previous digit and render it. */
 	half_source_rect.x = target_rect.x;
@@ -593,8 +660,9 @@ void flipclock_copy_rect(struct flipclock *app, int clock_index, SDL_Rect target
 	half_target_rect.y = target_rect.y + target_rect.h / 2;
 	half_target_rect.w = target_rect.w;
 	half_target_rect.h = target_rect.h / 2;
-	SDL_RenderCopy(app->clocks[clock_index].renderer, app->clocks[clock_index].textures.previous, &half_source_rect,
-		       &half_target_rect);
+	SDL_RenderCopy(app->clocks[clock_index].renderer,
+		       app->clocks[clock_index].textures.previous,
+		       &half_source_rect, &half_target_rect);
 
 	/**
 	 * Draw the flip part.
@@ -624,15 +692,17 @@ void flipclock_copy_rect(struct flipclock *app, int clock_index, SDL_Rect target
 
 void flipclock_animate(struct flipclock *app, int clock_index, int progress)
 {
-	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer, app->colors.black.r,
-			       app->colors.black.g, app->colors.black.b,
-			       app->colors.black.a);
+	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
+			       app->colors.black.r, app->colors.black.g,
+			       app->colors.black.b, app->colors.black.a);
 	SDL_RenderClear(app->clocks[clock_index].renderer);
-	flipclock_copy_rect(app, clock_index, app->clocks[clock_index].rects.hour,
+	flipclock_copy_rect(app, clock_index,
+			    app->clocks[clock_index].rects.hour,
 			    app->times.now.tm_hour != app->times.past.tm_hour ?
 				    progress :
 				    MAX_PROGRESS);
-	flipclock_copy_rect(app, clock_index, app->clocks[clock_index].rects.minute,
+	flipclock_copy_rect(app, clock_index,
+			    app->clocks[clock_index].rects.minute,
 			    app->times.now.tm_min != app->times.past.tm_min ?
 				    progress :
 				    MAX_PROGRESS);
@@ -685,7 +755,9 @@ void flipclock_run_mainloop(struct flipclock *app)
 #endif
 			case SDL_WINDOWEVENT:
 				for (int i = 0; i < app->clocks_length; ++i) {
-					if (event.window.windowID == SDL_GetWindowID(app->clocks[i].window)) {
+					if (event.window.windowID ==
+					    SDL_GetWindowID(
+						    app->clocks[i].window)) {
 						switch (event.window.event) {
 						case SDL_WINDOWEVENT_SIZE_CHANGED:
 							/*
@@ -694,27 +766,41 @@ void flipclock_run_mainloop(struct flipclock *app)
 							 * not changed, and cause strange bugs.
 							 */
 							if (event.window.data1 !=
-								    app->clocks[i].width ||
+								    app->clocks[i]
+									    .width ||
 							    event.window.data2 !=
-								    app->clocks[i].height) {
-								app->clocks[i].width =
-									event.window.data1;
-								app->clocks[i].height =
-									event.window.data2;
-								flipclock_destroy_textures(app, i);
-								flipclock_close_fonts(app, i);
-								flipclock_refresh(app, i);
-								flipclock_open_fonts(app, i);
-								flipclock_create_textures(app, i);
-								flipclock_render_texture(app, i);
+								    app->clocks[i]
+									    .height) {
+								app->clocks[i]
+									.width =
+									event.window
+										.data1;
+								app->clocks[i]
+									.height =
+									event.window
+										.data2;
+								flipclock_destroy_textures(
+									app, i);
+								flipclock_close_fonts(
+									app, i);
+								flipclock_refresh(
+									app, i);
+								flipclock_open_fonts(
+									app, i);
+								flipclock_create_textures(
+									app, i);
+								flipclock_render_texture(
+									app, i);
 							}
 							break;
 						case SDL_WINDOWEVENT_MINIMIZED:
-							app->clocks[i].wait = true;
+							app->clocks[i].wait =
+								true;
 							break;
 						/* `RESTORED` is emitted after `MINIMIZED`. */
 						case SDL_WINDOWEVENT_RESTORED:
-							app->clocks[i].wait = false;
+							app->clocks[i].wait =
+								false;
 							break;
 						case SDL_WINDOWEVENT_CLOSE:
 							exit = true;
@@ -753,8 +839,10 @@ void flipclock_run_mainloop(struct flipclock *app)
 				    last_touch + DOUBLE_TAP_INTERVAL_MS) {
 					app->properties.ampm =
 						!app->properties.ampm;
-					for (int i = 0; i < app->clocks_length; ++i)
-						flipclock_render_texture(app, i);
+					for (int i = 0; i < app->clocks_length;
+					     ++i)
+						flipclock_render_texture(app,
+									 i);
 				}
 				last_touch = event.tfinger.timestamp;
 				break;
@@ -780,19 +868,34 @@ void flipclock_run_mainloop(struct flipclock *app)
 					case SDLK_t:
 						app->properties.ampm =
 							!app->properties.ampm;
-						for (int i = 0; i < app->clocks_length; ++i)
-							flipclock_render_texture(app, i);
+						for (int i = 0;
+						     i < app->clocks_length;
+						     ++i)
+							flipclock_render_texture(
+								app, i);
 						break;
 					case SDLK_f:
-						app->properties.full = !app->properties.full;
-						for (int i = 0; i < app->clocks_length; ++i) {
-							flipclock_destroy_textures(app, i);
-							flipclock_close_fonts(app, i);
-							flipclock_set_fullscreen(app, !app->properties.full);
-							flipclock_refresh(app, i);
-							flipclock_open_fonts(app, i);
-							flipclock_create_textures(app, i);
-							flipclock_render_texture(app, i);
+						app->properties.full =
+							!app->properties.full;
+						for (int i = 0;
+						     i < app->clocks_length;
+						     ++i) {
+							flipclock_destroy_textures(
+								app, i);
+							flipclock_close_fonts(
+								app, i);
+							flipclock_set_fullscreen(
+								app,
+								!app->properties
+									 .full);
+							flipclock_refresh(app,
+									  i);
+							flipclock_open_fonts(
+								app, i);
+							flipclock_create_textures(
+								app, i);
+							flipclock_render_texture(
+								app, i);
 						}
 						break;
 					default:
@@ -810,19 +913,28 @@ void flipclock_run_mainloop(struct flipclock *app)
 				case SDLK_t:
 					app->properties.ampm =
 						!app->properties.ampm;
-					for (int i = 0; i < app->clocks_length; ++i)
-						flipclock_render_texture(app, i);
+					for (int i = 0; i < app->clocks_length;
+					     ++i)
+						flipclock_render_texture(app,
+									 i);
 					break;
 				case SDLK_f:
-					app->properties.full = !app->properties.full;
-					for (int i = 0; i < app->clocks_length; ++i) {
-						flipclock_destroy_textures(app, i);
+					app->properties.full =
+						!app->properties.full;
+					for (int i = 0; i < app->clocks_length;
+					     ++i) {
+						flipclock_destroy_textures(app,
+									   i);
 						flipclock_close_fonts(app, i);
-						flipclock_set_fullscreen(app, i, app->properties.full);
+						flipclock_set_fullscreen(
+							app, i,
+							app->properties.full);
 						flipclock_refresh(app, i);
 						flipclock_open_fonts(app, i);
-						flipclock_create_textures(app, i);
-						flipclock_render_texture(app, i);
+						flipclock_create_textures(app,
+									  i);
+						flipclock_render_texture(app,
+									 i);
 					}
 					break;
 				default:
