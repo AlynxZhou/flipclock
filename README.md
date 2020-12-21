@@ -4,7 +4,7 @@ FlipClock
 A flip clock screensaver supported by SDL2.
 -------------------------------------------
 
-![flipclock.png](flipclock.png)
+![Screenshot](screenshot.png)
 
 # Usage
 
@@ -37,6 +37,10 @@ Just download file with `win` in its name from [lastest release page](https://gi
 6. Select `Release`, and right click `INSTALL` in the right panel, and build it.
 8. Go to `flipclock` dir under your `CMAKE_INSTALL_PREFIX` and right click `flipclock.ttf` to "install it for all users", or just copy it into `C:\Windows\Fonts`.
 9. You can now rename `flipclock.exe` to `flipclock.scr` and right click it to install it as a screensaver.
+
+## Android
+
+See [flipclock-android](https://github.com/AlynxZhou/flipclock-android/).
 
 # License
 

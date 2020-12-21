@@ -1,5 +1,5 @@
-/*
- * Author: Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
+/**
+ * Author: Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
 #ifndef __FLIPCLOCK_H__
 #define __FLIPCLOCK_H__

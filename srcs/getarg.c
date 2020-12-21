@@ -1,5 +1,5 @@
-/*
- * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)
+/**
+ * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
 #include <string.h>
 
@@ -19,7 +19,7 @@ int getarg(int argc, char *argv[], const char opt_string[])
 	while (i < argc) {
 		argopt = NULL;
 		if (argv[i][0] != OPT_START) {
-			/*
+			/**
 			 * If there is a single value not leading by
 			 * an option, then argopt will be pointed to
 			 * it and return 0.
@@ -27,7 +27,7 @@ int getarg(int argc, char *argv[], const char opt_string[])
 			argopt = argv[i++];
 			return 0;
 		} else if (argv[i][j] == '\0') {
-			/*
+			/**
 			 * All options must begin with OPT_START
 			 * and end with '\0'.
 			 */
@@ -43,7 +43,7 @@ int getarg(int argc, char *argv[], const char opt_string[])
 		} else if (*(strchr(opt_string, argv[i][j]) + 1) == ':') {
 			/* An option followed by a value. */
 			if (i + 1 < argc && argv[i][j + 1] == '\0') {
-				/*
+				/**
 				 * The option must be followed
 				 * by a value, or it will be skipped.
 				 */
@@ -55,7 +55,7 @@ int getarg(int argc, char *argv[], const char opt_string[])
 				j = 1;
 				return argv[temp_i][temp_j];
 			} else {
-				/*
+				/**
 				 * Just skip an option with
 				 * ':' but no value.
 				 */
