@@ -40,6 +40,8 @@ struct flipclock *flipclock_create(void)
 	app->clocks = NULL;
 	/* Should create 1 clock in windowed mode. */
 	app->clocks_length = 1;
+	app->last_touch = 0;
+	app->running = true;
 	app->colors.font.r = 0xd0;
 	app->colors.font.g = 0xd0;
 	app->colors.font.b = 0xd0;
@@ -709,13 +711,191 @@ void flipclock_animate(struct flipclock *app, int clock_index, int progress)
 	SDL_RenderPresent(app->clocks[clock_index].renderer);
 }
 
+void flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
+{
+	for (int i = 0; i < app->clocks_length; ++i) {
+		if (event.window.windowID ==
+		    SDL_GetWindowID(app->clocks[i].window)) {
+			switch (event.window.event) {
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+				/*
+				 * Only re-render when size changed.
+				 * Windows may send event when size
+				 * not changed, and cause strange bugs.
+				 */
+				if (event.window.data1 !=
+					    app->clocks[i].width ||
+				    event.window.data2 !=
+					    app->clocks[i].height) {
+					app->clocks[i].width =
+						event.window.data1;
+					app->clocks[i].height =
+						event.window.data2;
+					flipclock_destroy_textures(app, i);
+					flipclock_close_fonts(app, i);
+					flipclock_refresh(app, i);
+					flipclock_open_fonts(app, i);
+					flipclock_create_textures(app, i);
+					flipclock_render_texture(app, i);
+				}
+				break;
+			case SDL_WINDOWEVENT_MINIMIZED:
+				app->clocks[i].wait = true;
+				break;
+			/* `RESTORED` is emitted after `MINIMIZED`. */
+			case SDL_WINDOWEVENT_RESTORED:
+				app->clocks[i].wait = false;
+				break;
+			case SDL_WINDOWEVENT_CLOSE:
+				app->running = false;
+				break;
+			default:
+				break;
+			}
+			break;
+		}
+	}
+}
+
+void flipclock_handle_event(struct flipclock *app, SDL_Event event)
+{
+	switch (event.type) {
+#ifdef _WIN32
+	/**
+	 * There is a silly design in Windows' screensaver
+	 * chooser. When you choose one screensaver, it will
+	 * run the program with `/p HWND`, but if you changed
+	 * to another, the former will not receive close
+	 * event (yes, any kind of close event is not sent),
+	 * and if you choose the former again, it will run
+	 * the program with the same HWND again! To prevent
+	 * this as a workaround, SDL sends
+	 * SDL_RENDER_TARGETS_RESET when preview changes to
+	 * another. I don't know why, but it works, and I
+	 * don't know why no close event is sent.
+	 */
+	case SDL_RENDER_TARGETS_RESET:
+		if (app->properties.preview)
+			app->running = false;
+		break;
+#endif
+	case SDL_WINDOWEVENT:
+		flipclock_handle_window_event(app, event);
+		break;
+#ifdef _WIN32
+	/**
+	 * If under Windows, and not in preview window,
+	 * and it was called as a screensaver,
+	 * just exit when user press mouse button or move it,
+	 * or interactive with touch screen.
+	 */
+	case SDL_MOUSEBUTTONDOWN:
+	case SDL_MOUSEMOTION:
+	case SDL_MOUSEWHEEL:
+	case SDL_FINGERDOWN:
+		if (!app->properties.preview && app->properties.screensaver)
+			app->running = false;
+		break;
+#endif
+	/**
+	 * For touch devices, the most used function is
+	 * changing type, so we use double tap for it,
+	 * instead of toggling fullscreen.
+	 * Double tap (less then 300ms) changes type.
+	 */
+	case SDL_FINGERUP:
+		if (event.tfinger.timestamp <
+		    app->last_touch + DOUBLE_TAP_INTERVAL_MS) {
+			app->properties.ampm = !app->properties.ampm;
+			for (int i = 0; i < app->clocks_length; ++i)
+				flipclock_render_texture(app, i);
+		}
+		app->last_touch = event.tfinger.timestamp;
+		break;
+	case SDL_KEYDOWN:
+#ifdef _WIN32
+		/**
+		 * If under Windows, and not in preview window,
+		 * and it was called as a screensaver.
+		 * just exit when user press any key.
+		 * But if it was not called as a screensaver,
+		 * it only handles some special keys.
+		 * Also, we do nothing when in preview.
+		 */
+		if (!app->properties.preview && app->properties.screensaver) {
+			app->running = false;
+		} else if (!app->properties.preview) {
+			switch (event.key.keysym.sym) {
+			case SDLK_ESCAPE:
+			case SDLK_q:
+				app->running = false;
+				break;
+			case SDLK_t:
+				app->properties.ampm = !app->properties.ampm;
+				for (int i = 0; i < app->clocks_length; ++i)
+					flipclock_render_texture(app, i);
+				break;
+			case SDLK_f:
+				app->properties.full = !app->properties.full;
+				for (int i = 0; i < app->clocks_length; ++i) {
+					flipclock_destroy_textures(app, i);
+					flipclock_close_fonts(app, i);
+					flipclock_set_fullscreen(
+						app, !app->properties.full);
+					flipclock_refresh(app, i);
+					flipclock_open_fonts(app, i);
+					flipclock_create_textures(app, i);
+					flipclock_render_texture(app, i);
+				}
+				break;
+			default:
+				break;
+			}
+		}
+#else
+		/* It's simple under Linux and Android. */
+		switch (event.key.keysym.sym) {
+		case SDLK_ESCAPE:
+		case SDLK_q:
+		case SDLK_AC_BACK:
+			app->running = false;
+			break;
+		case SDLK_t:
+			app->properties.ampm = !app->properties.ampm;
+			for (int i = 0; i < app->clocks_length; ++i)
+				flipclock_render_texture(app, i);
+			break;
+		case SDLK_f:
+			app->properties.full = !app->properties.full;
+			for (int i = 0; i < app->clocks_length; ++i) {
+				flipclock_destroy_textures(app, i);
+				flipclock_close_fonts(app, i);
+				flipclock_set_fullscreen(app, i,
+							 app->properties.full);
+				flipclock_refresh(app, i);
+				flipclock_open_fonts(app, i);
+				flipclock_create_textures(app, i);
+				flipclock_render_texture(app, i);
+			}
+			break;
+		default:
+			break;
+		}
+#endif
+		break;
+	case SDL_QUIT:
+		app->running = false;
+		break;
+	default:
+		break;
+	}
+}
+
 void flipclock_run_mainloop(struct flipclock *app)
 {
-	bool exit = false;
 	bool animating = false;
 	int progress = MAX_PROGRESS;
 	unsigned int start_tick = SDL_GetTicks();
-	unsigned int last_touch = 0;
 	SDL_Event event;
 	/* Clear event queue before running. */
 	while (SDL_PollEvent(&event))
@@ -725,229 +905,15 @@ void flipclock_run_mainloop(struct flipclock *app)
 		flipclock_render_texture(app, i);
 		flipclock_animate(app, i, MAX_PROGRESS);
 	}
-	while (!exit) {
+	while (app->running) {
 #ifdef _WIN32
 		/* Exit when preview window closed. */
 		if (app->properties.preview &&
 		    !IsWindow(app->properties.preview_window))
-			exit = true;
+			app->running = false;
 #endif
 		if (SDL_WaitEventTimeout(&event, 1000 / FPS)) {
-			switch (event.type) {
-#ifdef _WIN32
-			/**
-			 * There are a silly design in Windows' screensaver
-			 * chooser. When you choose one screensaver, it will
-			 * run the program with `/p HWND`, but if you changed
-			 * to another, the former will not receive close
-			 * event (yes, any kind of close event is not sent),
-			 * and if you choose the former again, it will run
-			 * the program with the same HWND again! To prevent
-			 * this as a workaround, SDL sends
-			 * SDL_RENDER_TARGETS_RESET when preview changes to
-			 * another. I don't know why, but it works, and I
-			 * don't know why no close event is sent.
-			 */
-			case SDL_RENDER_TARGETS_RESET:
-				if (app->properties.preview)
-					exit = true;
-				break;
-#endif
-			case SDL_WINDOWEVENT:
-				for (int i = 0; i < app->clocks_length; ++i) {
-					if (event.window.windowID ==
-					    SDL_GetWindowID(
-						    app->clocks[i].window)) {
-						switch (event.window.event) {
-						case SDL_WINDOWEVENT_SIZE_CHANGED:
-							/*
-							 * Only re-render when size changed.
-							 * Windows may send event when size
-							 * not changed, and cause strange bugs.
-							 */
-							if (event.window.data1 !=
-								    app->clocks[i]
-									    .width ||
-							    event.window.data2 !=
-								    app->clocks[i]
-									    .height) {
-								app->clocks[i]
-									.width =
-									event.window
-										.data1;
-								app->clocks[i]
-									.height =
-									event.window
-										.data2;
-								flipclock_destroy_textures(
-									app, i);
-								flipclock_close_fonts(
-									app, i);
-								flipclock_refresh(
-									app, i);
-								flipclock_open_fonts(
-									app, i);
-								flipclock_create_textures(
-									app, i);
-								flipclock_render_texture(
-									app, i);
-							}
-							break;
-						case SDL_WINDOWEVENT_MINIMIZED:
-							app->clocks[i].wait =
-								true;
-							break;
-						/* `RESTORED` is emitted after `MINIMIZED`. */
-						case SDL_WINDOWEVENT_RESTORED:
-							app->clocks[i].wait =
-								false;
-							break;
-						case SDL_WINDOWEVENT_CLOSE:
-							exit = true;
-							break;
-						default:
-							break;
-						}
-						break;
-					}
-				}
-				break;
-#ifdef _WIN32
-			/**
-			 * If under Windows, and not in preview window,
-			 * and it was called as a screensaver,
-			 * just exit when user press mouse button or move it,
-			 * or interactive with touch screen.
-			 */
-			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEMOTION:
-			case SDL_MOUSEWHEEL:
-			case SDL_FINGERDOWN:
-				if (!app->properties.preview &&
-				    app->properties.screensaver)
-					exit = true;
-				break;
-#endif
-			/**
-			 * For touch devices, the most used function is
-			 * changing type, so we use double tap for it,
-			 * instead of toggling fullscreen.
-			 * Double tap (less then 300ms) changes type.
-			 */
-			case SDL_FINGERUP:
-				if (event.tfinger.timestamp <
-				    last_touch + DOUBLE_TAP_INTERVAL_MS) {
-					app->properties.ampm =
-						!app->properties.ampm;
-					for (int i = 0; i < app->clocks_length;
-					     ++i)
-						flipclock_render_texture(app,
-									 i);
-				}
-				last_touch = event.tfinger.timestamp;
-				break;
-			case SDL_KEYDOWN:
-#ifdef _WIN32
-				/**
-				 * If under Windows, and not in preview window,
-				 * and it was called as a screensaver.
-				 * just exit when user press any key.
-				 * But if it was not called as a screensaver,
-				 * it only handles some special keys.
-				 * Also, we do nothing when in preview.
-				 */
-				if (!app->properties.preview &&
-				    app->properties.screensaver) {
-					exit = true;
-				} else if (!app->properties.preview) {
-					switch (event.key.keysym.sym) {
-					case SDLK_ESCAPE:
-					case SDLK_q:
-						exit = true;
-						break;
-					case SDLK_t:
-						app->properties.ampm =
-							!app->properties.ampm;
-						for (int i = 0;
-						     i < app->clocks_length;
-						     ++i)
-							flipclock_render_texture(
-								app, i);
-						break;
-					case SDLK_f:
-						app->properties.full =
-							!app->properties.full;
-						for (int i = 0;
-						     i < app->clocks_length;
-						     ++i) {
-							flipclock_destroy_textures(
-								app, i);
-							flipclock_close_fonts(
-								app, i);
-							flipclock_set_fullscreen(
-								app,
-								!app->properties
-									 .full);
-							flipclock_refresh(app,
-									  i);
-							flipclock_open_fonts(
-								app, i);
-							flipclock_create_textures(
-								app, i);
-							flipclock_render_texture(
-								app, i);
-						}
-						break;
-					default:
-						break;
-					}
-				}
-#else
-				/* It's simple under Linux and Android. */
-				switch (event.key.keysym.sym) {
-				case SDLK_ESCAPE:
-				case SDLK_q:
-				case SDLK_AC_BACK:
-					exit = true;
-					break;
-				case SDLK_t:
-					app->properties.ampm =
-						!app->properties.ampm;
-					for (int i = 0; i < app->clocks_length;
-					     ++i)
-						flipclock_render_texture(app,
-									 i);
-					break;
-				case SDLK_f:
-					app->properties.full =
-						!app->properties.full;
-					for (int i = 0; i < app->clocks_length;
-					     ++i) {
-						flipclock_destroy_textures(app,
-									   i);
-						flipclock_close_fonts(app, i);
-						flipclock_set_fullscreen(
-							app, i,
-							app->properties.full);
-						flipclock_refresh(app, i);
-						flipclock_open_fonts(app, i);
-						flipclock_create_textures(app,
-									  i);
-						flipclock_render_texture(app,
-									 i);
-					}
-					break;
-				default:
-					break;
-				}
-#endif
-				break;
-			case SDL_QUIT:
-				exit = true;
-				break;
-			default:
-				break;
-			}
+			flipclock_handle_event(app, event);
 		}
 		time_t raw_time = time(NULL);
 		app->times.now = *localtime(&raw_time);

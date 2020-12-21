@@ -16,6 +16,7 @@
 
 #define PROGRAM_TITLE "FlipClock"
 
+/* Those are from arguments. */
 struct properties {
 	const char *title;
 	const char *font_path;
@@ -72,6 +73,8 @@ struct flipclock {
 	struct times times;
 	struct colors colors;
 	struct properties properties;
+	unsigned int last_touch;
+	bool running;
 };
 
 struct flipclock *flipclock_create(void);
@@ -99,6 +102,8 @@ void flipclock_render_texture(struct flipclock *app, int clock_index);
 void flipclock_copy_rect(struct flipclock *app, int clock_index,
 			 SDL_Rect target_rect, int progress);
 void flipclock_animate(struct flipclock *app, int clock_index, int progress);
+void flipclock_handle_window_event(struct flipclock *app, SDL_Event event);
+void flipclock_handle_event(struct flipclock *app, SDL_Event event);
 void flipclock_run_mainloop(struct flipclock *app);
 void flipclock_destroy_clocks(struct flipclock *app);
 void flipclock_destroy(struct flipclock *app);
