@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "SDL Error: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	struct flipclock *app = flipclock_create();
 	/* Dealing with arguments. */
 	while ((opt = getarg(argc, argv, OPT_STRING)) != -1) {
