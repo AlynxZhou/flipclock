@@ -81,14 +81,34 @@ void flipclock_create_clocks(struct flipclock *app)
 		/* Create window from native window when in preview. */
 		app->clocks[0].window =
 			SDL_CreateWindowFrom(app->properties.preview_window);
+		/* Init window size after create it. */
+		SDL_GetWindowSize(app->clocks[0].window, &app->clocks[0].width,
+				  &app->clocks[0].height);
+	  	if (app->clocks[0].window == NULL) {
+			LOG_ERROR("%s\n", SDL_GetError());
+			exit(EXIT_FAILURE);
+		}
+		app->clocks[i].renderer = SDL_CreateRenderer(app->clocks[0].window, -1,
+							   SDL_RENDERER_ACCELERATED |
+								   SDL_RENDERER_TARGETTEXTURE |
+								   SDL_RENDERER_PRESENTVSYNC);
+		if (app->clocks[0].renderer == NULL) {
+			LOG_ERROR("%s\n", SDL_GetError());
+			exit(EXIT_FAILURE);
+		}
+		SDL_SetRenderDrawBlendMode(app->clocks[0].renderer, SDL_BLENDMODE_BLEND);
 	} else {
 		unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
 				     SDL_WINDOW_ALLOW_HIGHDPI;
+		/* Create window for each display if fullscreen. */
 		if (app->properties.full) {
+			/*
+			 * Instead of handling display number changing,
+			 * let user restart program is easier.
+			 */
 			app->clocks_length = SDL_GetNumVideoDisplays();
-			flags = SDL_WINDOW_SHOWN |
-				SDL_WINDOW_FULLSCREEN_DESKTOP |
-				SDL_WINDOW_ALLOW_HIGHDPI;
+			flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+				SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_FULLSCREEN_DESKTOP;
 			SDL_ShowCursor(SDL_DISABLE);
 		}
 		app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
@@ -123,23 +143,24 @@ void flipclock_create_clocks(struct flipclock *app)
 			SDL_SetRenderDrawBlendMode(app->clocks[i].renderer, SDL_BLENDMODE_BLEND);
 		}
 	}
-#elif defined(__ANDROID__)
-	/* We need `SDL_WINDOW_RESIZABLE` for auto-rotate while fullscreen. */
-	unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-			     SDL_WINDOW_FULLSCREEN_DESKTOP |
-			     SDL_WINDOW_ALLOW_HIGHDPI;
-	app->window = SDL_CreateWindow(PROGRAM_TITLE, SDL_WINDOWPOS_UNDEFINED,
-				       SDL_WINDOWPOS_UNDEFINED,
-				       app->properties.width,
-				       app->properties.height, flags);
 #else
+	/* Android and Linux should share the same code here. */
 	SDL_DisableScreenSaver();
+	/*
+	 * We need `SDL_WINDOW_RESIZABLE` for auto-rotate
+	 * while fullscreen on Android.
+	 */
 	unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
 			     SDL_WINDOW_ALLOW_HIGHDPI;
+	/* Create window for each display if fullscreen. */
 	if (app->properties.full) {
+		/*
+		 * Instead of handling display number changing,
+		 * let user restart program is easier.
+		 */
 		app->clocks_length = SDL_GetNumVideoDisplays();
-		flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP |
-			SDL_WINDOW_ALLOW_HIGHDPI;
+		flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+			SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_FULLSCREEN_DESKTOP;
 		SDL_ShowCursor(SDL_DISABLE);
 	}
 	app->clocks = malloc(sizeof(*(app->clocks)) * app->clocks_length);
@@ -180,6 +201,10 @@ void flipclock_set_fullscreen(struct flipclock *app, int clock_index, bool full)
 {
 	app->properties.full = full;
 	if (full) {
+		/* Move clock to their attached display. */
+		SDL_Rect display_bounds;
+		SDL_GetDisplayBounds(clock_index, &display_bounds);
+		SDL_SetWindowPosition(app->clocks[clock_index].window, display_bounds.x, display_bounds.y);
 		SDL_SetWindowFullscreen(app->clocks[clock_index].window,
 			SDL_WINDOW_FULLSCREEN_DESKTOP);
 		SDL_GetWindowSize(app->clocks[clock_index].window, &app->clocks[clock_index].width,

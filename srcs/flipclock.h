@@ -56,7 +56,6 @@ struct clock {
 	struct textures textures;
 	struct rects rects;
 	struct fonts fonts;
-	int display;
 	int width;
 	int height;
 	int rect_size;
