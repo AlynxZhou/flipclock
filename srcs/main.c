@@ -82,16 +82,21 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	flipclock_create_window(app);
-	flipclock_refresh(app);
-	flipclock_open_fonts(app);
-	flipclock_create_textures(app);
+	flipclock_create_clocks(app);
+	for (int i = 0; i < app->clocks_length; ++i) {
+		flipclock_refresh(app, i);
+		flipclock_open_fonts(app, i);
+		flipclock_create_textures(app, i);
+	}
 
 	flipclock_run_mainloop(app);
 
-	flipclock_destroy_textures(app);
-	flipclock_close_fonts(app);
-	flipclock_destroy_window(app);
+	for (int i = 0; i < app->clocks_length; ++i) {
+		flipclock_destroy_textures(app, i);
+		flipclock_close_fonts(app, i);
+	}
+
+	flipclock_destroy_clocks(app);
 
 	flipclock_destroy(app);
 	TTF_Quit();
