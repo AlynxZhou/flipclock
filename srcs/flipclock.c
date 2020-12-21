@@ -105,7 +105,7 @@ void flipclock_create_clocks(struct flipclock *app)
 				     SDL_WINDOW_ALLOW_HIGHDPI;
 		/* Create window for each display if fullscreen. */
 		if (app->properties.full) {
-			/*
+			/**
 			 * Instead of handling display number changing,
 			 * let user restart program is easier.
 			 */
@@ -152,7 +152,7 @@ void flipclock_create_clocks(struct flipclock *app)
 #else
 	/* Android and Linux should share the same code here. */
 	SDL_DisableScreenSaver();
-	/*
+	/**
 	 * We need `SDL_WINDOW_RESIZABLE` for auto-rotate
 	 * while fullscreen on Android.
 	 */
@@ -160,8 +160,7 @@ void flipclock_create_clocks(struct flipclock *app)
 			     SDL_WINDOW_ALLOW_HIGHDPI;
 	/* Create window for each display if fullscreen. */
 	if (app->properties.full) {
-		/*
-		 * Instead of handling display number changing,
+		/**		 * Instead of handling display number changing,
 		 * let user restart program is easier.
 		 */
 		app->clocks_length = SDL_GetNumVideoDisplays();
@@ -718,7 +717,7 @@ void flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 		    SDL_GetWindowID(app->clocks[i].window)) {
 			switch (event.window.event) {
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
-				/*
+				/**
 				 * Only re-render when size changed.
 				 * Windows may send event when size
 				 * not changed, and cause strange bugs.

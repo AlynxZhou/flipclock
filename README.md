@@ -6,6 +6,12 @@ A flip clock screensaver supported by SDL2.
 
 ![Screenshot](screenshot.png)
 
+# Notice
+
+I added multi-display support to this program, but adding/removing monitors while program is running is not supported, and you should not do this.
+
+If you run this program in windowed mode (`-w`), only one display is supported. Multi-display is only supported in fullscreen mode.
+
 # Usage
 
 ## Linux/macOS
@@ -18,7 +24,7 @@ A flip clock screensaver supported by SDL2.
 
 1. Install sdl2, sdl2_ttf.
 2. `mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make`
-3. `./bin/flipclock -f ./flipclock.ttf`
+3. `./bin/flipclock -f ../flipclock.ttf`
 4. If you want to install this to your system, it is suggested to build with `mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr .. && make && sudo make install`.
 
 ## Windows
