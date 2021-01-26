@@ -22,6 +22,15 @@ If you run this program in windowed mode (`-w`), only one display is supported. 
 
 ### From Source
 
+#### With Meson (Recommended)
+
+1. Install sdl2, sdl2_ttf.
+2. `mkdir build && cd build && meson setup . .. && meson compile`
+3. `./flipclock -f ../flipclock.ttf`
+4. If you want to install this to your system, it is suggested to build with `mkdir build && cd build && meson setup --prefix=/usr . .. && meson compile && sudo meson install`.
+
+#### With CMake
+
 1. Install sdl2, sdl2_ttf.
 2. `mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make`
 3. `./bin/flipclock -f ../flipclock.ttf`

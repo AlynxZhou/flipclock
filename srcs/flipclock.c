@@ -374,8 +374,7 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 		/* Directly under `app/src/main/assets` for Android APP. */
 		char font_path[] = "flipclock.ttf";
 #else
-		char font_path[] = CMAKE_INSTALL_PREFIX
-			"/share/fonts/flipclock.ttf";
+		char font_path[] = INSTALL_PREFIX "/share/fonts/flipclock.ttf";
 #endif
 		app->clocks[clock_index].fonts.time = TTF_OpenFont(
 			font_path, app->clocks[clock_index].rect_size);
@@ -975,6 +974,7 @@ void flipclock_destroy(struct flipclock *app)
 void flipclock_print_help(char program_name[])
 {
 	printf("A simple flip clock screensaver using SDL2.\n");
+	printf("Version " PROJECT_VERSION ".\n");
 	printf("Usage: %s [OPTION...] <value>\n", program_name);
 	printf("Options:\n");
 	printf("\t%ch\t\tDisplay this help.\n", OPT_START);

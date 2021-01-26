@@ -1,7 +1,7 @@
 find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
-configure_file("config.h.in" "config.h" @ONLY)
+configure_file("config-cmake.h.in" "config.h" @ONLY)
 
 include_directories(
 	${SDL2_INCLUDE_DIRS}
