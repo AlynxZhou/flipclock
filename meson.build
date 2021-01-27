@@ -8,9 +8,10 @@ project(
 
 cc = meson.get_compiler('c')
 
+c_args = []
 if get_option('debug') == true
   warning_level = 3
-  add_project_arguments('-D__DEBUG__', language: 'c')
+  c_args += ['-D__DEBUG__']
 endif
 
 conf_data = configuration_data()
@@ -23,23 +24,27 @@ configure_file(
   configuration: conf_data
 )
 
-sources = files([
+sources = files(
   'srcs/main.c',
   'srcs/getarg.c',
   'srcs/flipclock.c'
-])
+)
 
+dependencies = []
+include_directories = []
 if host_machine.system() == 'linux'
-  # dep = dependency('foo', fallback : [subproject_name, variable_name])
+  # Just simply use pkg-config.
   sdl2 = dependency('sdl2', required: true)
   sdl2_ttf = dependency('SDL2_ttf', required: true)
-
-  dependencies = [sdl2, sdl2_ttf]
-  include_directories = []
-else
+  dependencies += [sdl2, sdl2_ttf]
+  # Deps from pkg-config don't need to set include_directories explicitly.
+elif host_machine.system() == 'windows'
+  # I failed to build static SDL2 on Windows,
+  # so I just find downloaded prebuild libraries.
   vc_path = 'x86'
   if host_machine.cpu_family() == 'x86_64'
     vc_path = 'x64'
+  endif
   sdl2 = cc.find_library(
     'SDL2',
     dirs: [meson.project_source_root() / 'deps' / 'SDL2' / 'lib' / vc_path],
@@ -61,16 +66,15 @@ else
   sdl2_ttf_inc = include_directories(
     meson.project_source_root() / 'deps' / 'SDL2_ttf' / 'include'
   )
-  dependencies = [sdl2, sdl2_main, sdl2_ttf]
-  include_directories = [sdl2_inc, sdl2_ttf_inc]
+  dependencies += [sdl2, sdl2main, sdl2_ttf]
+  include_directories += [sdl2_inc, sdl2_ttf_inc]
 endif
-
-dependencies = [sdl2, sdl2_ttf]
 
 if host_machine.system() == 'linux'
   executable(
     'flipclock',
     sources: sources,
+    c_args: c_args,
     dependencies: dependencies,
     include_directories: include_directories,
     install: true,
@@ -93,10 +97,11 @@ if host_machine.system() == 'linux'
     'LICENSE',
     install_dir: get_option('datadir') / 'license' / meson.project_name()
   )
-else
+elif host_machine.system() == 'windows'
   executable(
     'flipclock',
     sources: sources,
+    c_args: c_args,
     dependencies: dependencies,
     include_directories: include_directories,
     install: true,
@@ -109,19 +114,31 @@ else
     install_dir: get_option('prefix') / meson.project_name()
   )
   install_data(
-    'flipclock.png',
-    install_dir: get_option('prefix') / meson.project_name()
-  )
-  install_data(
-    'flipclock.desktop',
-    install_dir: get_option('prefix') / meson.project_name()
-  )
-  install_data(
     'LICENSE',
     install_dir: get_option('prefix') / meson.project_name()
   )
   install_data(
     'COPYING',
+    install_dir: get_option('prefix') / meson.project_name()
+  )
+  install_data(
+    '读我.txt',
+    install_dir: get_option('prefix') / meson.project_name()
+  )
+  install_data(
+    'deps' / 'SDL2' / 'lib' / vc_path / 'SDL2.dll',
+    install_dir: get_option('prefix') / meson.project_name()
+  )
+  install_data(
+    'deps' / 'SDL2_ttf' / 'lib' / vc_path / 'SDL2_ttf.dll',
+    install_dir: get_option('prefix') / meson.project_name()
+  )
+  install_data(
+    'deps' / 'SDL2_ttf' / 'lib' / vc_path / 'libfreetype-6.dll',
+    install_dir: get_option('prefix') / meson.project_name()
+  )
+  install_data(
+    'deps' / 'SDL2_ttf' / 'lib' / vc_path / 'zlib1.dll',
     install_dir: get_option('prefix') / meson.project_name()
   )
 endif
