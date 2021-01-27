@@ -28,12 +28,21 @@ sources = files([
 ])
 
 # dep = dependency('foo', fallback : [subproject_name, variable_name])
-sdl2 = dependency('sdl2', fallback: ['sdl2', 'sdl2_dep'])
-sdl2_ttf = dependency('SDL2_ttf', fallback: ['sdl2_ttf', 'sdl2_ttf_dep'])
+if host.system() == 'linux'
+  sdl2 = dependency('sdl2', fallback: ['sdl2', 'sdl2_dep'])
+  sdl2_ttf = dependency('SDL2_ttf', fallback: ['sdl2_ttf', 'sdl2_ttf_dep'])
+else
+  sdl2 = dependency('sdl2', fallback: ['sdl2', 'sdl2_dep'], static: true)
+  sdl2_ttf = dependency(
+    'SDL2_ttf',
+    fallback: ['sdl2_ttf', 'sdl2_ttf_dep'],
+    static: true
+  )
+endif
 
 dependencies = [sdl2, sdl2_ttf]
 
-if host_machine.system() != 'windows'
+if host_machine.system() == 'linux'
   executable(
     'flipclock',
     sources: sources,
