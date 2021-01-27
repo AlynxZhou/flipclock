@@ -33,6 +33,7 @@ sdl2_ttf = dependency('SDL2_ttf')
 dependencies = [sdl2, sdl2_ttf]
 
 if host_machine.system() == 'windows'
+  add_global_arguments('-Ddefault_library=static', language: 'c')
   executable(
     'flipclock',
     sources: sources,
