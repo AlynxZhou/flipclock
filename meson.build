@@ -6,10 +6,6 @@ project(
   default_options: ['c_std=c11']
 )
 
-if host_machine.system() == 'windows'
-  add_global_arguments('-Ddefault_library=static', language: 'c')
-endif
-
 if get_option('debug') == true
   warning_level = 3
   add_project_arguments('-D__DEBUG__', language: 'c')
