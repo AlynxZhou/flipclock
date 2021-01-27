@@ -6,6 +6,8 @@ project(
   default_options: ['c_std=c11']
 )
 
+cc = meson.get_compiler('c')
+
 if get_option('debug') == true
   warning_level = 3
   add_project_arguments('-D__DEBUG__', language: 'c')
@@ -27,9 +29,41 @@ sources = files([
   'srcs/flipclock.c'
 ])
 
-# dep = dependency('foo', fallback : [subproject_name, variable_name])
-sdl2 = dependency('sdl2', fallback: ['sdl2', 'sdl2_dep'])
-sdl2_ttf = dependency('SDL2_ttf', fallback: ['sdl2_ttf', 'sdl2_ttf_dep'])
+if host_machine.system() == 'linux'
+  # dep = dependency('foo', fallback : [subproject_name, variable_name])
+  sdl2 = dependency('sdl2', required: true)
+  sdl2_ttf = dependency('SDL2_ttf', required: true)
+
+  dependencies = [sdl2, sdl2_ttf]
+  include_directories = []
+else
+  vc_path = 'x86'
+  if host_machine.cpu_family() == 'x86_64'
+    vc_path = 'x64'
+  sdl2 = cc.find_library(
+    'SDL2',
+    dirs: [meson.project_source_root() / 'deps' / 'SDL2' / 'lib' / vc_path],
+    required: true
+  )
+  sdl2main = cc.find_library(
+    'SDL2main',
+    dirs: [meson.project_source_root() / 'deps' / 'SDL2' / 'lib' / vc_path],
+    required: true
+  )
+  sdl2_ttf = cc.find_library(
+    'SDL2_ttf',
+    dirs: [meson.project_source_root() / 'deps' / 'SDL2_ttf' / 'lib' / vc_path],
+    required: true
+  )
+  sdl2_inc = include_directories(
+    meson.project_source_root() / 'deps' / 'SDL2' / 'include'
+  )
+  sdl2_ttf_inc = include_directories(
+    meson.project_source_root() / 'deps' / 'SDL2_ttf' / 'include'
+  )
+  dependencies = [sdl2, sdl2_main, sdl2_ttf]
+  include_directories = [sdl2_inc, sdl2_ttf_inc]
+endif
 
 dependencies = [sdl2, sdl2_ttf]
 
@@ -38,6 +72,7 @@ if host_machine.system() == 'linux'
     'flipclock',
     sources: sources,
     dependencies: dependencies,
+    include_directories: include_directories,
     install: true,
     install_dir: get_option('prefix') / 'bin'
   )
@@ -63,6 +98,7 @@ else
     'flipclock',
     sources: sources,
     dependencies: dependencies,
+    include_directories: include_directories,
     install: true,
     install_dir: get_option('prefix') / meson.project_name(),
     win_subsystem: 'windows'
