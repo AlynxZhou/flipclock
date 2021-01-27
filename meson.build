@@ -33,7 +33,7 @@ sdl2_ttf = dependency('SDL2_ttf', fallback: ['sdl2_ttf', 'sdl2_ttf_dep'])
 
 dependencies = [sdl2, sdl2_ttf]
 
-if host_machine.system() == 'windows'
+if host_machine.system() != 'windows'
   executable(
     'flipclock',
     sources: sources,
