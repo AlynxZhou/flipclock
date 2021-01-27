@@ -31,7 +31,8 @@ sources = files([
   'srcs/flipclock.c'
 ])
 
-sdl2 = dependency('sdl2', fallback: ['SDL2', 'sdl2_dep'])
+# dep = dependency('foo', fallback : [subproject_name, variable_name])
+sdl2 = dependency('sdl2', fallback: ['sdl2', 'sdl2_dep'])
 sdl2_ttf = dependency('SDL2_ttf', fallback: ['sdl2_ttf', 'sdl2_ttf_dep'])
 
 dependencies = [sdl2, sdl2_ttf]
