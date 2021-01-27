@@ -1,9 +1,15 @@
+if host_machine.system() == 'windows'
+  default_options = ['c_std=c11', 'default_library=static']
+else
+  default_options = ['c_std=c11']
+endif
+
 project(
   'flipclock',
   'c',
   version: '2.4.0',
   license: 'Apache-2.0',
-  default_options: ['c_std=c11']
+  default_options: default_options
 )
 
 if get_option('debug') == true
@@ -28,12 +34,11 @@ sources = files([
 ])
 
 sdl2 = dependency('sdl2')
-sdl2_ttf = dependency('SDL2_ttf')
+sdl2_ttf = dependency('SDL2_ttf', fallback: ['sdl2_ttf', 'sdl2_ttf_dep'])
 
 dependencies = [sdl2, sdl2_ttf]
 
 if host_machine.system() == 'windows'
-  add_global_arguments('-Ddefault_library=static', language: 'c')
   executable(
     'flipclock',
     sources: sources,
