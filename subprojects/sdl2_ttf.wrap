@@ -9,3 +9,5 @@ patch_hash = efa7e68693ff8e1ffa0f299f4622bce7ce5008bf081c9d4f20a6a50fdd72b5f0
 
 [provide]
 dependency_names = freetype2
+# pkg-config name of sdl2_ttf is SDL2_ttf.
+SDL2_ttf = sdl2_ttf_dep
