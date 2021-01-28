@@ -14,12 +14,37 @@
 #	include <windows.h>
 #endif
 
+/* Android APP does not generate `config.h` and use its own logger. */
+#ifdef __ANDROID__
+#	include <android/log.h>
+#	define LOG_TAG "FlipClock"
+#	ifdef __DEBUG__
+#		define LOG_DEBUG(...)                                  \
+			__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, \
+					    __VA_ARGS__)
+#	else
+#		define LOG_DEBUG(...)
+#	endif
+#	define LOG_ERROR(...) \
+		__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#else
+#	include <stdio.h>
+#	ifdef __DEBUG__
+#		define LOG_DEBUG(...) fprintf(stdout, __VA_ARGS__)
+#	else
+#		define LOG_DEBUG(...)
+#	endif
+#	define LOG_ERROR(...) fprintf(stderr, __VA_ARGS__)
+#	include "config.h"
+#endif
+
 #define PROGRAM_TITLE "FlipClock"
+#define MAX_BUFFER_LENGTH 512
 
 /* Those are from arguments. */
 struct properties {
 	const char *title;
-	const char *font_path;
+	char font_path[MAX_BUFFER_LENGTH];
 	bool ampm;
 	bool full;
 #ifdef _WIN32
@@ -78,6 +103,7 @@ struct flipclock {
 };
 
 struct flipclock *flipclock_create(void);
+void flipclock_load_conf(struct flipclock *app);
 void flipclock_create_clocks(struct flipclock *app);
 void flipclock_set_fullscreen(struct flipclock *app, int clock_index,
 			      bool full);

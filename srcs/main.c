@@ -1,7 +1,6 @@
 /**
  * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -18,16 +17,19 @@ int main(int argc, char *argv[])
 #endif
 	int opt = 0;
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "SDL Error: %s\n", SDL_GetError());
+		LOG_ERROR("SDL Error: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 	if (TTF_Init() < 0) {
-		fprintf(stderr, "SDL Error: %s\n", SDL_GetError());
+		LOG_ERROR("SDL Error: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	struct flipclock *app = flipclock_create();
-	/* Dealing with arguments. */
+	/* Android don't need conf and arguments. */
+#ifndef __ANDROID__
+	flipclock_load_conf(app);
+	/* Dealing with arguments which have higher priority. */
 	while ((opt = getarg(argc, argv, OPT_STRING)) != -1) {
 		switch (opt) {
 		case 'w':
@@ -36,15 +38,23 @@ int main(int argc, char *argv[])
 		case 't':
 			if (atoi(argopt) == 12)
 				app->properties.ampm = true;
+			else if (atoi(argopt) == 24)
+				app->properties.ampm = false;
 			break;
 		case 'f':
-			app->properties.font_path = argopt;
+			strncpy(app->properties.font_path, argopt,
+				MAX_BUFFER_LENGTH - 1);
+			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
 			break;
 		case 'h':
 			flipclock_print_help(argv[0]);
-			exit(EXIT_SUCCESS);
+			goto exit;
 			break;
-#ifdef _WIN32
+		case 'v':
+			printf(PROJECT_VERSION "\n");
+			goto exit;
+			break;
+#	ifdef _WIN32
 		/**
 		 * I have no idea about how to configure it without arguments
 		 * in Windows. So just tell user and exit.
@@ -56,7 +66,7 @@ int main(int argc, char *argv[])
 				   "and I think registry table is ugly, "
 				   "so configuration shoule not be here!",
 				   PROGRAM_TITLE, MB_OK);
-			exit(EXIT_SUCCESS);
+			goto exit;
 			break;
 		case 's':
 			/**
@@ -69,19 +79,17 @@ int main(int argc, char *argv[])
 			app->properties.preview = true;
 			app->properties.preview_window = atoi(argopt);
 			break;
-#endif
+#	endif
 		case 0:
-			fprintf(stderr, "%s: Invalid value `%s`.\n", argv[0],
-				argopt);
-			exit(EXIT_FAILURE);
+			LOG_ERROR("%s: Invalid value `%s`.\n", argv[0], argopt);
 			break;
 		default:
-			fprintf(stderr, "%s: Invalid option `%c%c`.\n", argv[0],
-				OPT_START, opt);
-			exit(EXIT_FAILURE);
+			LOG_ERROR("%s: Invalid option `%c%c`.\n", argv[0],
+				  OPT_START, opt);
 			break;
 		}
 	}
+#endif
 
 	flipclock_create_clocks(app);
 	for (int i = 0; i < app->clocks_length; ++i) {
@@ -98,6 +106,7 @@ int main(int argc, char *argv[])
 	}
 	flipclock_destroy_clocks(app);
 
+exit:
 	flipclock_destroy(app);
 	TTF_Quit();
 	SDL_Quit();

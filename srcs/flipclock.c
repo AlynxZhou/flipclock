@@ -1,6 +1,8 @@
 /**
  * Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)
  */
+#include <ctype.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -8,26 +10,11 @@
 #include "getarg.h"
 #include "flipclock.h"
 
-/* Android APP does not generate `config.h` and use its own logger. */
-#ifdef __ANDROID__
-#	include <android/log.h>
-#	define LOG_TAG "FlipClock"
-#	define LOG_DEBUG(...) \
-		__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#	define LOG_ERROR(...) \
-		__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-#else
-#	include <stdio.h>
-#	define LOG_DEBUG(...) fprintf(stdout, __VA_ARGS__)
-#	define LOG_ERROR(...) fprintf(stderr, __VA_ARGS__)
-#	include "config.h"
-#endif
-
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 #define FPS 60
 #define MAX_PROGRESS 300
 #define HALF_PROGRESS (MAX_PROGRESS / 2)
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
 #define DOUBLE_TAP_INTERVAL_MS 300
 
 struct flipclock *flipclock_create(void)
@@ -60,15 +47,184 @@ struct flipclock *flipclock_create(void)
 	app->colors.transparent.a = 0x00;
 	app->properties.ampm = false;
 	app->properties.full = true;
-	app->properties.font_path = NULL;
+	app->properties.font_path[0] = '\0';
 #ifdef _WIN32
 	app->properties.preview = false;
 	app->properties.screensaver = false;
+	// TODO: Get program dir on Windows.
 #endif
 	time_t raw_time = time(NULL);
 	app->times.past = *localtime(&raw_time);
 	app->times.now = *localtime(&raw_time);
 	return app;
+}
+
+#ifdef _WIN32
+void _flipclock_get_conf_path_win32(char *conf_path);
+{
+	// TODO: load conf path from program path on Windows.
+	// Use program dir.
+}
+#else
+void _flipclock_get_conf_path_linux(char *conf_path)
+{
+	/* Be a good program. */
+	const char *conf_dir = getenv("XDG_CONFIG_HOME");
+	if (conf_dir == NULL || strlen(conf_dir) == 0) {
+		const char *home = getenv("HOME");
+		/* Linux users should not be homeless. */
+		strncpy(conf_path, home, MAX_BUFFER_LENGTH - 1);
+		strncat(conf_path, "/.config/flipclock.conf",
+			MAX_BUFFER_LENGTH - strlen(conf_path) - 1);
+	} else {
+		strncpy(conf_path, conf_dir, MAX_BUFFER_LENGTH - 1);
+		strncat(conf_path, "/flipclock.conf",
+			MAX_BUFFER_LENGTH - strlen(conf_path) - 1);
+	}
+	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
+}
+#endif
+
+int _flipclock_parse_key_value(char *line, char **key, char **value)
+{
+	const int line_length = strlen(line);
+	int key_start = -1;
+	for (int i = 0; i < line_length; ++i) {
+		if (!isspace(line[i])) {
+			key_start = i;
+			break;
+		}
+	}
+	if (key_start == -1) {
+		LOG_DEBUG("No `key_start` found! Skip empty line.\n");
+		return -1;
+	}
+	if (line[key_start] == '#' || line[key_start] == ';') {
+		LOG_DEBUG("Skip comment line.\n");
+		return 1;
+	}
+	int value_end = -1;
+	for (int i = line_length - 1; i >= 0; --i) {
+		if (!isspace(line[i])) {
+			value_end = i + 1;
+			break;
+		}
+	}
+	if (value_end == -1) {
+		LOG_DEBUG("No `value_end` found! Skip empty line.\n");
+		return -2;
+	}
+	line[value_end] = '\0';
+	int equal = -1;
+	for (int i = 0; i < line_length; ++i) {
+		if (line[i] == '=') {
+			equal = i;
+			break;
+		}
+	}
+	if (equal == -1) {
+		LOG_ERROR("No `=` found! Invalid line!\n");
+		return -3;
+	}
+	int key_end = -1;
+	for (int i = equal - 1; i >= key_start; --i) {
+		if (!isspace(line[i])) {
+			key_end = i + 1;
+			break;
+		}
+	}
+	if (key_end == -1) {
+		LOG_ERROR("No `key_end` found!\n");
+		return -4;
+	}
+	line[key_end] = '\0';
+	int value_start = -1;
+	for (int i = equal + 1; i < value_end; ++i) {
+		if (!isspace(line[i])) {
+			value_start = i;
+			break;
+		}
+	}
+	if (value_start == -1) {
+		LOG_ERROR("No `value_start` found!\n");
+		return -5;
+	}
+	*key = line + key_start;
+	*value = line + value_start;
+	return 0;
+}
+
+void flipclock_load_conf(struct flipclock *app)
+{
+	// TODO: move this into app->properties?
+	char conf_path[MAX_BUFFER_LENGTH];
+#ifdef _WIN32
+
+#else
+	_flipclock_get_conf_path_linux(conf_path);
+#endif
+	LOG_DEBUG("Using conf_path: `%s`.\n", conf_path);
+	FILE *conf = fopen(conf_path, "r");
+	/**
+	 * See https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-constants?view=msvc-160.
+	 * errno seems work on MSVC.
+	 */
+	if (conf == NULL && errno == ENOENT) {
+		LOG_DEBUG(
+			"Conf file not found, create with default content.\n");
+		conf = fopen(conf_path, "w");
+		if (conf == NULL) {
+			/* Just skip conf, it's able to run. */
+			LOG_ERROR("Failed to write default conf content!\n");
+			goto out;
+		}
+		fputs("# Uncomment `ampm = true` to use 12-hour format.\n"
+		      "# 删除 `ampm = true` 前面的 `#` 以使用 12 小时制。\n"
+		      "#ampm = true\n"
+		      "# Uncomment `full = false` to disable fullscreen.\n"
+		      "# You should not use this for a screensaver.\n"
+		      "# 删除 `full = false` 前面的 `#` 以取消全屏。\n"
+		      "# 屏幕保护程序不应当使用这个设置。\n"
+		      "#full = false\n"
+		      "# Uncomment `font = ` and "
+		      "add path to use custom font.\n"
+		      "# 删除 `font = ` 前面的 `#` 并添加路径以使用自定义字体。\n"
+		      "#font = \n",
+		      conf);
+		goto close_file;
+	}
+	/**
+	 * Most file systems have max file name length limit.
+	 * So I don't need to alloc memory dynamically.
+	 */
+	char line[MAX_BUFFER_LENGTH];
+	char *key;
+	char *value;
+	while (fgets(line, MAX_BUFFER_LENGTH, conf) != NULL) {
+		if (_flipclock_parse_key_value(line, &key, &value)) {
+			continue;
+		}
+		LOG_DEBUG("Parsed key: `%s` and value `%s`.\n", key, value);
+		if (!strcmp(key, "ampm")) {
+			if (!strcmp(value, "true")) {
+				app->properties.ampm = true;
+			}
+		} else if (!strcmp(key, "full")) {
+			if (!strcmp(value, "false")) {
+				app->properties.full = false;
+			}
+		} else if (!strcmp(key, "font")) {
+			strncpy(app->properties.font_path, value,
+				MAX_BUFFER_LENGTH - 1);
+			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
+		} else {
+			LOG_DEBUG("Unknown key: `%s`.\n", key);
+		}
+	}
+close_file:
+	fclose(conf);
+out:
+	return;
 }
 
 void flipclock_create_clocks(struct flipclock *app)
@@ -160,7 +316,8 @@ void flipclock_create_clocks(struct flipclock *app)
 			     SDL_WINDOW_ALLOW_HIGHDPI;
 	/* Create window for each display if fullscreen. */
 	if (app->properties.full) {
-		/**		 * Instead of handling display number changing,
+		/**
+		 * Instead of handling display number changing,
 		 * let user restart program is easier.
 		 */
 		app->clocks_length = SDL_GetNumVideoDisplays();
@@ -350,7 +507,8 @@ void flipclock_destroy_textures(struct flipclock *app, int clock_index)
 
 void flipclock_open_fonts(struct flipclock *app, int clock_index)
 {
-	if (app->properties.font_path != NULL) {
+	// TODO: print actually used font_path to debug.
+	if (strlen(app->properties.font_path) != 0) {
 		app->clocks[clock_index].fonts.time =
 			TTF_OpenFont(app->properties.font_path,
 				     app->clocks[clock_index].rect_size);
@@ -359,30 +517,24 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 				     app->clocks[clock_index].rects.mode.h);
 	} else {
 #if defined(_WIN32)
-		char *system_root = getenv("SystemRoot");
-		int path_size = strlen(system_root) +
-				strlen("\\Fonts\\flipclock.ttf") + 1;
-		char *font_path = malloc(path_size * sizeof(*font_path));
-		if (font_path == NULL) {
-			LOG_ERROR("Load font path failed!\n");
-			exit(EXIT_FAILURE);
-		}
-		strncpy(font_path, system_root, strlen(system_root) + 1);
+		// TODO: Split it into different sub functions.
+		// TODO: Use program dir.
+		const char *system_root = getenv("SystemRoot");
+		char font_path[MAX_BUFFER_LENGTH];
+		strncpy(font_path, system_root, MAX_BUFFER_LENGTH - 1);
 		strncat(font_path, "\\Fonts\\flipclock.ttf",
-			strlen("\\Fonts\\flipclock.ttf") + 1);
+			MAX_BUFFER_LENGTH - strlen(font_path) - 1);
+		font_path[MAX_BUFFER_LENGTH - 1] = '\0';
 #elif defined(__ANDROID__)
 		/* Directly under `app/src/main/assets` for Android APP. */
-		char font_path[] = "flipclock.ttf";
+		char *font_path = "flipclock.ttf";
 #else
-		char font_path[] = INSTALL_PREFIX "/share/fonts/flipclock.ttf";
+		char *font_path = INSTALL_PREFIX "/share/fonts/flipclock.ttf";
 #endif
 		app->clocks[clock_index].fonts.time = TTF_OpenFont(
 			font_path, app->clocks[clock_index].rect_size);
 		app->clocks[clock_index].fonts.mode = TTF_OpenFont(
 			font_path, app->clocks[clock_index].rects.mode.h);
-#ifdef _WIN32
-		free(font_path);
-#endif
 	}
 	if (app->clocks[clock_index].fonts.time == NULL ||
 	    app->clocks[clock_index].fonts.mode == NULL) {
@@ -491,7 +643,7 @@ void flipclock_render_text(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
 	/* We render text every minute, so we don't need cache. */
 	for (int i = 0; i < len; i++) {
-		/*
+		/**
 		 * See https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html#SEC42
 		 * Normally Shaded is enough, however we have a rounded box,
 		 * and many fonts' boxes are too big compared with their
@@ -961,7 +1113,8 @@ void flipclock_destroy_clocks(struct flipclock *app)
 		SDL_DestroyRenderer(app->clocks[i].renderer);
 		SDL_DestroyWindow(app->clocks[i].window);
 	}
-	free(app->clocks);
+	if (app->clocks != NULL)
+		free(app->clocks);
 	if (app->properties.full)
 		SDL_ShowCursor(SDL_ENABLE);
 #ifdef _WIN32
@@ -981,6 +1134,7 @@ void flipclock_destroy(struct flipclock *app)
 
 void flipclock_print_help(char program_name[])
 {
+	// TODO: print conf_path here?
 	printf("A simple flip clock screensaver using SDL2.\n");
 	printf("Version " PROJECT_VERSION ".\n");
 	printf("Usage: %s [OPTION...] <value>\n", program_name);
