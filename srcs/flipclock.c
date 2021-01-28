@@ -489,10 +489,18 @@ void flipclock_render_text(struct flipclock *app, int clock_index,
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
+	/* We render text every minute, so we don't need cache. */
 	for (int i = 0; i < len; i++) {
-		/* We render text every minute, so we don't need cache. */
-		SDL_Surface *text_surface = TTF_RenderGlyph_Shaded(
-			font, text[i], app->colors.font, app->colors.rect);
+		/*
+		 * See https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html#SEC42
+		 * Normally Shaded is enough, however we have a rounded box,
+		 * and many fonts' boxes are too big compared with their
+		 * characters, they just cover the rounded corner.
+		 * So I have to use blended mode, because solid mode does not
+		 * have anti-alias.
+		 */
+		SDL_Surface *text_surface = TTF_RenderGlyph_Blended(
+			font, text[i], app->colors.font);
 		if (text_surface == NULL) {
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
