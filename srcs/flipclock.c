@@ -163,19 +163,18 @@ void flipclock_load_conf(struct flipclock *app)
 #else
 	_flipclock_get_conf_path_linux(conf_path);
 #endif
-	LOG_DEBUG("Using conf_path: `%s`.\n", conf_path);
+	LOG_DEBUG("Using conf_path `%s`.\n", conf_path);
 	FILE *conf = fopen(conf_path, "r");
 	/**
 	 * See https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-constants?view=msvc-160.
 	 * errno seems work on MSVC.
 	 */
 	if (conf == NULL && errno == ENOENT) {
-		LOG_DEBUG(
-			"Conf file not found, create with default content.\n");
+		LOG_DEBUG("File not found, create with default content.\n");
 		conf = fopen(conf_path, "w");
 		if (conf == NULL) {
 			/* Just skip conf, it's able to run. */
-			LOG_ERROR("Failed to write default conf content!\n");
+			LOG_ERROR("Failed to write default content!\n");
 			goto out;
 		}
 		fputs("# Uncomment `ampm = true` to use 12-hour format.\n"
@@ -204,7 +203,7 @@ void flipclock_load_conf(struct flipclock *app)
 		if (_flipclock_parse_key_value(line, &key, &value)) {
 			continue;
 		}
-		LOG_DEBUG("Parsed key: `%s` and value `%s`.\n", key, value);
+		LOG_DEBUG("Parsed key `%s` and value `%s`.\n", key, value);
 		if (!strcmp(key, "ampm")) {
 			if (!strcmp(value, "true")) {
 				app->properties.ampm = true;
@@ -218,7 +217,7 @@ void flipclock_load_conf(struct flipclock *app)
 				MAX_BUFFER_LENGTH - 1);
 			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
 		} else {
-			LOG_DEBUG("Unknown key: `%s`.\n", key);
+			LOG_DEBUG("Unknown key `%s`.\n", key);
 		}
 	}
 close_file:
