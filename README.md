@@ -49,7 +49,7 @@ Meson has a tool called wrap that can download and compile dependencies automati
 #### With Meson (Recommended)
 
 1. Install Meson, Ninja, Visual Studio.
-2. Download SDL2 and SDL2_ttf devel files and extract and rename. Please refer to [`deps/README.txt`](deps/README.txt) for links.
+2. Download SDL2 and SDL2_ttf devel files and extract and rename. Please refer to [`deps/README.md`](deps/README.md) for links.
 3. Open `x64 Native Tools Command Prompt for VS 2019` from Start Menu, or other architectures you need.
 4. Change dir to where you put this project. Run `mkdir build && cd build && meson setup --prefix=d:/ --buildtype=release . .. && meson compile && meson install`. You can change prefix to other path, but you need to use UNIX style slash instead of backslash because it's escape character in C.
 5. Go to `flipclock` folder under your prefix and right click `flipclock.ttf` to "install it for all users", or just copy it into `C:\Windows\Fonts`.
@@ -58,7 +58,7 @@ Meson has a tool called wrap that can download and compile dependencies automati
 #### With CMake
 
 1. Install CMake, Visual Studio.
-2. Download SDL2 and SDL2_ttf devel files and extract. Please refer to [`deps/README.txt`](deps/README.txt) for links.
+2. Download SDL2 and SDL2_ttf devel files and extract. Please refer to [`deps/README.md`](deps/README.md) for links.
 3. Open CMake GUI, select source as this project, then choose build path, press Configure and Finish.
 4. When Configure failed, set `CMAKE_INSTALL_PREFIX` to where you want to save all runtime files, fill `SDL2_DIR` to where you extract SDL2 devel files, then press Configure again. When Configure failed again, fill `SDL2_TTF_DIR` to where you extract SDL2_ttf devel files, then press Configure again.
 5. When Configure finished, press Generate, then press Open Project to open Visual Studio.
