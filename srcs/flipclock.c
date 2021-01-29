@@ -194,6 +194,60 @@ int _flipclock_parse_key_value(char *line, char **key, char **value)
 	return 0;
 }
 
+int _flipclock_parse_hex_char(char c)
+{
+	if (c >= 'a' && c <= 'f') {
+		return c - 'a' + 10;
+	} else if (c >= 'A' && c <= 'F') {
+		return c - 'A' + 10;
+	} else if (c >= '0' && c <= '9') {
+		return c - '0';
+	} else {
+		return -1;
+	}
+}
+
+int _flipclock_parse_color(const char *value, SDL_Color *color)
+{
+	const unsigned long value_str_len = strlen(value);
+	if (value_str_len == 0) {
+		LOG_ERROR("No color specified!\n");
+		return -1;
+	} else if (value[0] != '#') {
+		LOG_ERROR("Color must start with `#`!\n");
+		return -2;
+	} else if (value_str_len == 7 || value_str_len == 9) {
+		bool is_all_hexcode = true;
+		for (int i = 1; i < value_str_len; i++) {
+			if (!isxdigit(value[i])) {
+				is_all_hexcode = false;
+				break;
+			}
+		}
+		if (is_all_hexcode) {
+			color->r = (_flipclock_parse_hex_char(value[1]) * 16)
+				+ _flipclock_parse_hex_char(value[2]);
+			color->g = (_flipclock_parse_hex_char(value[3]) * 16)
+				+ _flipclock_parse_hex_char(value[4]);
+			color->b = (_flipclock_parse_hex_char(value[5]) * 16)
+				+ _flipclock_parse_hex_char(value[6]);
+			if (value_str_len == 9) {
+				color->a = (_flipclock_parse_hex_char(value[7]) * 16)
+					+ _flipclock_parse_hex_char(value[8]);
+			} else {
+				color->a = 0xff;
+			}
+			return 0;
+		} else {
+			LOG_ERROR("Color must specified in format `#rrggbb[aa]`");
+			return -3;
+		}
+	} else {
+		LOG_ERROR("Color must specified in format `#rrggbb[aa]`");
+		return -3;
+	}
+}
+
 void flipclock_load_conf(struct flipclock *app)
 {
 	FILE *conf = fopen(app->properties.conf_path, "r");
@@ -216,7 +270,13 @@ void flipclock_load_conf(struct flipclock *app)
 		      "#full = false\n"
 		      "# Uncomment `font = ` and "
 		      "add path to use custom font.\n"
-		      "#font = \n",
+		      "#font = \n"
+					"# Uncomment `font_color = ` to modify the color of font.\n"
+					"#font_color = #d0d0d0ff\n"
+					"# Uncomment `rect_color = ` to modify the color of rectangle.\n"
+					"#rect_color = #202020ff\n"
+					"# Uncomment `black_color = ` to modify the color of black.\n"
+					"#black_color = #000000ff\n",
 		      conf);
 		goto close_file;
 	}
@@ -251,6 +311,18 @@ void flipclock_load_conf(struct flipclock *app)
 			    MAX_BUFFER_LENGTH - 1) {
 				LOG_ERROR("font_path too long, "
 					  "may fail to load.\n");
+			}
+		} else if (!strcmp(key, "font_color")) {
+			if (_flipclock_parse_color(value, &app->colors.font) < 0) {
+				LOG_ERROR("Failed to parse the font color");
+			}
+		} else if (!strcmp(key, "rect_color")) {
+			if (_flipclock_parse_color(value, &app->colors.rect) < 0) {
+				LOG_ERROR("Failed to parse the color of rectangle");
+			}
+		} else if (!strcmp(key, "black_color")) {
+			if (_flipclock_parse_color(value, &app->colors.black) < 0) {
+				LOG_ERROR("Failed to parse the color of black");
 			}
 		} else {
 			LOG_DEBUG("Unknown key `%s`.\n", key);
