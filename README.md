@@ -70,6 +70,14 @@ Meson has a tool called wrap that can download and compile dependencies automati
 
 See [flipclock-android](https://github.com/AlynxZhou/flipclock-android/).
 
+# Configuration
+
+On Linux, program will first use `$XDG_CONFIG_HOME/flipclock.conf`, if `XDG_CONFIG_HOME` is not set, it will use `$HOME/.config/flipclock.conf`.
+
+On Windows, program will use `flipclock.conf` under the same directory as program.
+
+`flipclock.conf` will be automatically created if program does not find it, so please run program once before editing configuration file.
+
 # License
 
 [Apache-2.0](./LICENSE)
