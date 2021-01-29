@@ -40,7 +40,7 @@ If you run this program in windowed mode (`-w`), only one display is supported. 
 
 ### Prebuilt
 
-Just download file with `win` in its name from [lastest release page](https://github.com/AlynxZhou/flipclock/releases/latest), extract it and right click `flipclock.ttf` to "install it for all users", or just copy it into `C:\Windows\Fonts`. Then right click `flipclock.scr` to install it as a screensaver.
+Just download file with `win` in its name from [lastest release page](https://github.com/AlynxZhou/flipclock/releases/latest), extract it and right click `flipclock.scr` to install it as a screensaver.
 
 ### From Source
 
