@@ -3,3 +3,16 @@
 如果想替换字体，可以直接将其它字体重命名为 flipclock.ttf 并放置在这个目录下面。
 不建议单独提取 flipclock.scr 放到别处，程序运行需要依赖这个目录下的其他文件。
 如果下载了更新版本的程序并想要保持配置，请将 flipclock.conf 文件复制粘贴到新版本程序的目录。
+
+如果因为某些原因你的 flipclock.conf 打开后是乱码，请复制下一行到此文件结束的所有内容并粘贴到 flipclock.conf 内替换之前的内容：
+# Uncomment `ampm = true` to use 12-hour format.
+# 删除 `ampm = true` 前面的 `#` 以使用 12 小时制。
+#ampm = true
+# Uncomment `full = false` to disable fullscreen.
+# You should not change this for a screensaver.
+# 删除 `full = false` 前面的 `#` 以取消全屏。
+# 屏幕保护程序不应当修改这个设置。
+#full = false
+# Uncomment `font = ` and add path to use custom font.
+# 删除 `font = ` 前面的 `#` 并添加路径以使用自定义字体。
+#font =
