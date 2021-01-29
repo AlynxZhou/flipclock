@@ -1147,11 +1147,11 @@ void flipclock_print_help(struct flipclock *app, char program_name[])
 	printf("Options:\n");
 	printf("\t%ch\t\tDisplay this help.\n", OPT_START);
 #ifdef _WIN32
-	printf("\t%cs\t\t(Windows only)"
+	printf("\t%cs\t\t(Windows only) "
 	       "Required for starting screensaver in Windows.\n",
 	       OPT_START);
-	printf("\t%cc\t\t(Windows only)Dummy configuration.\n", OPT_START);
-	printf("\t%cp <HWND>\t(Windows only)Preview in given window.\n",
+	printf("\t%cc\t\t(Windows only) Dummy configuration.\n", OPT_START);
+	printf("\t%cp <HWND>\t(Windows only) Preview in given window.\n",
 	       OPT_START);
 #endif
 	printf("\t%cw\t\tRun in window, not fullscreen.\n", OPT_START);
