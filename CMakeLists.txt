@@ -66,6 +66,7 @@ if(WIN32)
 	)
 	install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "flipclock")
 	install(FILES "${CMAKE_SOURCE_DIR}/COPYING" DESTINATION "flipclock")
+	install(FILES "${CMAKE_SOURCE_DIR}/请先读我.txt" DESTINATION "flipclock")
 	install(
 		FILES "${SDL2_DIR}/${VC_LIB_PATH_SUFFIX}/SDL2.dll"
 		DESTINATION "flipclock"
