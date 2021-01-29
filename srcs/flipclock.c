@@ -271,12 +271,12 @@ void flipclock_load_conf(struct flipclock *app)
 		      "# Uncomment `font = ` and "
 		      "add path to use custom font.\n"
 		      "#font = \n"
-					"# Uncomment `font_color = ` to modify the color of font.\n"
-					"#font_color = #d0d0d0ff\n"
-					"# Uncomment `rect_color = ` to modify the color of rectangle.\n"
-					"#rect_color = #202020ff\n"
-					"# Uncomment `black_color = ` to modify the color of black.\n"
-					"#black_color = #000000ff\n",
+		      "# Uncomment `font_color = ` to modify the color of font.\n"
+		      "#font_color = #d0d0d0ff\n"
+		      "# Uncomment `rect_color = ` to modify the color of rectangle.\n"
+		      "#rect_color = #202020ff\n"
+		      "# Uncomment `black_color = ` to modify the color of black.\n"
+		      "#black_color = #000000ff\n",
 		      conf);
 		goto close_file;
 	}
