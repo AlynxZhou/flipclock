@@ -17,7 +17,7 @@
 #define HALF_PROGRESS (MAX_PROGRESS / 2)
 #define DOUBLE_TAP_INTERVAL_MS 300
 
-#ifdef _WIN32
+#if defined(_WIN32)
 void _flipclock_get_program_dir_win32(char *program_dir)
 {
 	/**
@@ -51,7 +51,7 @@ void _flipclock_get_conf_path_win32(char *conf_path, const char *program_dir);
 		LOG_ERROR("conf_path too long, may fail to load.\n");
 	}
 }
-#else
+#elif defined(__linux__)
 void _flipclock_get_conf_path_linux(char *conf_path)
 {
 	/* Be a good program. */
@@ -110,13 +110,15 @@ struct flipclock *flipclock_create(void)
 	_flipclock_get_program_dir_win32(app->properties.program_dir);
 	LOG_DEBUG("Using program_dir `%s`.\n", app->properties.program_dir);
 #endif
-#ifdef _WIN32
+#if defined(_WIN32)
 	_flipclock_get_conf_path_win32(app->properties.conf_path,
 				       app->properties.program_dir);
-#else
+#elif defined(__linux__)
 	_flipclock_get_conf_path_linux(app->properties.conf_path);
 #endif
+#ifndef __ANDROID__
 	LOG_DEBUG("Using conf_path `%s`.\n", app->properties.conf_path);
+#endif
 	time_t raw_time = time(NULL);
 	app->times.past = *localtime(&raw_time);
 	app->times.now = *localtime(&raw_time);
@@ -535,7 +537,7 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 #elif defined(__ANDROID__)
 		/* Directly under `app/src/main/assets` for Android APP. */
 		char *font_path = "flipclock.ttf";
-#else
+#elif defined(__linux__)
 		char *font_path = INSTALL_PREFIX "/share/fonts/flipclock.ttf";
 #endif
 		LOG_DEBUG("Using font_path `%s`.\n", font_path);
