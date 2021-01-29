@@ -63,9 +63,7 @@ int main(int argc, char *argv[])
 		case 'c':
 			MessageBox(NULL,
 				   "Please read and edit flipclock.conf "
-				   "under program directory to configure it!\n"
-				   "请阅读并编辑此程序相同目录下的 "
-				   "flipclock.conf 文件以配置程序行为！",
+				   "under program directory to configure it!",
 				   PROGRAM_TITLE, MB_OK);
 			goto exit;
 			break;

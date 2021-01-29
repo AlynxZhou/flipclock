@@ -209,21 +209,13 @@ void flipclock_load_conf(struct flipclock *app)
 			LOG_ERROR("Failed to write default content!\n");
 			goto out;
 		}
-#ifdef _WIN32
-		unsigned char bom[] = {0xEF,0xBB,0xBF};
-		fwrite(bom, sizeof(bom), 1, conf);
-#endif
 		fputs("# Uncomment `ampm = true` to use 12-hour format.\n"
-		      "# 删除 `ampm = true` 前面的 `#` 以使用 12 小时制。\n"
 		      "#ampm = true\n"
 		      "# Uncomment `full = false` to disable fullscreen.\n"
 		      "# You should not change this for a screensaver.\n"
-		      "# 删除 `full = false` 前面的 `#` 以取消全屏。\n"
-		      "# 屏幕保护程序不应当修改这个设置。\n"
 		      "#full = false\n"
 		      "# Uncomment `font = ` and "
 		      "add path to use custom font.\n"
-		      "# 删除 `font = ` 前面的 `#` 并添加路径以使用自定义字体。\n"
 		      "#font = \n",
 		      conf);
 		goto close_file;
