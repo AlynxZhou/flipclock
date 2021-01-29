@@ -98,16 +98,29 @@ if host_machine.system() == 'linux'
     install_dir: get_option('datadir') / 'license' / meson.project_name()
   )
 elif host_machine.system() == 'windows'
-  executable(
-    'flipclock',
-    sources: sources,
-    c_args: c_args,
-    dependencies: dependencies,
-    include_directories: include_directories,
-    install: true,
-    install_dir: get_option('prefix') / meson.project_name(),
-    win_subsystem: 'windows'
-  )
+  if get_option('debug') == true
+    executable(
+      'flipclock',
+      sources: sources,
+      c_args: c_args,
+      dependencies: dependencies,
+      include_directories: include_directories,
+      install: true,
+      install_dir: get_option('prefix') / meson.project_name(),
+      win_subsystem: 'console'
+    )
+  else
+    executable(
+      'flipclock',
+      sources: sources,
+      c_args: c_args,
+      dependencies: dependencies,
+      include_directories: include_directories,
+      install: true,
+      install_dir: get_option('prefix') / meson.project_name(),
+      win_subsystem: 'windows'
+    )
+  endif
 
   install_data(
     'flipclock.ttf',
@@ -122,7 +135,7 @@ elif host_machine.system() == 'windows'
     install_dir: get_option('prefix') / meson.project_name()
   )
   install_data(
-    '读我.txt',
+    '请先读我.txt',
     install_dir: get_option('prefix') / meson.project_name()
   )
   install_data(
