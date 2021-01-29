@@ -1145,20 +1145,22 @@ void flipclock_print_help(struct flipclock *app, char program_name[])
 	printf("Version " PROJECT_VERSION ".\n");
 	printf("Usage: %s [OPTION...] <value>\n", program_name);
 	printf("Options:\n");
-	printf("\t%ch\t\tDisplay this help.\n", OPT_START);
+	printf("\t%ch\t\tDisplay help then exit.\n", OPT_START);
+	printf("\t%cv\t\tDisplay version then exit.\n", OPT_START);
 #ifdef _WIN32
 	printf("\t%cs\t\t(Windows only) "
 	       "Required for starting screensaver in Windows.\n",
 	       OPT_START);
-	printf("\t%cc\t\t(Windows only) Dummy configuration.\n", OPT_START);
+	printf("\t%cc\t\t(Windows only) Dummy configuration dialog.\n",
+	       OPT_START);
 	printf("\t%cp <HWND>\t(Windows only) Preview in given window.\n",
 	       OPT_START);
 #endif
-	printf("\t%cw\t\tRun in window, not fullscreen.\n", OPT_START);
+	printf("\t%cw\t\tRun as a window instead of fullscreen.\n", OPT_START);
 	printf("\t%ct <12|24>\tToggle 12-hour clock format (AM/PM) "
 	       "or 24-hour clock format.\n",
 	       OPT_START);
-	printf("\t%cf <font>\tCustom font path.\n", OPT_START);
+	printf("\t%cf <font>\tLoad custom font path.\n", OPT_START);
 	printf("Press Esc or q to exit.\n");
 	printf("Press f to toggle fullscreen.\n");
 	printf("Press t to toggle 12/24-hour clock format.\n");

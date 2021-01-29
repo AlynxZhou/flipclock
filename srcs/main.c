@@ -10,12 +10,6 @@
 
 int main(int argc, char *argv[])
 {
-#ifdef _WIN32
-	char OPT_STRING[] = "hwcst:f:p:";
-#else
-	char OPT_STRING[] = "hwt:f:";
-#endif
-	int opt = 0;
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		LOG_ERROR("SDL Error: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
@@ -30,8 +24,43 @@ int main(int argc, char *argv[])
 #ifndef __ANDROID__
 	flipclock_load_conf(app);
 	/* Dealing with arguments which have higher priority. */
+#	ifdef _WIN32
+	char OPT_STRING[] = "hvscp:wt:f:";
+#	else
+	char OPT_STRING[] = "hvwt:f:";
+#	endif
+	int opt = 0;
+	bool exit_after_argument = false;
 	while ((opt = getarg(argc, argv, OPT_STRING)) != -1) {
 		switch (opt) {
+		case 'h':
+			flipclock_print_help(app, argv[0]);
+			exit_after_argument = true;
+			break;
+		case 'v':
+			printf(PROJECT_VERSION "\n");
+			exit_after_argument = true;
+			break;
+#	ifdef _WIN32
+		case 's':
+			/**
+			 * One of the most silly requirement I've seen.
+			 * But it seems I can use it to handle key press.
+			 */
+			app->properties.screensaver = true;
+			break;
+		case 'c':
+			MessageBox(NULL,
+				   "Please read and edit flipclock.conf "
+				   "under program directory to configure it!",
+				   PROGRAM_TITLE, MB_OK);
+			exit_after_argument = true;
+			break;
+		case 'p':
+			app->properties.preview = true;
+			app->properties.preview_window = atoi(argopt);
+			break;
+#	endif
 		case 'w':
 			app->properties.full = false;
 			break;
@@ -51,34 +80,6 @@ int main(int argc, char *argv[])
 					  "may fail to load.\n");
 			}
 			break;
-		case 'h':
-			flipclock_print_help(app, argv[0]);
-			goto exit;
-			break;
-		case 'v':
-			printf(PROJECT_VERSION "\n");
-			goto exit;
-			break;
-#	ifdef _WIN32
-		case 'c':
-			MessageBox(NULL,
-				   "Please read and edit flipclock.conf "
-				   "under program directory to configure it!",
-				   PROGRAM_TITLE, MB_OK);
-			goto exit;
-			break;
-		case 's':
-			/**
-			 * One of the most silly requirement I've seen.
-			 * But it seems I can use it to handle key press.
-			 */
-			app->properties.screensaver = true;
-			break;
-		case 'p':
-			app->properties.preview = true;
-			app->properties.preview_window = atoi(argopt);
-			break;
-#	endif
 		case 0:
 			LOG_ERROR("%s: Invalid value `%s`.\n", argv[0], argopt);
 			break;
@@ -88,6 +89,8 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+	if (exit_after_argument)
+		goto exit;
 #endif
 
 	flipclock_create_clocks(app);
