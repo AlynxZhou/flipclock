@@ -45,9 +45,14 @@ int main(int argc, char *argv[])
 			strncpy(app->properties.font_path, argopt,
 				MAX_BUFFER_LENGTH - 1);
 			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
+			if (strlen(app->properties.font_path) ==
+			    MAX_BUFFER_LENGTH - 1) {
+				LOG_ERROR("font_path too long, "
+					  "may fail to load.\n");
+			}
 			break;
 		case 'h':
-			flipclock_print_help(argv[0]);
+			flipclock_print_help(app, argv[0]);
 			goto exit;
 			break;
 		case 'v':
@@ -55,16 +60,12 @@ int main(int argc, char *argv[])
 			goto exit;
 			break;
 #	ifdef _WIN32
-		/**
-		 * I have no idea about how to configure it without arguments
-		 * in Windows. So just tell user and exit.
-		 */
 		case 'c':
 			MessageBox(NULL,
-				   "I am just a UNIX program that "
-				   "happens to support Windows, "
-				   "and I think registry table is ugly, "
-				   "so configuration shoule not be here!",
+				   "Please read and edit flipclock.conf "
+				   "under program directory to configure it!\n"
+				   "请阅读并编辑此程序相同目录下的 "
+				   "flipclock.conf 文件以配置程序行为！",
 				   PROGRAM_TITLE, MB_OK);
 			goto exit;
 			break;

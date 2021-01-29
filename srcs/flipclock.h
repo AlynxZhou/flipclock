@@ -39,18 +39,20 @@
 #endif
 
 #define PROGRAM_TITLE "FlipClock"
-#define MAX_BUFFER_LENGTH 512
+#define MAX_BUFFER_LENGTH 2048
 
 /* Those are from arguments. */
 struct properties {
 	const char *title;
 	char font_path[MAX_BUFFER_LENGTH];
+	char conf_path[MAX_BUFFER_LENGTH];
 	bool ampm;
 	bool full;
 #ifdef _WIN32
 	HWND preview_window;
 	bool preview;
 	bool screensaver;
+	char program_dir[MAX_BUFFER_LENGTH];
 #endif
 };
 struct colors {
@@ -112,27 +114,9 @@ void flipclock_create_textures(struct flipclock *app, int clock_index);
 void flipclock_destroy_textures(struct flipclock *app, int clock_index);
 void flipclock_open_fonts(struct flipclock *app, int clock_index);
 void flipclock_close_fonts(struct flipclock *app, int clock_index);
-void flipclock_clear_texture(struct flipclock *app, int clock_index,
-			     SDL_Texture *target_texture,
-			     SDL_Color background_color);
-void flipclock_render_rounded_box(struct flipclock *app, int clock_index,
-				  SDL_Texture *target_texture,
-				  SDL_Rect target_rect, int radius);
-void flipclock_render_text(struct flipclock *app, int clock_index,
-			   SDL_Texture *target_texture, SDL_Rect target_rect,
-			   TTF_Font *font, char text[]);
-void flipclock_render_divider(struct flipclock *app, int clock_index,
-			      SDL_Texture *target_texture,
-			      SDL_Rect target_rect);
-void flipclock_render_texture(struct flipclock *app, int clock_index);
-void flipclock_copy_rect(struct flipclock *app, int clock_index,
-			 SDL_Rect target_rect, int progress);
-void flipclock_animate(struct flipclock *app, int clock_index, int progress);
-void flipclock_handle_window_event(struct flipclock *app, SDL_Event event);
-void flipclock_handle_event(struct flipclock *app, SDL_Event event);
 void flipclock_run_mainloop(struct flipclock *app);
 void flipclock_destroy_clocks(struct flipclock *app);
 void flipclock_destroy(struct flipclock *app);
-void flipclock_print_help(char program_name[]);
+void flipclock_print_help(struct flipclock *app, char program_name[]);
 
 #endif

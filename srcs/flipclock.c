@@ -17,6 +17,61 @@
 #define HALF_PROGRESS (MAX_PROGRESS / 2)
 #define DOUBLE_TAP_INTERVAL_MS 300
 
+#ifdef _WIN32
+void _flipclock_get_program_dir_win32(char *program_dir)
+{
+	/**
+	 * See https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+	 * GetModuleFileName is a macro to
+	 * GetModuleFileNameW and GetModuleFileNameA.
+	 */
+	GetModuleFileName(NULL, program_dir, MAX_BUFFER_LENGTH);
+	program_dir[MAX_BUFFER_LENGTH - 1] = '\0';
+	if (strlen(program_dir) == MAX_BUFFER_LENGTH - 1) {
+		LOG_ERROR("program_dir too long, may fail to load.\n");
+	}
+	/**
+	 * Remove the program name and get the dir.
+	 * This should work because Windows path should have `\\`.
+	 */
+	for (int i = strlen(program_dir) - 1; i >= 0; --i) {
+		if (program_dir[i] == '\\') {
+			program_dir[i] = '\0';
+			break;
+		}
+	}
+}
+
+void _flipclock_get_conf_path_win32(char *conf_path, const char *program_dir);
+{
+	snprintf(conf_path, MAX_BUFFER_LENGTH, "%s\\flipclock.conf",
+		 program_dir);
+	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
+	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1) {
+		LOG_ERROR("conf_path too long, may fail to load.\n");
+	}
+}
+#else
+void _flipclock_get_conf_path_linux(char *conf_path)
+{
+	/* Be a good program. */
+	const char *conf_dir = getenv("XDG_CONFIG_HOME");
+	if (conf_dir == NULL || strlen(conf_dir) == 0) {
+		/* Linux users should not be homeless. */
+		const char *home = getenv("HOME");
+		snprintf(conf_path, MAX_BUFFER_LENGTH,
+			 "%s/.config/flipclock.conf", home);
+	} else {
+		snprintf(conf_path, MAX_BUFFER_LENGTH, "%s/flipclock.conf",
+			 conf_dir);
+	}
+	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
+	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1) {
+		LOG_ERROR("conf_path too long, may fail to load.\n");
+	}
+}
+#endif
+
 struct flipclock *flipclock_create(void)
 {
 	struct flipclock *app = malloc(sizeof(*app));
@@ -51,39 +106,22 @@ struct flipclock *flipclock_create(void)
 #ifdef _WIN32
 	app->properties.preview = false;
 	app->properties.screensaver = false;
-	// TODO: Get program dir on Windows.
+	app->properties.program_dir[0] = '\0';
+	_flipclock_get_program_dir_win32(app->properties.program_dir);
+	LOG_DEBUG("Using program_dir `%s`.\n", app->properties.program_dir);
 #endif
+#ifdef _WIN32
+	_flipclock_get_conf_path_win32(app->properties.conf_path,
+				       app->properties.program_dir);
+#else
+	_flipclock_get_conf_path_linux(app->properties.conf_path);
+#endif
+	LOG_DEBUG("Using conf_path `%s`.\n", app->properties.conf_path);
 	time_t raw_time = time(NULL);
 	app->times.past = *localtime(&raw_time);
 	app->times.now = *localtime(&raw_time);
 	return app;
 }
-
-#ifdef _WIN32
-void _flipclock_get_conf_path_win32(char *conf_path);
-{
-	// TODO: load conf path from program path on Windows.
-	// Use program dir.
-}
-#else
-void _flipclock_get_conf_path_linux(char *conf_path)
-{
-	/* Be a good program. */
-	const char *conf_dir = getenv("XDG_CONFIG_HOME");
-	if (conf_dir == NULL || strlen(conf_dir) == 0) {
-		const char *home = getenv("HOME");
-		/* Linux users should not be homeless. */
-		strncpy(conf_path, home, MAX_BUFFER_LENGTH - 1);
-		strncat(conf_path, "/.config/flipclock.conf",
-			MAX_BUFFER_LENGTH - strlen(conf_path) - 1);
-	} else {
-		strncpy(conf_path, conf_dir, MAX_BUFFER_LENGTH - 1);
-		strncat(conf_path, "/flipclock.conf",
-			MAX_BUFFER_LENGTH - strlen(conf_path) - 1);
-	}
-	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
-}
-#endif
 
 int _flipclock_parse_key_value(char *line, char **key, char **value)
 {
@@ -134,7 +172,7 @@ int _flipclock_parse_key_value(char *line, char **key, char **value)
 		}
 	}
 	if (key_end == -1) {
-		LOG_ERROR("No `key_end` found!\n");
+		LOG_ERROR("No `key_end` found! Invalid line!\n");
 		return -4;
 	}
 	line[key_end] = '\0';
@@ -146,7 +184,7 @@ int _flipclock_parse_key_value(char *line, char **key, char **value)
 		}
 	}
 	if (value_start == -1) {
-		LOG_ERROR("No `value_start` found!\n");
+		LOG_ERROR("No `value_start` found! Invalid line!\n");
 		return -5;
 	}
 	*key = line + key_start;
@@ -156,22 +194,14 @@ int _flipclock_parse_key_value(char *line, char **key, char **value)
 
 void flipclock_load_conf(struct flipclock *app)
 {
-	// TODO: move this into app->properties?
-	char conf_path[MAX_BUFFER_LENGTH];
-#ifdef _WIN32
-
-#else
-	_flipclock_get_conf_path_linux(conf_path);
-#endif
-	LOG_DEBUG("Using conf_path `%s`.\n", conf_path);
-	FILE *conf = fopen(conf_path, "r");
+	FILE *conf = fopen(app->properties.conf_path, "r");
 	/**
 	 * See https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-constants?view=msvc-160.
 	 * errno seems work on MSVC.
 	 */
 	if (conf == NULL && errno == ENOENT) {
 		LOG_DEBUG("File not found, create with default content.\n");
-		conf = fopen(conf_path, "w");
+		conf = fopen(app->properties.conf_path, "w");
 		if (conf == NULL) {
 			/* Just skip conf, it's able to run. */
 			LOG_ERROR("Failed to write default content!\n");
@@ -196,11 +226,14 @@ void flipclock_load_conf(struct flipclock *app)
 	 * Most file systems have max file name length limit.
 	 * So I don't need to alloc memory dynamically.
 	 */
-	char line[MAX_BUFFER_LENGTH];
+	char conf_line[MAX_BUFFER_LENGTH];
 	char *key;
 	char *value;
-	while (fgets(line, MAX_BUFFER_LENGTH, conf) != NULL) {
-		if (_flipclock_parse_key_value(line, &key, &value)) {
+	while (fgets(conf_line, MAX_BUFFER_LENGTH, conf) != NULL) {
+		if (strlen(conf_line) == MAX_BUFFER_LENGTH - 1) {
+			LOG_ERROR("conf_line too long, may fail to load.\n");
+		}
+		if (_flipclock_parse_key_value(conf_line, &key, &value) != 0) {
 			continue;
 		}
 		LOG_DEBUG("Parsed key `%s` and value `%s`.\n", key, value);
@@ -216,6 +249,11 @@ void flipclock_load_conf(struct flipclock *app)
 			strncpy(app->properties.font_path, value,
 				MAX_BUFFER_LENGTH - 1);
 			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
+			if (strlen(app->properties.font_path) ==
+			    MAX_BUFFER_LENGTH - 1) {
+				LOG_ERROR("font_path too long, "
+					  "may fail to load.\n");
+			}
 		} else {
 			LOG_DEBUG("Unknown key `%s`.\n", key);
 		}
@@ -226,87 +264,8 @@ out:
 	return;
 }
 
-void flipclock_create_clocks(struct flipclock *app)
+void _flipclock_create_clocks_default(struct flipclock *app)
 {
-#ifdef _WIN32
-	if (!app->properties.screensaver)
-		SDL_DisableScreenSaver();
-	if (app->properties.preview) {
-		/* Don't set fullscreen if in preview. */
-		app->properties.full = false;
-		app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
-		/* Create window from native window when in preview. */
-		app->clocks[0].window =
-			SDL_CreateWindowFrom(app->properties.preview_window);
-		/* Init window size after create it. */
-		SDL_GetWindowSize(app->clocks[0].window, &app->clocks[0].width,
-				  &app->clocks[0].height);
-		if (app->clocks[0].window == NULL) {
-			LOG_ERROR("%s\n", SDL_GetError());
-			exit(EXIT_FAILURE);
-		}
-		app->clocks[0].renderer = SDL_CreateRenderer(
-			app->clocks[0].window, -1,
-			SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE |
-				SDL_RENDERER_PRESENTVSYNC);
-		if (app->clocks[0].renderer == NULL) {
-			LOG_ERROR("%s\n", SDL_GetError());
-			exit(EXIT_FAILURE);
-		}
-		SDL_SetRenderDrawBlendMode(app->clocks[0].renderer,
-					   SDL_BLENDMODE_BLEND);
-	} else {
-		unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-				     SDL_WINDOW_ALLOW_HIGHDPI;
-		/* Create window for each display if fullscreen. */
-		if (app->properties.full) {
-			/**
-			 * Instead of handling display number changing,
-			 * let user restart program is easier.
-			 */
-			app->clocks_length = SDL_GetNumVideoDisplays();
-			flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-				SDL_WINDOW_ALLOW_HIGHDPI |
-				SDL_WINDOW_FULLSCREEN_DESKTOP;
-			SDL_ShowCursor(SDL_DISABLE);
-		}
-		app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
-		for (int i = 0; i < app->clocks_length; ++i) {
-			app->clocks[i].fonts.time = NULL;
-			app->clocks[i].fonts.mode = NULL;
-			app->clocks[i].textures.current = NULL;
-			app->clocks[i].textures.previous = NULL;
-			app->clocks[i].wait = false;
-			SDL_Rect display_bounds;
-			SDL_GetDisplayBounds(i, &display_bounds);
-			app->clocks[i].window = SDL_CreateWindow(
-				PROGRAM_TITLE, display_bounds.x,
-				display_bounds.y, display_bounds.w,
-				display_bounds.h, flags);
-			if (app->clocks[i].window == NULL) {
-				LOG_ERROR("%s\n", SDL_GetError());
-				exit(EXIT_FAILURE);
-			}
-			/* Init window size after create it. */
-			SDL_GetWindowSize(app->clocks[i].window,
-					  &app->clocks[i].width,
-					  &app->clocks[i].height);
-			app->clocks[i].renderer = SDL_CreateRenderer(
-				app->clocks[i].window, -1,
-				SDL_RENDERER_ACCELERATED |
-					SDL_RENDERER_TARGETTEXTURE |
-					SDL_RENDERER_PRESENTVSYNC);
-			if (app->clocks[i].renderer == NULL) {
-				LOG_ERROR("%s\n", SDL_GetError());
-				exit(EXIT_FAILURE);
-			}
-			SDL_SetRenderDrawBlendMode(app->clocks[i].renderer,
-						   SDL_BLENDMODE_BLEND);
-		}
-	}
-#else
-	/* Android and Linux should share the same code here. */
-	SDL_DisableScreenSaver();
 	/**
 	 * We need `SDL_WINDOW_RESIZABLE` for auto-rotate
 	 * while fullscreen on Android.
@@ -325,7 +284,7 @@ void flipclock_create_clocks(struct flipclock *app)
 			SDL_WINDOW_FULLSCREEN_DESKTOP;
 		SDL_ShowCursor(SDL_DISABLE);
 	}
-	app->clocks = malloc(sizeof(*(app->clocks)) * app->clocks_length);
+	app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
 	for (int i = 0; i < app->clocks_length; ++i) {
 		app->clocks[i].fonts.time = NULL;
 		app->clocks[i].fonts.mode = NULL;
@@ -355,6 +314,56 @@ void flipclock_create_clocks(struct flipclock *app)
 		SDL_SetRenderDrawBlendMode(app->clocks[i].renderer,
 					   SDL_BLENDMODE_BLEND);
 	}
+}
+
+#ifdef _WIN32
+void _flipclock_create_clocks_preview(struct flipclock *app)
+{
+	/* Don't set fullscreen if in preview. */
+	app->properties.full = false;
+	app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
+	/* Create window from native window when in preview. */
+	app->clocks[0].window =
+		SDL_CreateWindowFrom(app->properties.preview_window);
+	/* Init window size after create it. */
+	SDL_GetWindowSize(app->clocks[0].window, &app->clocks[0].width,
+			  &app->clocks[0].height);
+	if (app->clocks[0].window == NULL) {
+		LOG_ERROR("%s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+	app->clocks[0].renderer = SDL_CreateRenderer(
+		app->clocks[0].window, -1,
+		SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE |
+			SDL_RENDERER_PRESENTVSYNC);
+	if (app->clocks[0].renderer == NULL) {
+		LOG_ERROR("%s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+	SDL_SetRenderDrawBlendMode(app->clocks[0].renderer,
+				   SDL_BLENDMODE_BLEND);
+}
+
+void _flipclock_create_clocks_win32(struct flipclock *app)
+{
+	if (!app->properties.screensaver)
+		SDL_DisableScreenSaver();
+	if (app->properties.preview) {
+		_flipclock_create_clocks_preview(app);
+	} else {
+		_flipclock_create_clocks_default(app);
+	}
+}
+#endif
+
+void flipclock_create_clocks(struct flipclock *app)
+{
+#ifdef _WIN32
+	_flipclock_create_clocks_win32(app);
+#else
+	/* Android and Linux should share the same code here. */
+	SDL_DisableScreenSaver();
+	_flipclock_create_clocks_default(app);
 #endif
 }
 
@@ -506,8 +515,8 @@ void flipclock_destroy_textures(struct flipclock *app, int clock_index)
 
 void flipclock_open_fonts(struct flipclock *app, int clock_index)
 {
-	// TODO: print actually used font_path to debug.
 	if (strlen(app->properties.font_path) != 0) {
+		LOG_DEBUG("Using font_path `%s`.\n", app->properties.font_path);
 		app->clocks[clock_index].fonts.time =
 			TTF_OpenFont(app->properties.font_path,
 				     app->clocks[clock_index].rect_size);
@@ -516,20 +525,20 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 				     app->clocks[clock_index].rects.mode.h);
 	} else {
 #if defined(_WIN32)
-		// TODO: Split it into different sub functions.
-		// TODO: Use program dir.
-		const char *system_root = getenv("SystemRoot");
 		char font_path[MAX_BUFFER_LENGTH];
-		strncpy(font_path, system_root, MAX_BUFFER_LENGTH - 1);
-		strncat(font_path, "\\Fonts\\flipclock.ttf",
-			MAX_BUFFER_LENGTH - strlen(font_path) - 1);
+		snprintf(font_path, MAX_BUFFER_LENGTH, "%s\\flipclock.ttf",
+			 app->properties.program_dir);
 		font_path[MAX_BUFFER_LENGTH - 1] = '\0';
+		if (strlen(font_path) == MAX_BUFFER_LENGTH - 1) {
+			LOG_ERROR("font_path too long, may fail to load.\n");
+		}
 #elif defined(__ANDROID__)
 		/* Directly under `app/src/main/assets` for Android APP. */
 		char *font_path = "flipclock.ttf";
 #else
 		char *font_path = INSTALL_PREFIX "/share/fonts/flipclock.ttf";
 #endif
+		LOG_DEBUG("Using font_path `%s`.\n", font_path);
 		app->clocks[clock_index].fonts.time = TTF_OpenFont(
 			font_path, app->clocks[clock_index].rect_size);
 		app->clocks[clock_index].fonts.mode = TTF_OpenFont(
@@ -550,9 +559,9 @@ void flipclock_close_fonts(struct flipclock *app, int clock_index)
 		TTF_CloseFont(app->clocks[clock_index].fonts.mode);
 }
 
-void flipclock_clear_texture(struct flipclock *app, int clock_index,
-			     SDL_Texture *target_texture,
-			     SDL_Color background_color)
+void _flipclock_clear_texture(struct flipclock *app, int clock_index,
+			      SDL_Texture *target_texture,
+			      SDL_Color background_color)
 {
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
 	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
@@ -562,9 +571,9 @@ void flipclock_clear_texture(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void flipclock_render_rounded_box(struct flipclock *app, int clock_index,
-				  SDL_Texture *target_texture,
-				  SDL_Rect target_rect, int radius)
+void _flipclock_render_rounded_box(struct flipclock *app, int clock_index,
+				   SDL_Texture *target_texture,
+				   SDL_Rect target_rect, int radius)
 {
 	if (radius <= 1) {
 		SDL_SetRenderTarget(app->clocks[clock_index].renderer,
@@ -616,9 +625,9 @@ void flipclock_render_rounded_box(struct flipclock *app, int clock_index,
 			d = d + 4 * x + 6;
 		} else {
 			d = d + 4 * (x - y) + 10;
-			y--;
+			--y;
 		}
-		x++;
+		++x;
 	}
 	SDL_Rect temp_rect;
 	temp_rect.x = target_rect.x;
@@ -629,9 +638,9 @@ void flipclock_render_rounded_box(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void flipclock_render_text(struct flipclock *app, int clock_index,
-			   SDL_Texture *target_texture, SDL_Rect target_rect,
-			   TTF_Font *font, char text[])
+void _flipclock_render_text(struct flipclock *app, int clock_index,
+			    SDL_Texture *target_texture, SDL_Rect target_rect,
+			    TTF_Font *font, char text[])
 {
 	int len = strlen(text);
 	if (len > 2) {
@@ -644,7 +653,7 @@ void flipclock_render_text(struct flipclock *app, int clock_index,
 	for (int i = 0; i < len; i++) {
 		/**
 		 * See https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html#SEC42
-		 * Normally Shaded is enough, however we have a rounded box,
+		 * Normally shaded is enough, however we have a rounded box,
 		 * and many fonts' boxes are too big compared with their
 		 * characters, they just cover the rounded corner.
 		 * So I have to use blended mode, because solid mode does not
@@ -677,8 +686,9 @@ void flipclock_render_text(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void flipclock_render_divider(struct flipclock *app, int clock_index,
-			      SDL_Texture *target_texture, SDL_Rect target_rect)
+void _flipclock_render_divider(struct flipclock *app, int clock_index,
+			       SDL_Texture *target_texture,
+			       SDL_Rect target_rect)
 {
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
 	/* Don't be transparent, or you will not see divider. */
@@ -689,16 +699,16 @@ void flipclock_render_divider(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void flipclock_render_texture(struct flipclock *app, int clock_index)
+void _flipclock_render_texture(struct flipclock *app, int clock_index)
 {
 	SDL_Texture *swap = app->clocks[clock_index].textures.current;
 	app->clocks[clock_index].textures.current =
 		app->clocks[clock_index].textures.previous;
 	app->clocks[clock_index].textures.previous = swap;
 
-	flipclock_clear_texture(app, clock_index,
-				app->clocks[clock_index].textures.current,
-				app->colors.transparent);
+	_flipclock_clear_texture(app, clock_index,
+				 app->clocks[clock_index].textures.current,
+				 app->colors.transparent);
 
 	char text[3];
 	SDL_Rect divider_rect;
@@ -714,15 +724,15 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 	 */
 
 	/* Background. */
-	flipclock_render_rounded_box(app, clock_index,
-				     app->clocks[clock_index].textures.current,
-				     app->clocks[clock_index].rects.hour,
-				     app->clocks[clock_index].radius);
+	_flipclock_render_rounded_box(app, clock_index,
+				      app->clocks[clock_index].textures.current,
+				      app->clocks[clock_index].rects.hour,
+				      app->clocks[clock_index].radius);
 
-	flipclock_render_rounded_box(app, clock_index,
-				     app->clocks[clock_index].textures.current,
-				     app->clocks[clock_index].rects.minute,
-				     app->clocks[clock_index].radius);
+	_flipclock_render_rounded_box(app, clock_index,
+				      app->clocks[clock_index].textures.current,
+				      app->clocks[clock_index].rects.minute,
+				      app->clocks[clock_index].radius);
 
 	/* Text. */
 	if (app->properties.ampm) {
@@ -733,11 +743,11 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 		 */
 		snprintf(text, sizeof(text), "%cM",
 			 app->times.now.tm_hour / 12 ? 'P' : 'A');
-		flipclock_render_text(app, clock_index,
-				      app->clocks[clock_index].textures.current,
-				      app->clocks[clock_index].rects.mode,
-				      app->clocks[clock_index].fonts.mode,
-				      text);
+		_flipclock_render_text(
+			app, clock_index,
+			app->clocks[clock_index].textures.current,
+			app->clocks[clock_index].rects.mode,
+			app->clocks[clock_index].fonts.mode, text);
 	}
 
 	/**
@@ -751,16 +761,16 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 		text[0] = text[1];
 		text[1] = text[2];
 	}
-	flipclock_render_text(app, clock_index,
-			      app->clocks[clock_index].textures.current,
-			      app->clocks[clock_index].rects.hour,
-			      app->clocks[clock_index].fonts.time, text);
+	_flipclock_render_text(app, clock_index,
+			       app->clocks[clock_index].textures.current,
+			       app->clocks[clock_index].rects.hour,
+			       app->clocks[clock_index].fonts.time, text);
 
 	strftime(text, sizeof(text), "%M", &app->times.now);
-	flipclock_render_text(app, clock_index,
-			      app->clocks[clock_index].textures.current,
-			      app->clocks[clock_index].rects.minute,
-			      app->clocks[clock_index].fonts.time, text);
+	_flipclock_render_text(app, clock_index,
+			       app->clocks[clock_index].textures.current,
+			       app->clocks[clock_index].rects.minute,
+			       app->clocks[clock_index].fonts.time, text);
 
 	/* And cut the card! */
 	divider_rect.h = app->clocks[clock_index].rects.hour.h / 100;
@@ -769,9 +779,9 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 	divider_rect.y =
 		app->clocks[clock_index].rects.hour.y +
 		(app->clocks[clock_index].rects.hour.h - divider_rect.h) / 2;
-	flipclock_render_divider(app, clock_index,
-				 app->clocks[clock_index].textures.current,
-				 divider_rect);
+	_flipclock_render_divider(app, clock_index,
+				  app->clocks[clock_index].textures.current,
+				  divider_rect);
 
 	divider_rect.h = app->clocks[clock_index].rects.minute.h / 100;
 	divider_rect.w = app->clocks[clock_index].rects.minute.w;
@@ -779,13 +789,13 @@ void flipclock_render_texture(struct flipclock *app, int clock_index)
 	divider_rect.y =
 		app->clocks[clock_index].rects.minute.y +
 		(app->clocks[clock_index].rects.minute.h - divider_rect.h) / 2;
-	flipclock_render_divider(app, clock_index,
-				 app->clocks[clock_index].textures.current,
-				 divider_rect);
+	_flipclock_render_divider(app, clock_index,
+				  app->clocks[clock_index].textures.current,
+				  divider_rect);
 }
 
-void flipclock_copy_rect(struct flipclock *app, int clock_index,
-			 SDL_Rect target_rect, int progress)
+void _flipclock_copy_rect(struct flipclock *app, int clock_index,
+			  SDL_Rect target_rect, int progress)
 {
 	if (progress >= MAX_PROGRESS) {
 		/* It finished flipping, so we don't draw flipping. */
@@ -849,26 +859,26 @@ void flipclock_copy_rect(struct flipclock *app, int clock_index,
 		       &half_source_rect, &half_target_rect);
 }
 
-void flipclock_animate(struct flipclock *app, int clock_index, int progress)
+void _flipclock_animate(struct flipclock *app, int clock_index, int progress)
 {
 	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
 			       app->colors.black.r, app->colors.black.g,
 			       app->colors.black.b, app->colors.black.a);
 	SDL_RenderClear(app->clocks[clock_index].renderer);
-	flipclock_copy_rect(app, clock_index,
-			    app->clocks[clock_index].rects.hour,
-			    app->times.now.tm_hour != app->times.past.tm_hour ?
-				    progress :
-				    MAX_PROGRESS);
-	flipclock_copy_rect(app, clock_index,
-			    app->clocks[clock_index].rects.minute,
-			    app->times.now.tm_min != app->times.past.tm_min ?
-				    progress :
-				    MAX_PROGRESS);
+	_flipclock_copy_rect(app, clock_index,
+			     app->clocks[clock_index].rects.hour,
+			     app->times.now.tm_hour != app->times.past.tm_hour ?
+				     progress :
+				     MAX_PROGRESS);
+	_flipclock_copy_rect(app, clock_index,
+			     app->clocks[clock_index].rects.minute,
+			     app->times.now.tm_min != app->times.past.tm_min ?
+				     progress :
+				     MAX_PROGRESS);
 	SDL_RenderPresent(app->clocks[clock_index].renderer);
 }
 
-void flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
+void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 {
 	for (int i = 0; i < app->clocks_length; ++i) {
 		if (event.window.windowID ==
@@ -893,7 +903,7 @@ void flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 					flipclock_refresh(app, i);
 					flipclock_open_fonts(app, i);
 					flipclock_create_textures(app, i);
-					flipclock_render_texture(app, i);
+					_flipclock_render_texture(app, i);
 				}
 				break;
 			case SDL_WINDOWEVENT_MINIMIZED:
@@ -914,7 +924,7 @@ void flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 	}
 }
 
-void flipclock_handle_event(struct flipclock *app, SDL_Event event)
+void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 {
 	switch (event.type) {
 #ifdef _WIN32
@@ -937,7 +947,7 @@ void flipclock_handle_event(struct flipclock *app, SDL_Event event)
 		break;
 #endif
 	case SDL_WINDOWEVENT:
-		flipclock_handle_window_event(app, event);
+		_flipclock_handle_window_event(app, event);
 		break;
 #ifdef _WIN32
 	/**
@@ -965,7 +975,7 @@ void flipclock_handle_event(struct flipclock *app, SDL_Event event)
 		    app->last_touch + DOUBLE_TAP_INTERVAL_MS) {
 			app->properties.ampm = !app->properties.ampm;
 			for (int i = 0; i < app->clocks_length; ++i)
-				flipclock_render_texture(app, i);
+				_flipclock_render_texture(app, i);
 		}
 		app->last_touch = event.tfinger.timestamp;
 		break;
@@ -990,7 +1000,7 @@ void flipclock_handle_event(struct flipclock *app, SDL_Event event)
 			case SDLK_t:
 				app->properties.ampm = !app->properties.ampm;
 				for (int i = 0; i < app->clocks_length; ++i)
-					flipclock_render_texture(app, i);
+					_flipclock_render_texture(app, i);
 				break;
 			case SDLK_f:
 				app->properties.full = !app->properties.full;
@@ -1002,7 +1012,7 @@ void flipclock_handle_event(struct flipclock *app, SDL_Event event)
 					flipclock_refresh(app, i);
 					flipclock_open_fonts(app, i);
 					flipclock_create_textures(app, i);
-					flipclock_render_texture(app, i);
+					_flipclock_render_texture(app, i);
 				}
 				break;
 			default:
@@ -1020,7 +1030,7 @@ void flipclock_handle_event(struct flipclock *app, SDL_Event event)
 		case SDLK_t:
 			app->properties.ampm = !app->properties.ampm;
 			for (int i = 0; i < app->clocks_length; ++i)
-				flipclock_render_texture(app, i);
+				_flipclock_render_texture(app, i);
 			break;
 		case SDLK_f:
 			app->properties.full = !app->properties.full;
@@ -1032,7 +1042,7 @@ void flipclock_handle_event(struct flipclock *app, SDL_Event event)
 				flipclock_refresh(app, i);
 				flipclock_open_fonts(app, i);
 				flipclock_create_textures(app, i);
-				flipclock_render_texture(app, i);
+				_flipclock_render_texture(app, i);
 			}
 			break;
 		default:
@@ -1059,8 +1069,8 @@ void flipclock_run_mainloop(struct flipclock *app)
 		;
 	/* First frame when app starts. */
 	for (int i = 0; i < app->clocks_length; ++i) {
-		flipclock_render_texture(app, i);
-		flipclock_animate(app, i, MAX_PROGRESS);
+		_flipclock_render_texture(app, i);
+		_flipclock_animate(app, i, MAX_PROGRESS);
 	}
 	while (app->running) {
 #ifdef _WIN32
@@ -1070,7 +1080,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 			app->running = false;
 #endif
 		if (SDL_WaitEventTimeout(&event, 1000 / FPS)) {
-			flipclock_handle_event(app, event);
+			_flipclock_handle_event(app, event);
 		}
 		time_t raw_time = time(NULL);
 		app->times.now = *localtime(&raw_time);
@@ -1086,12 +1096,12 @@ void flipclock_run_mainloop(struct flipclock *app)
 			progress = 0;
 			start_tick = SDL_GetTicks();
 			for (int i = 0; i < app->clocks_length; ++i)
-				flipclock_render_texture(app, i);
+				_flipclock_render_texture(app, i);
 		}
 		/* Pause when minimized. */
 		for (int i = 0; i < app->clocks_length; ++i) {
 			if (!app->clocks[i].wait) {
-				flipclock_animate(app, i, progress);
+				_flipclock_animate(app, i, progress);
 			}
 		}
 		/* Only calculate frame when animating. */
@@ -1131,9 +1141,8 @@ void flipclock_destroy(struct flipclock *app)
 	free(app);
 }
 
-void flipclock_print_help(char program_name[])
+void flipclock_print_help(struct flipclock *app, char program_name[])
 {
-	// TODO: print conf_path here?
 	printf("A simple flip clock screensaver using SDL2.\n");
 	printf("Version " PROJECT_VERSION ".\n");
 	printf("Usage: %s [OPTION...] <value>\n", program_name);
@@ -1152,7 +1161,8 @@ void flipclock_print_help(char program_name[])
 	       "or 24-hour clock format.\n",
 	       OPT_START);
 	printf("\t%cf <font>\tCustom font path.\n", OPT_START);
-	printf("Press `Esc` or `q` to exit.\n");
-	printf("Press `f` to toggle fullscreen.\n");
-	printf("Press `t` to toggle 12/24-hour clock format.\n");
+	printf("Press Esc or q to exit.\n");
+	printf("Press f to toggle fullscreen.\n");
+	printf("Press t to toggle 12/24-hour clock format.\n");
+	printf("Using configuration file %s.\n", app->properties.conf_path);
 }
