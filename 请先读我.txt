@@ -4,6 +4,8 @@
 
 如果想替换字体，可以直接将其它字体重命名为 flipclock.ttf 并放置在这个目录下面。也可以修改 flipclock.conf 里面的 font 选项，但不推荐这种方式。
 
+如果想使用自定义颜色，请参考此文件末尾的中文说明版配置文件。
+
 不建议单独提取 flipclock.scr 放到别处，程序运行需要依赖这个目录下的其他文件。
 
 如果下载了更新版本的程序并想要保持配置，请将 flipclock.conf 文件复制粘贴到新版本程序的目录。
@@ -20,3 +22,12 @@
 # Uncomment `font = ` and add path to use custom font.
 # 删除 `font = ` 前面的 `#` 并添加路径以使用自定义字体。
 #font =
+# Uncomment `font_color = ` to modify the color of the digit.
+# 删除 `font_color` 前面的 `#` 并修改颜色码以使用自定义数字色。
+#font_color = #000000ff
+# Uncomment `rect_color = ` to modify the color of the card.
+# 删除 `rect_color` 前面的 `#` 并修改颜色码以使用自定义卡片色。
+#rect_color = #fe9a00ff
+# Uncomment `black_color = ` to modify the color of the background.
+# 删除 `back_color` 前面的 `#` 并修改颜色码以使用自定义背景色。
+#back_color = #000000ff

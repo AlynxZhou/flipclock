@@ -58,6 +58,7 @@ struct properties {
 struct colors {
 	SDL_Color font;
 	SDL_Color rect;
+	SDL_Color back;
 	SDL_Color black;
 	SDL_Color transparent;
 };

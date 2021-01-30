@@ -84,14 +84,6 @@ struct flipclock *flipclock_create(void)
 	app->clocks_length = 1;
 	app->last_touch = 0;
 	app->running = true;
-	app->colors.font.r = 0xd0;
-	app->colors.font.g = 0xd0;
-	app->colors.font.b = 0xd0;
-	app->colors.font.a = 0xff;
-	app->colors.rect.r = 0x20;
-	app->colors.rect.g = 0x20;
-	app->colors.rect.b = 0x20;
-	app->colors.rect.a = 0xff;
 	app->colors.black.r = 0x00;
 	app->colors.black.g = 0x00;
 	app->colors.black.b = 0x00;
@@ -100,6 +92,15 @@ struct flipclock *flipclock_create(void)
 	app->colors.transparent.g = 0x00;
 	app->colors.transparent.b = 0x00;
 	app->colors.transparent.a = 0x00;
+	app->colors.font.r = 0xd0;
+	app->colors.font.g = 0xd0;
+	app->colors.font.b = 0xd0;
+	app->colors.font.a = 0xff;
+	app->colors.rect.r = 0x20;
+	app->colors.rect.g = 0x20;
+	app->colors.rect.b = 0x20;
+	app->colors.rect.a = 0xff;
+	app->colors.back = app->colors.black;
 	app->properties.ampm = false;
 	app->properties.full = true;
 	app->properties.font_path[0] = '\0';
@@ -194,58 +195,45 @@ int _flipclock_parse_key_value(char *line, char **key, char **value)
 	return 0;
 }
 
-int _flipclock_parse_hex_char(char c)
+int _flipclock_parse_color(const char *rgba, SDL_Color *color)
 {
-	if (c >= 'a' && c <= 'f') {
-		return c - 'a' + 10;
-	} else if (c >= 'A' && c <= 'F') {
-		return c - 'A' + 10;
-	} else if (c >= '0' && c <= '9') {
-		return c - '0';
-	} else {
+	const int rgba_length = strlen(rgba);
+	if (rgba_length == 0) {
+		LOG_ERROR("Empty color string!\n");
 		return -1;
-	}
-}
-
-int _flipclock_parse_color(const char *value, SDL_Color *color)
-{
-	const unsigned long value_str_len = strlen(value);
-	if (value_str_len == 0) {
-		LOG_ERROR("No color specified!\n");
-		return -1;
-	} else if (value[0] != '#') {
-		LOG_ERROR("Color must start with `#`!\n");
+	} else if (rgba[0] != '#') {
+		LOG_ERROR("Color string must start with `#`!\n");
 		return -2;
-	} else if (value_str_len == 7 || value_str_len == 9) {
-		bool is_all_hexcode = true;
-		for (int i = 1; i < value_str_len; i++) {
-			if (!isxdigit(value[i])) {
-				is_all_hexcode = false;
-				break;
-			}
-		}
-		if (is_all_hexcode) {
-			color->r = (_flipclock_parse_hex_char(value[1]) * 16)
-				+ _flipclock_parse_hex_char(value[2]);
-			color->g = (_flipclock_parse_hex_char(value[3]) * 16)
-				+ _flipclock_parse_hex_char(value[4]);
-			color->b = (_flipclock_parse_hex_char(value[5]) * 16)
-				+ _flipclock_parse_hex_char(value[6]);
-			if (value_str_len == 9) {
-				color->a = (_flipclock_parse_hex_char(value[7]) * 16)
-					+ _flipclock_parse_hex_char(value[8]);
-			} else {
-				color->a = 0xff;
-			}
-			return 0;
-		} else {
-			LOG_ERROR("Color must specified in format `#rrggbb[aa]`");
-			return -3;
-		}
-	} else {
-		LOG_ERROR("Color must specified in format `#rrggbb[aa]`");
+	} else if (rgba_length != 7 && rgba_length != 9) {
+		LOG_ERROR("Color string must be in format `#rrggbb[aa]`!\n");
 		return -3;
+	} else {
+		for (int i = 1; i < rgba_length; ++i) {
+			if (!isxdigit(rgba[i])) {
+				LOG_ERROR("Color string numbers "
+					  "should be hexcode!\n");
+				return -4;
+			}
+		}
+		/**
+		 * Even if user input an invalid hexcode,
+		 * we also let strtoll try to parse it.
+		 * It's user's problem when displayed color
+		 * is not what he/she wants.
+		 */
+		long long hex_number = strtoll(rgba + 1, NULL, 16);
+		if (rgba_length == 7) {
+			/* Add 0xff as alpha. */
+			hex_number = (hex_number << 8) | 0xff;
+		}
+		color->r = (hex_number >> 24) & 0xff;
+		color->g = (hex_number >> 16) & 0xff;
+		color->b = (hex_number >> 8) & 0xff;
+		color->a = (hex_number >> 0) & 0xff;
+		LOG_DEBUG("Parsed color `rgba(%d, %d, %d, %d)`.\n", color->r,
+			  color->g, color->b, color->a);
 	}
+	return 0;
 }
 
 void flipclock_load_conf(struct flipclock *app)
@@ -271,12 +259,15 @@ void flipclock_load_conf(struct flipclock *app)
 		      "# Uncomment `font = ` and "
 		      "add path to use custom font.\n"
 		      "#font = \n"
-		      "# Uncomment `font_color = ` to modify the color of font.\n"
-		      "#font_color = #d0d0d0ff\n"
-		      "# Uncomment `rect_color = ` to modify the color of rectangle.\n"
-		      "#rect_color = #202020ff\n"
-		      "# Uncomment `black_color = ` to modify the color of black.\n"
-		      "#black_color = #000000ff\n",
+		      "# Uncomment `font_color = ` to modify "
+		      "the color of the digit.\n"
+		      "#font_color = #000000ff\n"
+		      "# Uncomment `rect_color = ` to modify "
+		      "the color of the card.\n"
+		      "#rect_color = #fe9a00ff\n"
+		      "# Uncomment `black_color = ` to modify "
+		      "the color of the background.\n"
+		      "#back_color = #000000ff\n",
 		      conf);
 		goto close_file;
 	}
@@ -287,11 +278,16 @@ void flipclock_load_conf(struct flipclock *app)
 	char conf_line[MAX_BUFFER_LENGTH];
 	char *key;
 	char *value;
+	/**
+	 * It's better to use a temp variable here,
+	 * so when parsing failed we still have the default color.
+	 */
+	SDL_Color parsed_color;
 	while (fgets(conf_line, MAX_BUFFER_LENGTH, conf) != NULL) {
 		if (strlen(conf_line) == MAX_BUFFER_LENGTH - 1) {
 			LOG_ERROR("conf_line too long, may fail to load.\n");
 		}
-		if (_flipclock_parse_key_value(conf_line, &key, &value) != 0) {
+		if (_flipclock_parse_key_value(conf_line, &key, &value)) {
 			continue;
 		}
 		LOG_DEBUG("Parsed key `%s` and value `%s`.\n", key, value);
@@ -313,16 +309,22 @@ void flipclock_load_conf(struct flipclock *app)
 					  "may fail to load.\n");
 			}
 		} else if (!strcmp(key, "font_color")) {
-			if (_flipclock_parse_color(value, &app->colors.font) < 0) {
-				LOG_ERROR("Failed to parse the font color");
+			if (_flipclock_parse_color(value, &parsed_color) == 0) {
+				app->colors.font = parsed_color;
+			} else {
+				LOG_ERROR("Failed to parse font_color!\n");
 			}
 		} else if (!strcmp(key, "rect_color")) {
-			if (_flipclock_parse_color(value, &app->colors.rect) < 0) {
-				LOG_ERROR("Failed to parse the color of rectangle");
+			if (_flipclock_parse_color(value, &parsed_color) == 0) {
+				app->colors.rect = parsed_color;
+			} else {
+				LOG_ERROR("Failed to parse rect_color!\n");
 			}
-		} else if (!strcmp(key, "black_color")) {
-			if (_flipclock_parse_color(value, &app->colors.black) < 0) {
-				LOG_ERROR("Failed to parse the color of black");
+		} else if (!strcmp(key, "back_color")) {
+			if (_flipclock_parse_color(value, &parsed_color) == 0) {
+				app->colors.back = parsed_color;
+			} else {
+				LOG_ERROR("Failed to parse back_color!\n");
 			}
 		} else {
 			LOG_DEBUG("Unknown key `%s`.\n", key);
@@ -763,8 +765,8 @@ void _flipclock_render_divider(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
 	/* Don't be transparent, or you will not see divider. */
 	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
-			       app->colors.black.r, app->colors.black.g,
-			       app->colors.black.b, app->colors.black.a);
+			       app->colors.back.r, app->colors.back.g,
+			       app->colors.back.b, app->colors.back.a);
 	SDL_RenderFillRect(app->clocks[clock_index].renderer, &target_rect);
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
@@ -932,8 +934,8 @@ void _flipclock_copy_rect(struct flipclock *app, int clock_index,
 void _flipclock_animate(struct flipclock *app, int clock_index, int progress)
 {
 	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
-			       app->colors.black.r, app->colors.black.g,
-			       app->colors.black.b, app->colors.black.a);
+			       app->colors.back.r, app->colors.back.g,
+			       app->colors.back.b, app->colors.back.a);
 	SDL_RenderClear(app->clocks[clock_index].renderer);
 	_flipclock_copy_rect(app, clock_index,
 			     app->clocks[clock_index].rects.hour,
