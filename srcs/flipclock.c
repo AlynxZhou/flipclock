@@ -445,7 +445,8 @@ void flipclock_create_clocks(struct flipclock *app)
 #endif
 }
 
-void flipclock_set_fullscreen(struct flipclock *app, int clock_index, bool full)
+void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
+			       bool full)
 {
 	app->properties.full = full;
 	if (full) {
@@ -1089,7 +1090,7 @@ void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 				for (int i = 0; i < app->clocks_length; ++i) {
 					flipclock_destroy_textures(app, i);
 					flipclock_close_fonts(app, i);
-					flipclock_set_fullscreen(
+					_flipclock_set_fullscreen(
 						app, i, app->properties.full);
 					flipclock_refresh(app, i);
 					flipclock_open_fonts(app, i);
@@ -1119,8 +1120,8 @@ void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 			for (int i = 0; i < app->clocks_length; ++i) {
 				flipclock_destroy_textures(app, i);
 				flipclock_close_fonts(app, i);
-				flipclock_set_fullscreen(app, i,
-							 app->properties.full);
+				_flipclock_set_fullscreen(app, i,
+							  app->properties.full);
 				flipclock_refresh(app, i);
 				flipclock_open_fonts(app, i);
 				flipclock_create_textures(app, i);

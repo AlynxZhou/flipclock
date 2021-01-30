@@ -109,8 +109,6 @@ struct flipclock {
 struct flipclock *flipclock_create(void);
 void flipclock_load_conf(struct flipclock *app);
 void flipclock_create_clocks(struct flipclock *app);
-void flipclock_set_fullscreen(struct flipclock *app, int clock_index,
-			      bool full);
 void flipclock_refresh(struct flipclock *app, int clock_index);
 void flipclock_create_textures(struct flipclock *app, int clock_index);
 void flipclock_destroy_textures(struct flipclock *app, int clock_index);
