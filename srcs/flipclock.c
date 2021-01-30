@@ -27,9 +27,8 @@ void _flipclock_get_program_dir_win32(char *program_dir)
 	 */
 	GetModuleFileName(NULL, program_dir, MAX_BUFFER_LENGTH);
 	program_dir[MAX_BUFFER_LENGTH - 1] = '\0';
-	if (strlen(program_dir) == MAX_BUFFER_LENGTH - 1) {
+	if (strlen(program_dir) == MAX_BUFFER_LENGTH - 1)
 		LOG_ERROR("program_dir too long, may fail to load.\n");
-	}
 	/**
 	 * Remove the program name and get the dir.
 	 * This should work because Windows path should have `\\`.
@@ -47,9 +46,8 @@ void _flipclock_get_conf_path_win32(char *conf_path, const char *program_dir)
 	snprintf(conf_path, MAX_BUFFER_LENGTH, "%s\\flipclock.conf",
 		 program_dir);
 	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
-	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1) {
+	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
 		LOG_ERROR("conf_path too long, may fail to load.\n");
-	}
 }
 #elif defined(__linux__)
 void _flipclock_get_conf_path_linux(char *conf_path)
@@ -66,9 +64,8 @@ void _flipclock_get_conf_path_linux(char *conf_path)
 			 conf_dir);
 	}
 	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
-	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1) {
+	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
 		LOG_ERROR("conf_path too long, may fail to load.\n");
-	}
 }
 #endif
 
@@ -224,10 +221,9 @@ int _flipclock_parse_color(const char *rgba, SDL_Color *color)
 		 * is not what he/she wants.
 		 */
 		long long hex_number = strtoll(rgba + 1, NULL, 16);
-		if (rgba_length == 7) {
-			// Add 0xff as alpha.
+		// Add 0xff as alpha if no alpha provided.
+		if (rgba_length == 7)
 			hex_number = (hex_number << 8) | 0xff;
-		}
 		color->r = (hex_number >> 24) & 0xff;
 		color->g = (hex_number >> 16) & 0xff;
 		color->b = (hex_number >> 8) & 0xff;
@@ -288,50 +284,42 @@ void flipclock_load_conf(struct flipclock *app)
 	 */
 	SDL_Color parsed_color;
 	while (fgets(conf_line, MAX_BUFFER_LENGTH, conf) != NULL) {
-		if (strlen(conf_line) == MAX_BUFFER_LENGTH - 1) {
+		if (strlen(conf_line) == MAX_BUFFER_LENGTH - 1)
 			LOG_ERROR("conf_line too long, may fail to load.\n");
-		}
-		if (_flipclock_parse_key_value(conf_line, &key, &value)) {
+		if (_flipclock_parse_key_value(conf_line, &key, &value))
 			continue;
-		}
 		LOG_DEBUG("Parsed key `%s` and value `%s`.\n", key, value);
 		if (!strcmp(key, "ampm")) {
-			if (!strcmp(value, "true")) {
+			if (!strcmp(value, "true"))
 				app->properties.ampm = true;
-			}
 		} else if (!strcmp(key, "full")) {
-			if (!strcmp(value, "false")) {
+			if (!strcmp(value, "false"))
 				app->properties.full = false;
-			}
 		} else if (!strcmp(key, "font")) {
 			strncpy(app->properties.font_path, value,
 				MAX_BUFFER_LENGTH - 1);
 			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
 			if (strlen(app->properties.font_path) ==
-			    MAX_BUFFER_LENGTH - 1) {
+			    MAX_BUFFER_LENGTH - 1)
 				LOG_ERROR("font_path too long, "
 					  "may fail to load.\n");
-			}
 		} else if (!strcmp(key, "font_scale")) {
 			app->properties.font_scale = strtod(value, NULL);
 		} else if (!strcmp(key, "font_color")) {
-			if (!_flipclock_parse_color(value, &parsed_color)) {
+			if (!_flipclock_parse_color(value, &parsed_color))
 				app->colors.font = parsed_color;
-			} else {
+			else
 				LOG_ERROR("Failed to parse font_color!\n");
-			}
 		} else if (!strcmp(key, "rect_color")) {
-			if (!_flipclock_parse_color(value, &parsed_color)) {
+			if (!_flipclock_parse_color(value, &parsed_color))
 				app->colors.rect = parsed_color;
-			} else {
+			else
 				LOG_ERROR("Failed to parse rect_color!\n");
-			}
 		} else if (!strcmp(key, "back_color")) {
-			if (!_flipclock_parse_color(value, &parsed_color)) {
+			if (!_flipclock_parse_color(value, &parsed_color))
 				app->colors.back = parsed_color;
-			} else {
+			else
 				LOG_ERROR("Failed to parse back_color!\n");
-			}
 		} else {
 			LOG_DEBUG("Unknown key `%s`.\n", key);
 		}
@@ -371,9 +359,16 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 		app->clocks[i].wait = false;
 		SDL_Rect display_bounds;
 		SDL_GetDisplayBounds(i, &display_bounds);
-		app->clocks[i].window = SDL_CreateWindow(
-			PROGRAM_TITLE, display_bounds.x, display_bounds.y,
-			display_bounds.w, display_bounds.h, flags);
+		if (app->properties.full)
+			app->clocks[i].window = SDL_CreateWindow(
+				PROGRAM_TITLE, display_bounds.x,
+				display_bounds.y, display_bounds.w,
+				display_bounds.h, flags);
+		else
+			app->clocks[i].window = SDL_CreateWindow(
+				PROGRAM_TITLE, display_bounds.x,
+				display_bounds.y, WINDOW_WIDTH, WINDOW_HEIGHT,
+				flags);
 		if (app->clocks[i].window == NULL) {
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
@@ -426,11 +421,10 @@ void _flipclock_create_clocks_win32(struct flipclock *app)
 {
 	if (!app->properties.screensaver)
 		SDL_DisableScreenSaver();
-	if (app->properties.preview) {
+	if (app->properties.preview)
 		_flipclock_create_clocks_preview(app);
-	} else {
+	else
 		_flipclock_create_clocks_default(app);
-	}
 }
 #endif
 
@@ -461,6 +455,9 @@ void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
 				  &app->clocks[clock_index].width,
 				  &app->clocks[clock_index].height);
 		SDL_ShowCursor(SDL_DISABLE);
+		LOG_DEBUG("Set clock `%d` to fullscreen with size `%dx%d`.\n",
+			  clock_index, app->clocks[clock_index].width,
+			  app->clocks[clock_index].height);
 	} else {
 		SDL_SetWindowFullscreen(app->clocks[clock_index].window, 0);
 		SDL_GetWindowSize(app->clocks[clock_index].window,
@@ -471,6 +468,9 @@ void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
 				      app->clocks[clock_index].width / 2,
 				      app->clocks[clock_index].height / 2);
 		SDL_ShowCursor(SDL_ENABLE);
+		LOG_DEBUG("Set clock `%d` to windowed with size `%dx%d`.\n",
+			  clock_index, app->clocks[clock_index].width,
+			  app->clocks[clock_index].height);
 	}
 }
 
@@ -963,47 +963,79 @@ void _flipclock_animate(struct flipclock *app, int clock_index, int progress)
 
 void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 {
+	int clock_index = 0;
 	for (int i = 0; i < app->clocks_length; ++i) {
 		if (event.window.windowID ==
 		    SDL_GetWindowID(app->clocks[i].window)) {
-			switch (event.window.event) {
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
-				/**
-				 * Only re-render when size changed.
-				 * Windows may send event when size
-				 * not changed, and cause strange bugs.
-				 */
-				if (event.window.data1 !=
-					    app->clocks[i].width ||
-				    event.window.data2 !=
-					    app->clocks[i].height) {
-					app->clocks[i].width =
-						event.window.data1;
-					app->clocks[i].height =
-						event.window.data2;
-					flipclock_destroy_textures(app, i);
-					flipclock_close_fonts(app, i);
-					flipclock_refresh(app, i);
-					flipclock_open_fonts(app, i);
-					flipclock_create_textures(app, i);
-					_flipclock_render_texture(app, i);
-				}
-				break;
-			case SDL_WINDOWEVENT_MINIMIZED:
-				app->clocks[i].wait = true;
-				break;
-			// `RESTORED` is emitted after `MINIMIZED`.
-			case SDL_WINDOWEVENT_RESTORED:
-				app->clocks[i].wait = false;
-				break;
-			case SDL_WINDOWEVENT_CLOSE:
-				app->running = false;
-				break;
-			default:
-				break;
-			}
+			clock_index = i;
 			break;
 		}
+	}
+	switch (event.window.event) {
+	case SDL_WINDOWEVENT_SIZE_CHANGED:
+		/**
+		 * Only re-render when size changed.
+		 * Windows may send event when size
+		 * not changed, and cause strange bugs.
+		 */
+		if (event.window.data1 != app->clocks[clock_index].width ||
+		    event.window.data2 != app->clocks[clock_index].height) {
+			app->clocks[clock_index].width = event.window.data1;
+			app->clocks[clock_index].height = event.window.data2;
+			LOG_DEBUG("New window size for "
+				  "clock `%d` is `%dx%d`.\n",
+				  clock_index, app->clocks[clock_index].width,
+				  app->clocks[clock_index].height);
+			flipclock_destroy_textures(app, clock_index);
+			flipclock_close_fonts(app, clock_index);
+			flipclock_refresh(app, clock_index);
+			flipclock_open_fonts(app, clock_index);
+			flipclock_create_textures(app, clock_index);
+			_flipclock_render_texture(app, clock_index);
+		}
+		break;
+	case SDL_WINDOWEVENT_MINIMIZED:
+		app->clocks[clock_index].wait = true;
+		break;
+	// `RESTORED` is emitted after `MINIMIZED`.
+	case SDL_WINDOWEVENT_RESTORED:
+		app->clocks[clock_index].wait = false;
+		break;
+	case SDL_WINDOWEVENT_CLOSE:
+		app->running = false;
+		break;
+	default:
+		break;
+	}
+}
+
+void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
+{
+	switch (event.key.keysym.sym) {
+	case SDLK_ESCAPE:
+	case SDLK_q:
+	case SDLK_AC_BACK:
+		app->running = false;
+		break;
+	case SDLK_t:
+		app->properties.ampm = !app->properties.ampm;
+		for (int i = 0; i < app->clocks_length; ++i)
+			_flipclock_render_texture(app, i);
+		break;
+	case SDLK_f:
+		app->properties.full = !app->properties.full;
+		for (int i = 0; i < app->clocks_length; ++i) {
+			flipclock_destroy_textures(app, i);
+			flipclock_close_fonts(app, i);
+			_flipclock_set_fullscreen(app, i, app->properties.full);
+			flipclock_refresh(app, i);
+			flipclock_open_fonts(app, i);
+			flipclock_create_textures(app, i);
+			_flipclock_render_texture(app, i);
+		}
+		break;
+	default:
+		break;
 	}
 }
 
@@ -1072,65 +1104,13 @@ void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 		 * it only handles some special keys.
 		 * Also, we do nothing when in preview.
 		 */
-		if (!app->properties.preview && app->properties.screensaver) {
+		if (!app->properties.preview && app->properties.screensaver)
 			app->running = false;
-		} else if (!app->properties.preview) {
-			switch (event.key.keysym.sym) {
-			case SDLK_ESCAPE:
-			case SDLK_q:
-				app->running = false;
-				break;
-			case SDLK_t:
-				app->properties.ampm = !app->properties.ampm;
-				for (int i = 0; i < app->clocks_length; ++i)
-					_flipclock_render_texture(app, i);
-				break;
-			case SDLK_f:
-				app->properties.full = !app->properties.full;
-				for (int i = 0; i < app->clocks_length; ++i) {
-					flipclock_destroy_textures(app, i);
-					flipclock_close_fonts(app, i);
-					_flipclock_set_fullscreen(
-						app, i, app->properties.full);
-					flipclock_refresh(app, i);
-					flipclock_open_fonts(app, i);
-					flipclock_create_textures(app, i);
-					_flipclock_render_texture(app, i);
-				}
-				break;
-			default:
-				break;
-			}
-		}
+		else if (!app->properties.preview)
+			_flipclock_handle_keydown(app, event);
 #else
 		// It's simple under Linux and Android.
-		switch (event.key.keysym.sym) {
-		case SDLK_ESCAPE:
-		case SDLK_q:
-		case SDLK_AC_BACK:
-			app->running = false;
-			break;
-		case SDLK_t:
-			app->properties.ampm = !app->properties.ampm;
-			for (int i = 0; i < app->clocks_length; ++i)
-				_flipclock_render_texture(app, i);
-			break;
-		case SDLK_f:
-			app->properties.full = !app->properties.full;
-			for (int i = 0; i < app->clocks_length; ++i) {
-				flipclock_destroy_textures(app, i);
-				flipclock_close_fonts(app, i);
-				_flipclock_set_fullscreen(app, i,
-							  app->properties.full);
-				flipclock_refresh(app, i);
-				flipclock_open_fonts(app, i);
-				flipclock_create_textures(app, i);
-				_flipclock_render_texture(app, i);
-			}
-			break;
-		default:
-			break;
-		}
+		_flipclock_handle_keydown(app, event);
 #endif
 		break;
 	case SDL_QUIT:
@@ -1162,9 +1142,8 @@ void flipclock_run_mainloop(struct flipclock *app)
 		    !IsWindow(app->properties.preview_window))
 			app->running = false;
 #endif
-		if (SDL_WaitEventTimeout(&event, 1000 / FPS)) {
+		if (SDL_WaitEventTimeout(&event, 1000 / FPS))
 			_flipclock_handle_event(app, event);
-		}
 		time_t raw_time = time(NULL);
 		app->times.now = *localtime(&raw_time);
 		/**
@@ -1182,11 +1161,9 @@ void flipclock_run_mainloop(struct flipclock *app)
 				_flipclock_render_texture(app, i);
 		}
 		// Pause when minimized.
-		for (int i = 0; i < app->clocks_length; ++i) {
-			if (!app->clocks[i].wait) {
+		for (int i = 0; i < app->clocks_length; ++i)
+			if (!app->clocks[i].wait)
 				_flipclock_animate(app, i, progress);
-			}
-		}
 		// Only calculate frame when animating.
 		if (animating)
 			progress = SDL_GetTicks() - start_tick;
