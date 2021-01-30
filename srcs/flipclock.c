@@ -366,9 +366,12 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 				display_bounds.h, flags);
 		else
 			app->clocks[i].window = SDL_CreateWindow(
-				PROGRAM_TITLE, display_bounds.x,
-				display_bounds.y, WINDOW_WIDTH, WINDOW_HEIGHT,
-				flags);
+				PROGRAM_TITLE,
+				display_bounds.x +
+					(display_bounds.w - WINDOW_WIDTH) / 2,
+				display_bounds.y +
+					(display_bounds.h - WINDOW_HEIGHT) / 2,
+				WINDOW_WIDTH, WINDOW_HEIGHT, flags);
 		if (app->clocks[i].window == NULL) {
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
