@@ -104,6 +104,7 @@ struct flipclock *flipclock_create(void)
 	app->properties.ampm = false;
 	app->properties.full = true;
 	app->properties.font_path[0] = '\0';
+	app->properties.font_scale = 1.0;
 #ifdef _WIN32
 	app->properties.preview = false;
 	app->properties.screensaver = false;
@@ -259,6 +260,8 @@ void flipclock_load_conf(struct flipclock *app)
 		      "# Uncomment `font = ` and "
 		      "add path to use custom font.\n"
 		      "#font = \n"
+		      "# Uncomment `font_scale = 0.8` to modify font scale.\n"
+		      "#font_scale = 0.8\n"
 		      "# Uncomment `font_color = ` to modify "
 		      "the color of the digit.\n"
 		      "#font_color = #000000ff\n"
@@ -308,20 +311,22 @@ void flipclock_load_conf(struct flipclock *app)
 				LOG_ERROR("font_path too long, "
 					  "may fail to load.\n");
 			}
+		} else if (!strcmp(key, "font_scale")) {
+			app->properties.font_scale = strtod(value, NULL);
 		} else if (!strcmp(key, "font_color")) {
-			if (_flipclock_parse_color(value, &parsed_color) == 0) {
+			if (!_flipclock_parse_color(value, &parsed_color)) {
 				app->colors.font = parsed_color;
 			} else {
 				LOG_ERROR("Failed to parse font_color!\n");
 			}
 		} else if (!strcmp(key, "rect_color")) {
-			if (_flipclock_parse_color(value, &parsed_color) == 0) {
+			if (!_flipclock_parse_color(value, &parsed_color)) {
 				app->colors.rect = parsed_color;
 			} else {
 				LOG_ERROR("Failed to parse rect_color!\n");
 			}
 		} else if (!strcmp(key, "back_color")) {
-			if (_flipclock_parse_color(value, &parsed_color) == 0) {
+			if (!_flipclock_parse_color(value, &parsed_color)) {
 				app->colors.back = parsed_color;
 			} else {
 				LOG_ERROR("Failed to parse back_color!\n");
@@ -591,10 +596,12 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 		LOG_DEBUG("Using font_path `%s`.\n", app->properties.font_path);
 		app->clocks[clock_index].fonts.time =
 			TTF_OpenFont(app->properties.font_path,
-				     app->clocks[clock_index].rect_size);
+				     app->clocks[clock_index].rect_size *
+					     app->properties.font_scale);
 		app->clocks[clock_index].fonts.mode =
 			TTF_OpenFont(app->properties.font_path,
-				     app->clocks[clock_index].rects.mode.h);
+				     app->clocks[clock_index].rects.mode.h *
+					     app->properties.font_scale);
 	} else {
 #if defined(_WIN32)
 		char font_path[MAX_BUFFER_LENGTH];
@@ -612,9 +619,11 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 #endif
 		LOG_DEBUG("Using font_path `%s`.\n", font_path);
 		app->clocks[clock_index].fonts.time = TTF_OpenFont(
-			font_path, app->clocks[clock_index].rect_size);
+			font_path, app->clocks[clock_index].rect_size *
+					   app->properties.font_scale);
 		app->clocks[clock_index].fonts.mode = TTF_OpenFont(
-			font_path, app->clocks[clock_index].rects.mode.h);
+			font_path, app->clocks[clock_index].rects.mode.h *
+					   app->properties.font_scale);
 	}
 	if (app->clocks[clock_index].fonts.time == NULL ||
 	    app->clocks[clock_index].fonts.mode == NULL) {

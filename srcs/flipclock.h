@@ -48,6 +48,7 @@ struct properties {
 	char conf_path[MAX_BUFFER_LENGTH];
 	bool ampm;
 	bool full;
+	double font_scale;
 #ifdef _WIN32
 	HWND preview_window;
 	bool preview;
