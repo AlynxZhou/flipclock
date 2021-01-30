@@ -78,6 +78,19 @@ On Windows, program will use `flipclock.conf` under the same directory as progra
 
 `flipclock.conf` will be automatically created if program does not find it, so please run program once before editing configuration file.
 
+# Contribution
+
+If you want some features and you can implement it, a PR is always welcome, but there are some rules or personal habits:
+
+- If you are writing multi-line comment, please use the same style with existing comments. Comments should always occupy a new line. If your comment is longer than Column 80, break it into block comment with `/* */`, don't use `//` for block comment.
+- You can use all **C11** features freely.
+- Try to use C standard functions only and first, until you are implementing some platform-dependent features that libc does not support. Do use preprocessor (`_WIN32`, `__ANDROID__`, `__linux__`) for platform-dependent code.
+- Try not to pull new dependency into project other than SDL2 and SDL2_ttf, it's too brain damage to add dependency when building on Windows, building on this platform is a disaster and packaging on this platform is a mistery.
+- **When you are coding please use [Linux kernel coding style](https://www.kernel.org/doc/html/v4.10/process/coding-style.html).** There is a `.clang-format` for this project, please run `clang-format` yourself before committing something. It will keep most coding style consistent.
+- There are still some coding style `clang-format` cannot change, please keep the same as existing code. For example, add period for all comments and printed text, add `\n` yourself for logging.
+- Prefer to `++i`, except when you really need `i` before increasement.
+- If you added new options to configuration file and you are able to write Chinese, please update `请先读我.txt` too. This file is a README for Chinese Windows users and **should use GB2312 as encoding and CRLF as return**.
+
 # License
 
 [Apache-2.0](./LICENSE)
