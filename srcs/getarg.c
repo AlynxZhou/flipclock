@@ -10,12 +10,12 @@ char *argopt = NULL;
 int getarg(int argc, char *argv[], const char opt_string[])
 {
 	static int i = 1;
-	/* Always init i with 1, because 0 is the program name. */
+	// Always init i with 1, because 0 is the program name.
 	static int j = 1;
-	/* Always init j with 1, because 0 is OPT_START. */
+	// Always init j with 1, because 0 is OPT_START.
 	int temp_i = 0;
 	int temp_j = 0;
-	/* Temp i and j for an option followed by a value. */
+	// Temp i and j for an option followed by a value.
 	while (i < argc) {
 		argopt = NULL;
 		if (argv[i][0] != OPT_START) {
@@ -31,17 +31,17 @@ int getarg(int argc, char *argv[], const char opt_string[])
 			 * All options must begin with OPT_START
 			 * and end with '\0'.
 			 */
-			i++;
+			++i;
 			j = 1;
 			continue;
 		} else if (strchr(opt_string, argv[i][j]) == NULL) {
-			/* Not a valid option. But just return it. */
+			// Not a valid option. But just return it.
 			return argv[i][j++];
 		} else if (*(strchr(opt_string, argv[i][j]) + 1) != ':') {
-			/* Options not finished. */
+			// Options not finished.
 			return argv[i][j++];
 		} else if (*(strchr(opt_string, argv[i][j]) + 1) == ':') {
-			/* An option followed by a value. */
+			// An option followed by a value.
 			if (i + 1 < argc && argv[i][j + 1] == '\0') {
 				/**
 				 * The option must be followed
@@ -50,8 +50,8 @@ int getarg(int argc, char *argv[], const char opt_string[])
 				temp_i = i;
 				temp_j = j;
 				argopt = argv[++i];
-				i++;
-				/* Increase i to skip value in next loop. */
+				++i;
+				// Increase i to skip value in next loop.
 				j = 1;
 				return argv[temp_i][temp_j];
 			} else {
@@ -59,7 +59,7 @@ int getarg(int argc, char *argv[], const char opt_string[])
 				 * Just skip an option with
 				 * ':' but no value.
 				 */
-				j++;
+				++j;
 			}
 		}
 	}

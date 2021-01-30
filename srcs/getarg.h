@@ -10,7 +10,7 @@
 #	define OPT_START '-'
 #endif
 
-/* Global optarg. */
+// Global optarg.
 extern char *argopt;
 
 /**

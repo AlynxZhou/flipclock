@@ -54,10 +54,10 @@ void _flipclock_get_conf_path_win32(char *conf_path, const char *program_dir)
 #elif defined(__linux__)
 void _flipclock_get_conf_path_linux(char *conf_path)
 {
-	/* Be a good program. */
+	// Be a good program.
 	const char *conf_dir = getenv("XDG_CONFIG_HOME");
 	if (conf_dir == NULL || strlen(conf_dir) == 0) {
-		/* Linux users should not be homeless. */
+		// Linux users should not be homeless.
 		const char *home = getenv("HOME");
 		snprintf(conf_path, MAX_BUFFER_LENGTH,
 			 "%s/.config/flipclock.conf", home);
@@ -80,7 +80,7 @@ struct flipclock *flipclock_create(void)
 		exit(EXIT_FAILURE);
 	}
 	app->clocks = NULL;
-	/* Should create 1 clock in windowed mode. */
+	// Should create 1 clock in windowed mode.
 	app->clocks_length = 1;
 	app->last_touch = 0;
 	app->running = true;
@@ -210,6 +210,7 @@ int _flipclock_parse_color(const char *rgba, SDL_Color *color)
 		return -3;
 	} else {
 		for (int i = 1; i < rgba_length; ++i) {
+			// Cool, ctype.h always gives me surprise.
 			if (!isxdigit(rgba[i])) {
 				LOG_ERROR("Color string numbers "
 					  "should be hexcode!\n");
@@ -224,7 +225,7 @@ int _flipclock_parse_color(const char *rgba, SDL_Color *color)
 		 */
 		long long hex_number = strtoll(rgba + 1, NULL, 16);
 		if (rgba_length == 7) {
-			/* Add 0xff as alpha. */
+			// Add 0xff as alpha.
 			hex_number = (hex_number << 8) | 0xff;
 		}
 		color->r = (hex_number >> 24) & 0xff;
@@ -248,7 +249,7 @@ void flipclock_load_conf(struct flipclock *app)
 		LOG_DEBUG("File not found, create with default content.\n");
 		conf = fopen(app->properties.conf_path, "w");
 		if (conf == NULL) {
-			/* Just skip conf, it's able to run. */
+			// Just skip conf, it's able to run.
 			LOG_ERROR("Failed to write default content!\n");
 			goto out;
 		}
@@ -349,7 +350,7 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 	 */
 	unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
 			     SDL_WINDOW_ALLOW_HIGHDPI;
-	/* Create window for each display if fullscreen. */
+	// Create window for each display if fullscreen.
 	if (app->properties.full) {
 		/**
 		 * Instead of handling display number changing,
@@ -377,7 +378,7 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 			LOG_ERROR("%s\n", SDL_GetError());
 			exit(EXIT_FAILURE);
 		}
-		/* Init window size after create it. */
+		// Init window size after create it.
 		SDL_GetWindowSize(app->clocks[i].window, &app->clocks[i].width,
 				  &app->clocks[i].height);
 		app->clocks[i].renderer = SDL_CreateRenderer(
@@ -396,13 +397,13 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 #ifdef _WIN32
 void _flipclock_create_clocks_preview(struct flipclock *app)
 {
-	/* Don't set fullscreen if in preview. */
+	// Don't set fullscreen if in preview.
 	app->properties.full = false;
 	app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
-	/* Create window from native window when in preview. */
+	// Create window from native window when in preview.
 	app->clocks[0].window =
 		SDL_CreateWindowFrom(app->properties.preview_window);
-	/* Init window size after create it. */
+	// Init window size after create it.
 	SDL_GetWindowSize(app->clocks[0].window, &app->clocks[0].width,
 			  &app->clocks[0].height);
 	if (app->clocks[0].window == NULL) {
@@ -438,7 +439,7 @@ void flipclock_create_clocks(struct flipclock *app)
 #ifdef _WIN32
 	_flipclock_create_clocks_win32(app);
 #else
-	/* Android and Linux should share the same code here. */
+	// Android and Linux should share the same code here.
 	SDL_DisableScreenSaver();
 	_flipclock_create_clocks_default(app);
 #endif
@@ -448,7 +449,7 @@ void flipclock_set_fullscreen(struct flipclock *app, int clock_index, bool full)
 {
 	app->properties.full = full;
 	if (full) {
-		/* Move clocks to their attached displays. */
+		// Move clocks to their attached displays.
 		SDL_Rect display_bounds;
 		SDL_GetDisplayBounds(clock_index, &display_bounds);
 		SDL_SetWindowPosition(app->clocks[clock_index].window,
@@ -464,7 +465,7 @@ void flipclock_set_fullscreen(struct flipclock *app, int clock_index, bool full)
 		SDL_GetWindowSize(app->clocks[clock_index].window,
 				  &app->clocks[clock_index].width,
 				  &app->clocks[clock_index].height);
-		/* Move mouse back into center. */
+		// Move mouse back into center.
 		SDL_WarpMouseInWindow(app->clocks[clock_index].window,
 				      app->clocks[clock_index].width / 2,
 				      app->clocks[clock_index].height / 2);
@@ -475,7 +476,7 @@ void flipclock_set_fullscreen(struct flipclock *app, int clock_index, bool full)
 void flipclock_refresh(struct flipclock *app, int clock_index)
 {
 	if (app->clocks[clock_index].width < app->clocks[clock_index].height) {
-		/* Some user do love portrait. */
+		// Some user do love portrait.
 		app->clocks[clock_index].rect_size =
 			app->clocks[clock_index].height * 0.4 >
 					app->clocks[clock_index].width * 0.8 ?
@@ -508,7 +509,7 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 		app->clocks[clock_index].rects.minute.h =
 			app->clocks[clock_index].rect_size;
 	} else {
-		/* But others love landscape. */
+		// But others love landscape.
 		app->clocks[clock_index].rect_size =
 			app->clocks[clock_index].width * 0.4 >
 					app->clocks[clock_index].height * 0.8 ?
@@ -542,7 +543,7 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 			app->clocks[clock_index].rect_size;
 	}
 
-	/* How do I get those numbers? Test. */
+	// How do I get those numbers? Test.
 	app->clocks[clock_index].rects.mode.w =
 		app->clocks[clock_index].rect_size / 5;
 	app->clocks[clock_index].rects.mode.h =
@@ -559,7 +560,7 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 
 void flipclock_create_textures(struct flipclock *app, int clock_index)
 {
-	/* Two transparent backend texture swap for tribuffer. */
+	// Two transparent backend texture swap for tribuffer.
 	app->clocks[clock_index].textures.current = SDL_CreateTexture(
 		app->clocks[clock_index].renderer, 0, SDL_TEXTUREACCESS_TARGET,
 		app->clocks[clock_index].width,
@@ -612,7 +613,7 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 			LOG_ERROR("font_path too long, may fail to load.\n");
 		}
 #elif defined(__ANDROID__)
-		/* Directly under `app/src/main/assets` for Android APP. */
+		// Directly under `app/src/main/assets` for Android APP.
 		char *font_path = "flipclock.ttf";
 #elif defined(__linux__)
 		char *font_path = INSTALL_PREFIX "/share/fonts/flipclock.ttf";
@@ -725,12 +726,12 @@ void _flipclock_render_text(struct flipclock *app, int clock_index,
 {
 	int len = strlen(text);
 	if (len > 2) {
-		/* We can handle text longer than 2 chars, though. */
+		// We can handle text longer than 2 chars, though.
 		LOG_ERROR("Text length must be less than 3!");
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
-	/* We render text every minute, so we don't need cache. */
+	// We render text every minute, so we don't need cache.
 	for (int i = 0; i < len; i++) {
 		/**
 		 * See https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html#SEC42
@@ -772,7 +773,7 @@ void _flipclock_render_divider(struct flipclock *app, int clock_index,
 			       SDL_Rect target_rect)
 {
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
-	/* Don't be transparent, or you will not see divider. */
+	// Don't be transparent, or you will not see divider.
 	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
 			       app->colors.back.r, app->colors.back.g,
 			       app->colors.back.b, app->colors.back.a);
@@ -804,7 +805,7 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 	 * that is, in layer sequence, it just works.
 	 */
 
-	/* Background. */
+	// Background.
 	_flipclock_render_rounded_box(app, clock_index,
 				      app->clocks[clock_index].textures.current,
 				      app->clocks[clock_index].rects.hour,
@@ -815,10 +816,10 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 				      app->clocks[clock_index].rects.minute,
 				      app->clocks[clock_index].radius);
 
-	/* Text. */
+	// Text.
 	if (app->properties.ampm) {
-		/* Just draw AM/PM text on hour card. */
 		/**
+		 * Just draw AM/PM text on hour card.
 		 * Don't use strftime() here,
 		 * because font only have `A`, `P`, `M`.
 		 */
@@ -837,7 +838,7 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 	 */
 	strftime(text, sizeof(text), app->properties.ampm ? "%I" : "%H",
 		 &app->times.now);
-	/* Trim zero when using 12-hour clock. */
+	// Trim zero when using 12-hour clock.
 	if (app->properties.ampm && text[0] == '0') {
 		text[0] = text[1];
 		text[1] = text[2];
@@ -853,7 +854,7 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 			       app->clocks[clock_index].rects.minute,
 			       app->clocks[clock_index].fonts.time, text);
 
-	/* And cut the card! */
+	// And cut the card!
 	divider_rect.h = app->clocks[clock_index].rects.hour.h / 100;
 	divider_rect.w = app->clocks[clock_index].rects.hour.w;
 	divider_rect.x = app->clocks[clock_index].rects.hour.x;
@@ -879,14 +880,14 @@ void _flipclock_copy_rect(struct flipclock *app, int clock_index,
 			  SDL_Rect target_rect, int progress)
 {
 	if (progress >= MAX_PROGRESS) {
-		/* It finished flipping, so we don't draw flipping. */
+		// It finished flipping, so we don't draw flipping.
 		SDL_RenderCopy(app->clocks[clock_index].renderer,
 			       app->clocks[clock_index].textures.current,
 			       &target_rect, &target_rect);
 		return;
 	}
 
-	/* Draw the upper current digit and render it. */
+	// Draw the upper current digit and render it.
 	SDL_Rect half_source_rect;
 	half_source_rect.x = target_rect.x;
 	half_source_rect.y = target_rect.y;
@@ -901,7 +902,7 @@ void _flipclock_copy_rect(struct flipclock *app, int clock_index,
 		       app->clocks[clock_index].textures.current,
 		       &half_source_rect, &half_target_rect);
 
-	/* Draw the lower previous digit and render it. */
+	// Draw the lower previous digit and render it.
 	half_source_rect.x = target_rect.x;
 	half_source_rect.y = target_rect.y + target_rect.h / 2;
 	half_source_rect.w = target_rect.w;
@@ -990,7 +991,7 @@ void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 			case SDL_WINDOWEVENT_MINIMIZED:
 				app->clocks[i].wait = true;
 				break;
-			/* `RESTORED` is emitted after `MINIMIZED`. */
+			// `RESTORED` is emitted after `MINIMIZED`.
 			case SDL_WINDOWEVENT_RESTORED:
 				app->clocks[i].wait = false;
 				break;
@@ -1101,7 +1102,7 @@ void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 			}
 		}
 #else
-		/* It's simple under Linux and Android. */
+		// It's simple under Linux and Android.
 		switch (event.key.keysym.sym) {
 		case SDLK_ESCAPE:
 		case SDLK_q:
@@ -1145,17 +1146,17 @@ void flipclock_run_mainloop(struct flipclock *app)
 	int progress = MAX_PROGRESS;
 	unsigned int start_tick = SDL_GetTicks();
 	SDL_Event event;
-	/* Clear event queue before running. */
+	// Clear event queue before running.
 	while (SDL_PollEvent(&event))
 		;
-	/* First frame when app starts. */
+	// First frame when app starts.
 	for (int i = 0; i < app->clocks_length; ++i) {
 		_flipclock_render_texture(app, i);
 		_flipclock_animate(app, i, MAX_PROGRESS);
 	}
 	while (app->running) {
 #ifdef _WIN32
-		/* Exit when preview window closed. */
+		// Exit when preview window closed.
 		if (app->properties.preview &&
 		    !IsWindow(app->properties.preview_window))
 			app->running = false;
@@ -1179,16 +1180,16 @@ void flipclock_run_mainloop(struct flipclock *app)
 			for (int i = 0; i < app->clocks_length; ++i)
 				_flipclock_render_texture(app, i);
 		}
-		/* Pause when minimized. */
+		// Pause when minimized.
 		for (int i = 0; i < app->clocks_length; ++i) {
 			if (!app->clocks[i].wait) {
 				_flipclock_animate(app, i, progress);
 			}
 		}
-		/* Only calculate frame when animating. */
+		// Only calculate frame when animating.
 		if (animating)
 			progress = SDL_GetTicks() - start_tick;
-		/* Sync time when animation ends. */
+		// Sync time when animation ends.
 		if (animating && progress > MAX_PROGRESS) {
 			animating = false;
 			progress = MAX_PROGRESS;

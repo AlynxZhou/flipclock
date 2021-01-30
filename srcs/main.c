@@ -20,10 +20,10 @@ int main(int argc, char *argv[])
 	}
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	struct flipclock *app = flipclock_create();
-	/* Android don't need conf and arguments. */
+	// Android don't need conf and arguments.
 #ifndef __ANDROID__
 	flipclock_load_conf(app);
-	/* Dealing with arguments which have higher priority. */
+	// Dealing with arguments which have higher priority.
 #	ifdef _WIN32
 	char OPT_STRING[] = "hvscp:wt:f:";
 #	else
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 		case 't':
 			if (atoi(argopt) == 12)
 				app->properties.ampm = true;
-			else if (atoi(argopt) == 24)
+			else
 				app->properties.ampm = false;
 			break;
 		case 'f':

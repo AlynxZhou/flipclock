@@ -14,7 +14,7 @@
 #	include <windows.h>
 #endif
 
-/* Android APP does not generate `config.h` and use its own logger. */
+// Android APP does not generate `config.h` and use its own logger.
 #ifdef __ANDROID__
 #	include <android/log.h>
 #	define LOG_TAG "FlipClock"
@@ -41,7 +41,7 @@
 #define PROGRAM_TITLE "FlipClock"
 #define MAX_BUFFER_LENGTH 2048
 
-/* Those are from arguments. */
+// Those are from arguments.
 struct properties {
 	const char *title;
 	char font_path[MAX_BUFFER_LENGTH];
@@ -92,13 +92,13 @@ struct clock {
 	int radius;
 	bool wait;
 };
-/* You only need this to create an app. */
+// You only need this to create an app.
 struct flipclock {
-	/* Structures not shared by clocks. */
+	// Structures not shared by clocks.
 	struct clock *clocks;
-	/* Number of displays. */
+	// Number of displays.
 	int clocks_length;
-	/* Structures shared by clocks. */
+	// Structures shared by clocks.
 	struct times times;
 	struct colors colors;
 	struct properties properties;
