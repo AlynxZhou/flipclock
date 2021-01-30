@@ -446,9 +446,9 @@ void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
 			       bool full)
 {
 	app->properties.full = full;
+	SDL_Rect display_bounds;
 	if (full) {
 		// Move clocks to their attached displays.
-		SDL_Rect display_bounds;
 		SDL_GetDisplayBounds(clock_index, &display_bounds);
 		SDL_SetWindowPosition(app->clocks[clock_index].window,
 				      display_bounds.x, display_bounds.y);
@@ -463,17 +463,24 @@ void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
 			  app->clocks[clock_index].height);
 	} else {
 		SDL_SetWindowFullscreen(app->clocks[clock_index].window, 0);
-		SDL_GetWindowSize(app->clocks[clock_index].window,
-				  &app->clocks[clock_index].width,
-				  &app->clocks[clock_index].height);
-		// Move mouse back into center.
-		SDL_WarpMouseInWindow(app->clocks[clock_index].window,
-				      app->clocks[clock_index].width / 2,
-				      app->clocks[clock_index].height / 2);
+		/**
+		 * We need to restore window first, because if started in
+		 * fullscreen mode, it will be maximized when turning off
+		 * fullscreen mode and we cannot set window size. Looks like
+		 * a strange bug.
+		 */
+		SDL_RestoreWindow(app->clocks[clock_index].window);
+		SDL_SetWindowSize(app->clocks[clock_index].window, WINDOW_WIDTH,
+				  WINDOW_HEIGHT);
+		SDL_GetDisplayBounds(clock_index, &display_bounds);
+		SDL_SetWindowPosition(
+			app->clocks[clock_index].window,
+			display_bounds.x +
+				(display_bounds.w - WINDOW_WIDTH) / 2,
+			display_bounds.y +
+				(display_bounds.h - WINDOW_HEIGHT) / 2);
 		SDL_ShowCursor(SDL_ENABLE);
-		LOG_DEBUG("Set clock `%d` to windowed with size `%dx%d`.\n",
-			  clock_index, app->clocks[clock_index].width,
-			  app->clocks[clock_index].height);
+		LOG_DEBUG("Set clock `%d` to windowed.\n", clock_index);
 	}
 }
 
@@ -1028,13 +1035,23 @@ void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
 	case SDLK_f:
 		app->properties.full = !app->properties.full;
 		for (int i = 0; i < app->clocks_length; ++i) {
-			flipclock_destroy_textures(app, i);
-			flipclock_close_fonts(app, i);
+			/**
+			 * Setting to windowed mode from fullscreen mode will
+			 * emit a size changed event for window, but setting
+			 * to fullscreen mode from windowed mode has no event,
+			 * so we have to manually refresh clocks here. Strange.
+			 */
+			if (app->properties.full) {
+				flipclock_destroy_textures(app, i);
+				flipclock_close_fonts(app, i);
+			}
 			_flipclock_set_fullscreen(app, i, app->properties.full);
-			flipclock_refresh(app, i);
-			flipclock_open_fonts(app, i);
-			flipclock_create_textures(app, i);
-			_flipclock_render_texture(app, i);
+			if (app->properties.full) {
+				flipclock_refresh(app, i);
+				flipclock_open_fonts(app, i);
+				flipclock_create_textures(app, i);
+				_flipclock_render_texture(app, i);
+			}
 		}
 		break;
 	default:
