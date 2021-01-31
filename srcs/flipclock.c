@@ -351,6 +351,10 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 		SDL_ShowCursor(SDL_DISABLE);
 	}
 	app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
+	if (app->clocks == NULL) {
+		LOG_ERROR("Failed to create clocks!\n");
+		exit(EXIT_FAILURE);
+	}
 	for (int i = 0; i < app->clocks_length; ++i) {
 		app->clocks[i].fonts.time = NULL;
 		app->clocks[i].fonts.mode = NULL;
@@ -1036,15 +1040,25 @@ void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 	// `RESTORED` is emitted after `MINIMIZED`.
 	case SDL_WINDOWEVENT_RESTORED: {
 		app->clocks[clock_index].wait = false;
+		/**
+		 * Sometimes when a window is restored, its texture get lost.
+		 * Typically happens when we have two fullscreen clocks in
+		 * one display, and the lower one is switched to top, and we
+		 * have to re-render its texture.
+		 */
+		_flipclock_render_texture(app, clock_index);
 		break;
 	}
 	case SDL_WINDOWEVENT_CLOSE: {
 		app->clocks[clock_index].running = false;
+		// Don't forget to destroy window actually.
+		SDL_DestroyRenderer(app->clocks[clock_index].renderer);
+		SDL_DestroyWindow(app->clocks[clock_index].window);
 		LOG_DEBUG("Clock `%d` closed!\n", clock_index);
 		// Exit app if no running clock.
 		bool no_clock = true;
 		for (int i = 0; i < app->clocks_length; ++i) {
-			if (app->clocks[clock_index].running) {
+			if (app->clocks[i].running) {
 				no_clock = false;
 				break;
 			}
@@ -1254,11 +1268,13 @@ void flipclock_run_mainloop(struct flipclock *app)
 void flipclock_destroy_clocks(struct flipclock *app)
 {
 	for (int i = 0; i < app->clocks_length; ++i) {
+		// Already destroyed.
+		if (!app->clocks[i].running)
+			continue;
 		SDL_DestroyRenderer(app->clocks[i].renderer);
 		SDL_DestroyWindow(app->clocks[i].window);
 	}
-	if (app->clocks != NULL)
-		free(app->clocks);
+	free(app->clocks);
 	if (app->properties.full)
 		SDL_ShowCursor(SDL_ENABLE);
 #ifdef _WIN32
@@ -1271,8 +1287,6 @@ void flipclock_destroy_clocks(struct flipclock *app)
 
 void flipclock_destroy(struct flipclock *app)
 {
-	if (app == NULL)
-		return;
 	free(app);
 }
 
