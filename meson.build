@@ -45,6 +45,7 @@ elif host_machine.system() == 'windows'
   if host_machine.cpu_family() == 'x86_64'
     vc_path = 'x64'
   endif
+  # Need absolute path for find_library().
   sdl2 = cc.find_library(
     'SDL2',
     dirs: [meson.project_source_root() / 'deps' / 'SDL2' / 'lib' / vc_path],
@@ -60,12 +61,9 @@ elif host_machine.system() == 'windows'
     dirs: [meson.project_source_root() / 'deps' / 'SDL2_ttf' / 'lib' / vc_path],
     required: true
   )
-  sdl2_inc = include_directories(
-    meson.project_source_root() / 'deps' / 'SDL2' / 'include'
-  )
-  sdl2_ttf_inc = include_directories(
-    meson.project_source_root() / 'deps' / 'SDL2_ttf' / 'include'
-  )
+  # But relative path is acceptable for include_directories().
+  sdl2_inc = include_directories('deps' / 'SDL2' / 'include')
+  sdl2_ttf_inc = include_directories('deps' / 'SDL2_ttf' / 'include')
   dependencies += [sdl2, sdl2main, sdl2_ttf]
   include_directories += [sdl2_inc, sdl2_ttf_inc]
 endif
