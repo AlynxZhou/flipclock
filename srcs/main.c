@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 			exit_after_argument = true;
 			break;
 #	ifdef _WIN32
+		// See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms686421(v=vs.85)#concepts.
 		case 's':
 			/**
 			 * One of the most silly requirement I've seen.
@@ -58,7 +59,17 @@ int main(int argc, char *argv[])
 			break;
 		case 'p':
 			app->properties.preview = true;
-			app->properties.preview_window = atoi(argopt);
+			/**
+			 * See https://docs.microsoft.com/en-us/windows/win32/winprog/windows-data-types.
+			 * typedef void *PVOID;
+			 * typedef PVOID HANDLE;
+			 * typedef HANDLE HWND;
+			 * So it's safe to treat it as a unsigned int.
+			 * Seems Windows print HWND as a decimal number,
+			 * so %p with scanf() is not suitable here.
+			 */
+			app->properties.preview_window =
+				strtoul(argopt, NULL, 0);
 			break;
 #	endif
 		case 'w':

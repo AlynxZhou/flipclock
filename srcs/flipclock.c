@@ -21,7 +21,7 @@
 void _flipclock_get_program_dir_win32(char *program_dir)
 {
 	/**
-	 * See https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+	 * See https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew.
 	 * GetModuleFileName is a macro to
 	 * GetModuleFileNameW and GetModuleFileNameA.
 	 */
@@ -403,6 +403,16 @@ void _flipclock_create_clocks_preview(struct flipclock *app)
 	// Don't set fullscreen if in preview.
 	app->properties.full = false;
 	app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
+	if (app->clocks == NULL) {
+		LOG_ERROR("Failed to create clocks!\n");
+		exit(EXIT_FAILURE);
+	}
+	app->clocks[0].fonts.time = NULL;
+	app->clocks[0].fonts.mode = NULL;
+	app->clocks[0].textures.current = NULL;
+	app->clocks[0].textures.previous = NULL;
+	app->clocks[0].wait = false;
+	app->clocks[0].running = true;
 	// Create window from native window when in preview.
 	app->clocks[0].window =
 		SDL_CreateWindowFrom(app->properties.preview_window);
@@ -768,7 +778,7 @@ void _flipclock_render_text(struct flipclock *app, int clock_index,
 	// We render text every minute, so we don't need cache.
 	for (int i = 0; i < len; i++) {
 		/**
-		 * See https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html#SEC42
+		 * See https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html#SEC42.
 		 * Normally shaded is enough, however we have a rounded box,
 		 * and many fonts' boxes are too big compared with their
 		 * characters, they just cover the rounded corner.
