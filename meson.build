@@ -82,20 +82,20 @@ if host_machine.system() == 'linux'
   )
 
   install_data(
-    'flipclock.ttf',
+    'LICENSE',
+    install_dir: get_option('datadir') / 'license' / meson.project_name()
+  )
+  install_data(
+    'dists' / 'flipclock.ttf',
     install_dir: get_option('datadir') / 'fonts'
   )
   install_data(
-    'flipclock.png',
+    'dists' / 'flipclock.png',
     install_dir: get_option('datadir') / 'pixmaps'
   )
   install_data(
-    'flipclock.desktop',
+    'dists' / 'flipclock.desktop',
     install_dir: get_option('datadir') / 'applications'
-  )
-  install_data(
-    'LICENSE',
-    install_dir: get_option('datadir') / 'license' / meson.project_name()
   )
 elif host_machine.system() == 'windows'
   if get_option('debug') == true
@@ -107,6 +107,7 @@ elif host_machine.system() == 'windows'
       include_directories: include_directories,
       install: true,
       install_dir: get_option('prefix') / meson.project_name(),
+      name_suffix: 'scr',
       win_subsystem: 'console'
     )
   else
@@ -118,24 +119,25 @@ elif host_machine.system() == 'windows'
       include_directories: include_directories,
       install: true,
       install_dir: get_option('prefix') / meson.project_name(),
+      name_suffix: 'scr',
       win_subsystem: 'windows'
     )
   endif
 
   install_data(
-    'flipclock.ttf',
-    install_dir: get_option('prefix') / meson.project_name()
-  )
-  install_data(
     'LICENSE',
     install_dir: get_option('prefix') / meson.project_name()
   )
   install_data(
-    'COPYING',
+    'dists' / 'flipclock.ttf',
     install_dir: get_option('prefix') / meson.project_name()
   )
   install_data(
-    '请先读我.txt',
+    'dists' / 'COPYING',
+    install_dir: get_option('prefix') / meson.project_name()
+  )
+  install_data(
+    'dists' / '请先读我.txt',
     install_dir: get_option('prefix') / meson.project_name()
   )
   install_data(

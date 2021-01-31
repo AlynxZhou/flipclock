@@ -7,8 +7,6 @@ project(
 )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
-set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
-set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 
 if(NOT MSVC)
 	set(
@@ -38,6 +36,11 @@ if(WIN32)
 		${FLIPCLOCK_SOURCES}
 
 	)
+	set_target_properties(
+		"flipclock"
+		PROPERTIES
+		SUFFIX ".scr"
+	)
 elseif(APPLE)
 	add_executable(
 		"flipclock"
@@ -60,13 +63,19 @@ target_link_libraries(
 
 if(WIN32)
 	install(TARGETS "flipclock" DESTINATION "flipclock")
+	install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "flipclock")
 	install(
-		FILES "${CMAKE_SOURCE_DIR}/flipclock.ttf"
+		FILES "${CMAKE_SOURCE_DIR}/dists/flipclock.ttf"
 		DESTINATION "flipclock"
 	)
-	install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "flipclock")
-	install(FILES "${CMAKE_SOURCE_DIR}/COPYING" DESTINATION "flipclock")
-	install(FILES "${CMAKE_SOURCE_DIR}/请先读我.txt" DESTINATION "flipclock")
+	install(
+		FILES "${CMAKE_SOURCE_DIR}/dists/COPYING"
+		DESTINATION "flipclock"
+	)
+	install(
+		FILES "${CMAKE_SOURCE_DIR}/dists/请先读我.txt"
+		DESTINATION "flipclock"
+	)
 	install(
 		FILES "${SDL2_DIR}/${VC_LIB_PATH_SUFFIX}/SDL2.dll"
 		DESTINATION "flipclock"
@@ -86,19 +95,19 @@ if(WIN32)
 else()
 	install(TARGETS "flipclock" DESTINATION "bin")
 	install(
-		FILES "${CMAKE_SOURCE_DIR}/flipclock.ttf"
+		FILES "${CMAKE_SOURCE_DIR}/LICENSE"
+		DESTINATION "share/licenses/flipclock"
+	)
+	install(
+		FILES "${CMAKE_SOURCE_DIR}/dists/flipclock.ttf"
 		DESTINATION "share/fonts"
 	)
 	install(
-		FILES "${CMAKE_SOURCE_DIR}/flipclock.png"
+		FILES "${CMAKE_SOURCE_DIR}/dists/flipclock.png"
 		DESTINATION "share/pixmaps"
 	)
 	install(
-		FILES "${CMAKE_SOURCE_DIR}/flipclock.desktop"
+		FILES "${CMAKE_SOURCE_DIR}/dists/flipclock.desktop"
 		DESTINATION "share/applications"
-	)
-	install(
-		FILES "${CMAKE_SOURCE_DIR}/LICENSE"
-		DESTINATION "share/licenses/flipclock"
 	)
 endif()

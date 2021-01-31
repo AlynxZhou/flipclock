@@ -26,14 +26,14 @@ If you run this program in windowed mode (`-w`), only one display is supported. 
 
 1. Install sdl2, sdl2_ttf.
 2. `mkdir build && cd build && meson setup . .. && meson compile`
-3. `./flipclock -f ../flipclock.ttf`
+3. `./flipclock -f ../dists/flipclock.ttf`
 4. If you want to install this to your system, it is suggested to build with `mkdir build && cd build && meson setup --prefix=/usr --buildtype=release . .. && meson compile && sudo meson install`.
 
 #### With CMake
 
 1. Install sdl2, sdl2_ttf.
 2. `mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make`
-3. `./bin/flipclock -f ../flipclock.ttf`
+3. `./flipclock -f ../dists/flipclock.ttf`
 4. If you want to install this to your system, it is suggested to build with `mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr .. && make && sudo make install`.
 
 ## Windows
@@ -52,7 +52,7 @@ Meson has a tool called wrap that can download and compile dependencies automati
 2. Download SDL2 and SDL2_ttf devel files and extract and rename. Please refer to [`deps/README.md`](deps/README.md) for links.
 3. Open `x64 Native Tools Command Prompt for VS 2019` from Start Menu, or other architectures you need.
 4. Change dir to where you put this project. Run `mkdir build && cd build && meson setup --prefix=d:/ --buildtype=release . .. && meson compile && meson install`. You can change prefix to other path, but you need to use UNIX style slash instead of backslash because it's escape character in C.
-5. Go to `flipclock` folder under your prefix, you can now rename `flipclock.exe` to `flipclock.scr` and right click it to install it as a screensaver.
+5. Go to `flipclock` dir under your prefix, you can now find `flipclock.scr` and right click it to install it as a screensaver.
 
 #### With CMake
 
@@ -62,7 +62,7 @@ Meson has a tool called wrap that can download and compile dependencies automati
 4. When Configure failed, set `CMAKE_INSTALL_PREFIX` to where you want to save all runtime files, fill `SDL2_DIR` to where you extract SDL2 devel files, then press Configure again. When Configure failed again, fill `SDL2_TTF_DIR` to where you extract SDL2_ttf devel files, then press Configure again.
 5. When Configure finished, press Generate, then press Open Project to open Visual Studio.
 6. Select `Release`, and right click `INSTALL` in the right panel, and build it.
-8. Go to `flipclock` dir under your `CMAKE_INSTALL_PREFIX`, you can now rename `flipclock.exe` to `flipclock.scr` and right click it to install it as a screensaver.
+8. Go to `flipclock` dir under your `CMAKE_INSTALL_PREFIX`, you can now find `flipclock.scr` and right click it to install it as a screensaver.
 
 ## Android
 
