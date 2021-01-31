@@ -1,7 +1,7 @@
 project(
   'flipclock',
   'c',
-  version: '2.7.1',
+  version: '2.7.2',
   license: 'Apache-2.0',
   default_options: ['c_std=c11']
 )
