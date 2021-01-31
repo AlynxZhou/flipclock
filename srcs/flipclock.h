@@ -91,6 +91,7 @@ struct clock {
 	int rect_size;
 	int radius;
 	bool wait;
+	bool running;
 };
 // You only need this to create an app.
 struct flipclock {

@@ -357,6 +357,7 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 		app->clocks[i].textures.current = NULL;
 		app->clocks[i].textures.previous = NULL;
 		app->clocks[i].wait = false;
+		app->clocks[i].running = true;
 		SDL_Rect display_bounds;
 		SDL_GetDisplayBounds(i, &display_bounds);
 		if (app->properties.full)
@@ -446,10 +447,29 @@ void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
 			       bool full)
 {
 	app->properties.full = full;
+	// Let's find which display the clock is inside.
 	SDL_Rect display_bounds;
+	int clock_x;
+	int clock_y;
+	SDL_GetWindowPosition(app->clocks[clock_index].window, &clock_x,
+			      &clock_y);
+	int clock_center_x = clock_x + app->clocks[clock_index].width / 2;
+	int clock_center_y = clock_y + app->clocks[clock_index].height / 2;
+	int display_number = SDL_GetNumVideoDisplays();
+	// If a clock is out of all displays it will be re-placed into the last.
+	for (int i = 0; i < display_number; ++i) {
+		SDL_GetDisplayBounds(i, &display_bounds);
+		if (clock_center_x >= display_bounds.x &&
+		    clock_center_x < display_bounds.x + display_bounds.w &&
+		    clock_center_y >= display_bounds.y &&
+		    clock_center_y < display_bounds.y + display_bounds.h) {
+			LOG_DEBUG("Clock `%d` is inside display `%d`.\n",
+				  clock_index, i);
+			break;
+		}
+	}
 	if (full) {
-		// Move clocks to their attached displays.
-		SDL_GetDisplayBounds(clock_index, &display_bounds);
+		// Move clocks to their placed displays.
 		SDL_SetWindowPosition(app->clocks[clock_index].window,
 				      display_bounds.x, display_bounds.y);
 		SDL_SetWindowFullscreen(app->clocks[clock_index].window,
@@ -472,7 +492,6 @@ void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
 		SDL_RestoreWindow(app->clocks[clock_index].window);
 		SDL_SetWindowSize(app->clocks[clock_index].window, WINDOW_WIDTH,
 				  WINDOW_HEIGHT);
-		SDL_GetDisplayBounds(clock_index, &display_bounds);
 		SDL_SetWindowPosition(
 			app->clocks[clock_index].window,
 			display_bounds.x +
@@ -973,16 +992,21 @@ void _flipclock_animate(struct flipclock *app, int clock_index, int progress)
 
 void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 {
-	int clock_index = 0;
+	int clock_index = -1;
 	for (int i = 0; i < app->clocks_length; ++i) {
 		if (event.window.windowID ==
-		    SDL_GetWindowID(app->clocks[i].window)) {
+			    SDL_GetWindowID(app->clocks[i].window) &&
+		    app->clocks[i].running) {
 			clock_index = i;
 			break;
 		}
 	}
+	if (clock_index == -1) {
+		LOG_ERROR("There is no running window that event belongs!\n");
+		return;
+	}
 	switch (event.window.event) {
-	case SDL_WINDOWEVENT_SIZE_CHANGED:
+	case SDL_WINDOWEVENT_SIZE_CHANGED: {
 		/**
 		 * Only re-render when size changed.
 		 * Windows may send event when size
@@ -1004,18 +1028,36 @@ void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 			_flipclock_render_texture(app, clock_index);
 		}
 		break;
-	case SDL_WINDOWEVENT_MINIMIZED:
+	}
+	case SDL_WINDOWEVENT_MINIMIZED: {
 		app->clocks[clock_index].wait = true;
 		break;
+	}
 	// `RESTORED` is emitted after `MINIMIZED`.
-	case SDL_WINDOWEVENT_RESTORED:
+	case SDL_WINDOWEVENT_RESTORED: {
 		app->clocks[clock_index].wait = false;
 		break;
-	case SDL_WINDOWEVENT_CLOSE:
-		app->running = false;
+	}
+	case SDL_WINDOWEVENT_CLOSE: {
+		app->clocks[clock_index].running = false;
+		LOG_DEBUG("Clock `%d` closed!\n", clock_index);
+		// Exit app if no running clock.
+		bool no_clock = true;
+		for (int i = 0; i < app->clocks_length; ++i) {
+			if (app->clocks[clock_index].running) {
+				no_clock = false;
+				break;
+			}
+		}
+		if (no_clock) {
+			LOG_DEBUG("No running clock, exitting.\n");
+			app->running = false;
+		}
 		break;
-	default:
+	}
+	default: {
 		break;
+	}
 	}
 }
 
@@ -1029,12 +1071,17 @@ void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
 		break;
 	case SDLK_t:
 		app->properties.ampm = !app->properties.ampm;
-		for (int i = 0; i < app->clocks_length; ++i)
+		for (int i = 0; i < app->clocks_length; ++i) {
+			if (!app->clocks[i].running)
+				continue;
 			_flipclock_render_texture(app, i);
+		}
 		break;
 	case SDLK_f:
 		app->properties.full = !app->properties.full;
 		for (int i = 0; i < app->clocks_length; ++i) {
+			if (!app->clocks[i].running)
+				continue;
 			/**
 			 * Setting to windowed mode from fullscreen mode will
 			 * emit a size changed event for window, but setting
@@ -1109,8 +1156,11 @@ void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 		if (event.tfinger.timestamp <
 		    app->last_touch + DOUBLE_TAP_INTERVAL_MS) {
 			app->properties.ampm = !app->properties.ampm;
-			for (int i = 0; i < app->clocks_length; ++i)
+			for (int i = 0; i < app->clocks_length; ++i) {
+				if (!app->clocks[i].running)
+					continue;
 				_flipclock_render_texture(app, i);
+			}
 		}
 		app->last_touch = event.tfinger.timestamp;
 		break;
@@ -1152,6 +1202,8 @@ void flipclock_run_mainloop(struct flipclock *app)
 		;
 	// First frame when app starts.
 	for (int i = 0; i < app->clocks_length; ++i) {
+		if (!app->clocks[i].running)
+			continue;
 		_flipclock_render_texture(app, i);
 		_flipclock_animate(app, i, MAX_PROGRESS);
 	}
@@ -1177,12 +1229,15 @@ void flipclock_run_mainloop(struct flipclock *app)
 			animating = true;
 			progress = 0;
 			start_tick = SDL_GetTicks();
-			for (int i = 0; i < app->clocks_length; ++i)
+			for (int i = 0; i < app->clocks_length; ++i) {
+				if (!app->clocks[i].running)
+					continue;
 				_flipclock_render_texture(app, i);
+			}
 		}
 		// Pause when minimized.
 		for (int i = 0; i < app->clocks_length; ++i)
-			if (!app->clocks[i].wait)
+			if (!app->clocks[i].wait && app->clocks[i].running)
 				_flipclock_animate(app, i, progress);
 		// Only calculate frame when animating.
 		if (animating)
