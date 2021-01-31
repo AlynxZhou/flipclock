@@ -1020,7 +1020,7 @@ void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 		return;
 	}
 	switch (event.window.event) {
-	case SDL_WINDOWEVENT_SIZE_CHANGED: {
+	case SDL_WINDOWEVENT_SIZE_CHANGED:
 		/**
 		 * Only re-render when size changed.
 		 * Windows may send event when size
@@ -1042,13 +1042,11 @@ void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 			_flipclock_render_texture(app, clock_index);
 		}
 		break;
-	}
-	case SDL_WINDOWEVENT_MINIMIZED: {
+	case SDL_WINDOWEVENT_MINIMIZED:
 		app->clocks[clock_index].wait = true;
 		break;
-	}
 	// `RESTORED` is emitted after `MINIMIZED`.
-	case SDL_WINDOWEVENT_RESTORED: {
+	case SDL_WINDOWEVENT_RESTORED:
 		app->clocks[clock_index].wait = false;
 		/**
 		 * Sometimes when a window is restored, its texture get lost.
@@ -1058,30 +1056,21 @@ void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 		 */
 		_flipclock_render_texture(app, clock_index);
 		break;
-	}
-	case SDL_WINDOWEVENT_CLOSE: {
+	case SDL_WINDOWEVENT_CLOSE:
 		app->clocks[clock_index].running = false;
 		// Don't forget to destroy window actually.
 		SDL_DestroyRenderer(app->clocks[clock_index].renderer);
 		SDL_DestroyWindow(app->clocks[clock_index].window);
+		/**
+		 * See https://wiki.libsdl.org/SDL_EventType#SDL_QUIT.
+		 * It seems that SDL will send SDL_QUIT automatically
+		 * when all windows are closed, so we don't need to exit
+		 * manually here.
+		 */
 		LOG_DEBUG("Clock `%d` closed!\n", clock_index);
-		// Exit app if no running clock.
-		bool no_clock = true;
-		for (int i = 0; i < app->clocks_length; ++i) {
-			if (app->clocks[i].running) {
-				no_clock = false;
-				break;
-			}
-		}
-		if (no_clock) {
-			LOG_DEBUG("No running clock, exitting.\n");
-			app->running = false;
-		}
 		break;
-	}
-	default: {
+	default:
 		break;
-	}
 	}
 }
 
