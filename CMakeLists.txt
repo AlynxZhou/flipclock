@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(
 	"flipclock"
 	LANGUAGES C
-	VERSION 2.7.4
+	VERSION 2.8.0
 )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
