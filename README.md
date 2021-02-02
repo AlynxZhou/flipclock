@@ -88,7 +88,7 @@ If you want some features and you can implement it, a PR is always welcome, but 
 - There are still some coding style `clang-format` cannot change, please keep the same as existing code. For example, add period for all comments and printed text, add `\n` yourself for logging.
 - Prefer to `++i`, except when you really need `i` before increasement.
 - I prefer to write commit message in past tense, capitalize the first character and add period. For example "Added new feature.", "Updated README.md.".
-- If you added new options to configuration file and you are able to write Chinese, please update `dists/请先读我.txt` too. This file is a README for Chinese Windows users and **should use GB2312 as encoding and CRLF as return**.
+- If you added new options to configuration file and you are able to write Chinese, please also update `dists/请先读我.txt`. This file is a README for Chinese Windows users and **should use GB2312 as encoding and CRLF as return**.
 
 # License
 
