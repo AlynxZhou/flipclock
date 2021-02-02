@@ -102,6 +102,7 @@ struct flipclock *flipclock_create(void)
 	app->properties.full = true;
 	app->properties.font_path[0] = '\0';
 	app->properties.font_scale = 1.0;
+	app->properties.rect_scale = 1.0;
 #ifdef _WIN32
 	app->properties.preview = false;
 	app->properties.screensaver = false;
@@ -257,8 +258,12 @@ void flipclock_load_conf(struct flipclock *app)
 		      "# Uncomment `font = ` and "
 		      "add path to use custom font.\n"
 		      "#font = \n"
-		      "# Uncomment `font_scale = 0.8` to modify font scale.\n"
+		      "# Uncomment `font_scale = 0.8` to modify digit scale.\n"
+		      "# This scales the digits again based on card scale.\n"
 		      "#font_scale = 0.8\n"
+		      "# Uncomment `rect_scale = 0.8` to modify card scale.\n"
+		      "# This also scales the digits.\n"
+		      "#rect_scale = 0.8\n"
 		      "# Uncomment `font_color = ` to modify "
 		      "the color of the digit.\n"
 		      "#font_color = #000000ff\n"
@@ -305,6 +310,8 @@ void flipclock_load_conf(struct flipclock *app)
 					  "may fail to load.\n");
 		} else if (!strcmp(key, "font_scale")) {
 			app->properties.font_scale = strtod(value, NULL);
+		} else if (!strcmp(key, "rect_scale")) {
+			app->properties.rect_scale = strtod(value, NULL);
 		} else if (!strcmp(key, "font_color")) {
 			if (!_flipclock_parse_color(value, &parsed_color))
 				app->colors.font = parsed_color;
@@ -522,10 +529,11 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 	if (app->clocks[clock_index].width < app->clocks[clock_index].height) {
 		// Some user do love portrait.
 		app->clocks[clock_index].rect_size =
-			app->clocks[clock_index].height * 0.4 >
-					app->clocks[clock_index].width * 0.8 ?
-				app->clocks[clock_index].width * 0.8 :
-				app->clocks[clock_index].height * 0.4;
+			(app->clocks[clock_index].height * 0.4 >
+					 app->clocks[clock_index].width * 0.8 ?
+				 app->clocks[clock_index].width * 0.8 :
+				 app->clocks[clock_index].height * 0.4) *
+			app->properties.rect_scale;
 		int space = app->clocks[clock_index].height * 0.06;
 		app->clocks[clock_index].radius =
 			app->clocks[clock_index].rect_size / 10;
@@ -555,10 +563,11 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 	} else {
 		// But others love landscape.
 		app->clocks[clock_index].rect_size =
-			app->clocks[clock_index].width * 0.4 >
-					app->clocks[clock_index].height * 0.8 ?
-				app->clocks[clock_index].height * 0.8 :
-				app->clocks[clock_index].width * 0.4;
+			(app->clocks[clock_index].width * 0.4 >
+					 app->clocks[clock_index].height * 0.8 ?
+				 app->clocks[clock_index].height * 0.8 :
+				 app->clocks[clock_index].width * 0.4) *
+			app->properties.rect_scale;
 		int space = app->clocks[clock_index].width * 0.06;
 		app->clocks[clock_index].radius =
 			app->clocks[clock_index].rect_size / 10;

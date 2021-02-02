@@ -32,9 +32,16 @@
 # Uncomment `font = ` and add path to use custom font.
 # 删除 `font = ` 前面的 `#` 并添加路径以使用自定义字体。
 #font =
-# Uncomment `font_scale = 0.8` to modify font scale.
+# Uncomment `font_scale = 0.8` to modify digit scale.
 # 删除 `font_scale = 0.8` 前面的 `#` 并修改数字以改变字符缩放大小。
+# This scales the digits again based on card scale.
+# 这会在卡片缩放大小基础上再次缩放字符。
 #font_scale = 0.8
+# Uncomment `rect_scale = 0.8` to modify card scale.
+# 删除 `rect_scale = 0.8` 前面的 `#` 并修改数字以改变卡片缩放大小。
+# This also scales the digits.
+# 这也会缩放字符大小。
+#rect_scale = 0.8
 # Uncomment `font_color = ` to modify the color of the digit.
 # 删除 `font_color` 前面的 `#` 并修改颜色码以使用自定义数字色。
 #font_color = #000000ff

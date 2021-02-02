@@ -49,6 +49,7 @@ struct properties {
 	bool ampm;
 	bool full;
 	double font_scale;
+	double rect_scale;
 #ifdef _WIN32
 	HWND preview_window;
 	bool preview;
