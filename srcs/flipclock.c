@@ -72,11 +72,14 @@ struct flipclock *flipclock_create(void)
 	app->colors.back = app->colors.black;
 	app->properties.ampm = false;
 	app->properties.full = true;
+	app->properties.font_path[0] = '\0';
+	app->properties.conf_path[0] = '\0';
 	app->properties.font_scale = 1.0;
 	app->properties.rect_scale = 1.0;
 #ifdef _WIN32
 	app->properties.preview = false;
 	app->properties.screensaver = false;
+	app->properties.program_dir[0] = '\0';
 	_flipclock_get_program_dir_win32(app->properties.program_dir);
 	LOG_DEBUG("Using program_dir `%s`.\n", app->properties.program_dir);
 #endif
@@ -414,7 +417,7 @@ static void _flipclock_create_clocks(struct flipclock *app)
  */
 
 // Have to use global variable here because of atexit().
-char preview_lock_path[MAX_BUFFER_LENGTH];
+char preview_lock_path[MAX_BUFFER_LENGTH] = { '\0' };
 
 static void _flipclock_get_preview_lock_path_win32(HWND preview_window,
 						   const char *program_dir)
