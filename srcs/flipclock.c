@@ -39,34 +39,6 @@ static void _flipclock_get_program_dir_win32(char *program_dir)
 		}
 	}
 }
-
-static void _flipclock_get_conf_path_win32(char *conf_path,
-					   const char *program_dir)
-{
-	snprintf(conf_path, MAX_BUFFER_LENGTH, "%s\\flipclock.conf",
-		 program_dir);
-	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
-	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
-		LOG_ERROR("conf_path too long, may fail to load.\n");
-}
-#elif defined(__linux__)
-static void _flipclock_get_conf_path_linux(char *conf_path)
-{
-	// Be a good program.
-	const char *conf_dir = getenv("XDG_CONFIG_HOME");
-	if (conf_dir == NULL || strlen(conf_dir) == 0) {
-		// Linux users should not be homeless.
-		const char *home = getenv("HOME");
-		snprintf(conf_path, MAX_BUFFER_LENGTH,
-			 "%s/.config/flipclock.conf", home);
-	} else {
-		snprintf(conf_path, MAX_BUFFER_LENGTH, "%s/flipclock.conf",
-			 conf_dir);
-	}
-	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
-	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
-		LOG_ERROR("conf_path too long, may fail to load.\n");
-}
 #endif
 
 struct flipclock *flipclock_create(void)
@@ -100,24 +72,13 @@ struct flipclock *flipclock_create(void)
 	app->colors.back = app->colors.black;
 	app->properties.ampm = false;
 	app->properties.full = true;
-	app->properties.font_path[0] = '\0';
 	app->properties.font_scale = 1.0;
 	app->properties.rect_scale = 1.0;
 #ifdef _WIN32
 	app->properties.preview = false;
 	app->properties.screensaver = false;
-	app->properties.program_dir[0] = '\0';
 	_flipclock_get_program_dir_win32(app->properties.program_dir);
 	LOG_DEBUG("Using program_dir `%s`.\n", app->properties.program_dir);
-#endif
-#if defined(_WIN32)
-	_flipclock_get_conf_path_win32(app->properties.conf_path,
-				       app->properties.program_dir);
-#elif defined(__linux__)
-	_flipclock_get_conf_path_linux(app->properties.conf_path);
-#endif
-#ifndef __ANDROID__
-	LOG_DEBUG("Using conf_path `%s`.\n", app->properties.conf_path);
 #endif
 	time_t raw_time = time(NULL);
 	app->now = *localtime(&raw_time);
@@ -234,8 +195,47 @@ static int _flipclock_parse_color(const char *rgba, SDL_Color *color)
 	return 0;
 }
 
+#if defined(_WIN32)
+static void _flipclock_get_conf_path_win32(char *conf_path,
+					   const char *program_dir)
+{
+	snprintf(conf_path, MAX_BUFFER_LENGTH, "%s\\flipclock.conf",
+		 program_dir);
+	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
+	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
+		LOG_ERROR("conf_path too long, may fail to load.\n");
+}
+#elif defined(__linux__)
+static void _flipclock_get_conf_path_linux(char *conf_path)
+{
+	// Be a good program.
+	const char *conf_dir = getenv("XDG_CONFIG_HOME");
+	if (conf_dir == NULL || strlen(conf_dir) == 0) {
+		// Linux users should not be homeless.
+		const char *home = getenv("HOME");
+		snprintf(conf_path, MAX_BUFFER_LENGTH,
+			 "%s/.config/flipclock.conf", home);
+	} else {
+		snprintf(conf_path, MAX_BUFFER_LENGTH, "%s/flipclock.conf",
+			 conf_dir);
+	}
+	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
+	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
+		LOG_ERROR("conf_path too long, may fail to load.\n");
+}
+#endif
+
 void flipclock_load_conf(struct flipclock *app)
 {
+#if defined(_WIN32)
+	_flipclock_get_conf_path_win32(app->properties.conf_path,
+				       app->properties.program_dir);
+#elif defined(__linux__)
+	_flipclock_get_conf_path_linux(app->properties.conf_path);
+#endif
+#ifndef __ANDROID__
+	LOG_DEBUG("Using conf_path `%s`.\n", app->properties.conf_path);
+#endif
 	FILE *conf = fopen(app->properties.conf_path, "r");
 	/**
 	 * See https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-constants?view=msvc-160.
@@ -336,7 +336,7 @@ out:
 	return;
 }
 
-static void _flipclock_create_clocks_default(struct flipclock *app)
+static void _flipclock_create_clocks(struct flipclock *app)
 {
 	/**
 	 * We need `SDL_WINDOW_RESIZABLE` for auto-rotate
@@ -404,10 +404,64 @@ static void _flipclock_create_clocks_default(struct flipclock *app)
 }
 
 #ifdef _WIN32
-static void _flipclock_create_clocks_preview(struct flipclock *app)
+/**
+ * There is another silly design in Windows screensaver chooser (yes, differs
+ * from the one happens when you choose other screensaver and then choose
+ * back!). When you press preview button to start a fullscreen screensaver and
+ * close it, Windows will launch another process in the small preview window!
+ * And even SDL_RENDER_TARGETS_RESET is not sent this time! So there is no
+ * other way than creating lock files by ourselves, what a horrible system!
+ */
+
+// Have to use global variable here because of atexit().
+char preview_lock_path[MAX_BUFFER_LENGTH];
+
+static void _flipclock_get_preview_lock_path_win32(HWND preview_window,
+						   const char *program_dir)
 {
-	// Don't set fullscreen if in preview.
-	app->properties.full = false;
+	/**
+	 * User can open more than screensaver chooser,
+	 * so we need to add HWND as part of lock file name.
+	 */
+	snprintf(preview_lock_path, MAX_BUFFER_LENGTH, "%s\\flipclock.%lu.lock",
+		 program_dir, preview_window);
+	preview_lock_path[MAX_BUFFER_LENGTH - 1] = '\0';
+	if (strlen(preview_lock_path) == MAX_BUFFER_LENGTH - 1)
+		LOG_ERROR("preview_lock_path too long, may fail to load.\n");
+}
+
+static void _flipclock_remove_preview_lock_win32(void)
+{
+	/**
+	 * UNIX is designed for normal people, because you can remove one
+	 * file after you just opened it, system will close it until your
+	 * program ends. While silly Windows just say "cannot modify an opened
+	 * file". So this function is used for atexit(), we have to remove
+	 * file by ourselves at exit.
+	 */
+	remove(preview_lock_path);
+}
+
+static void _flipclock_lock_preview_win32(struct flipclock *app)
+{
+	_flipclock_get_preview_lock_path_win32(app->properties.preview_window,
+					       app->properties.program_dir);
+	LOG_DEBUG("Using preview_lock_path `%s`.\n", preview_lock_path);
+	FILE *preview_lock = fopen(preview_lock_path, "r");
+	if (preview_lock != NULL || errno != ENOENT) {
+		LOG_ERROR("Already running in the given preview window!\n");
+		fclose(preview_lock);
+		exit(EXIT_FAILURE);
+	}
+	preview_lock = fopen(preview_lock_path, "w");
+	fprintf(preview_lock, "%lu\n", app->properties.preview_window);
+	fclose(preview_lock);
+	atexit(_flipclock_remove_preview_lock_win32);
+}
+
+static void _flipclock_create_preview_win32(struct flipclock *app)
+{
+	_flipclock_lock_preview_win32(app);
 	app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
 	if (app->clocks == NULL) {
 		LOG_ERROR("Failed to create clocks!\n");
@@ -446,9 +500,9 @@ static void _flipclock_create_clocks_win32(struct flipclock *app)
 	if (!app->properties.screensaver)
 		SDL_DisableScreenSaver();
 	if (app->properties.preview)
-		_flipclock_create_clocks_preview(app);
+		_flipclock_create_preview_win32(app);
 	else
-		_flipclock_create_clocks_default(app);
+		_flipclock_create_clocks(app);
 }
 #endif
 
@@ -459,7 +513,7 @@ void flipclock_create_clocks(struct flipclock *app)
 #else
 	// Android and Linux should share the same code here.
 	SDL_DisableScreenSaver();
-	_flipclock_create_clocks_default(app);
+	_flipclock_create_clocks(app);
 #endif
 }
 
@@ -1127,17 +1181,15 @@ static void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 	switch (event.type) {
 #ifdef _WIN32
 	/**
-	 * There is a silly design in Windows' screensaver
+	 * There is a silly design in Windows screensaver
 	 * chooser. When you choose one screensaver, it will
 	 * run the program with `/p HWND`, but if you changed
 	 * to another, the former will not receive close
 	 * event (yes, any kind of close event is not sent),
 	 * and if you choose the former again, it will run
-	 * the program with the same HWND again! To prevent
-	 * this as a workaround, SDL sends
-	 * SDL_RENDER_TARGETS_RESET when preview changes to
-	 * another. I don't know why, but it works, and I
-	 * don't know why no close event is sent.
+	 * the program with the same HWND again! And your
+	 * previous program only get a SDL_RENDER_TARGETS_RESET.
+	 * So we have to close the lost program manually here.
 	 */
 	case SDL_RENDER_TARGETS_RESET:
 		if (app->properties.preview)
