@@ -649,9 +649,8 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 		snprintf(font_path, MAX_BUFFER_LENGTH, "%s\\flipclock.ttf",
 			 app->properties.program_dir);
 		font_path[MAX_BUFFER_LENGTH - 1] = '\0';
-		if (strlen(font_path) == MAX_BUFFER_LENGTH - 1) {
+		if (strlen(font_path) == MAX_BUFFER_LENGTH - 1)
 			LOG_ERROR("font_path too long, may fail to load.\n");
-		}
 #elif defined(__ANDROID__)
 		// Directly under `app/src/main/assets` for Android APP.
 		char *font_path = "flipclock.ttf";

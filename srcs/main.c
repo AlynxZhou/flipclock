@@ -49,6 +49,11 @@ int main(int argc, char *argv[])
 			 * But it seems I can use it to handle key press.
 			 */
 			app->properties.screensaver = true;
+			/**
+			 * Even if user set windowed mode in configuration file,
+			 * screensaver still needs to be fullscreen.
+			 */
+			app->properties.full = true;
 			break;
 		case 'c':
 			MessageBox(NULL,
@@ -86,10 +91,9 @@ int main(int argc, char *argv[])
 				MAX_BUFFER_LENGTH - 1);
 			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
 			if (strlen(app->properties.font_path) ==
-			    MAX_BUFFER_LENGTH - 1) {
+			    MAX_BUFFER_LENGTH - 1)
 				LOG_ERROR("font_path too long, "
 					  "may fail to load.\n");
-			}
 			break;
 		case 0:
 			LOG_ERROR("%s: Invalid value `%s`.\n", argv[0], argopt);
