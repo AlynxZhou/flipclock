@@ -92,7 +92,7 @@ struct clock {
 	struct fonts fonts;
 	int width;
 	int height;
-	int rect_height;
+	int time_height;
 	int mode_height;
 	int radius;
 	bool waiting;

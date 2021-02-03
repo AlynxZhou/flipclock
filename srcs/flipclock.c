@@ -528,7 +528,7 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 {
 	if (app->clocks[clock_index].width < app->clocks[clock_index].height) {
 		// Some user do love portrait.
-		app->clocks[clock_index].rect_height =
+		app->clocks[clock_index].time_height =
 			(app->clocks[clock_index].height * 0.4 >
 					 app->clocks[clock_index].width * 0.8 ?
 				 app->clocks[clock_index].width * 0.8 :
@@ -536,20 +536,20 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 			app->properties.rect_scale;
 		int space = app->clocks[clock_index].height * 0.06;
 		app->clocks[clock_index].radius =
-			app->clocks[clock_index].rect_height / 10;
+			app->clocks[clock_index].time_height / 10;
 
 		app->clocks[clock_index].cards.hour.rect.y =
 			(app->clocks[clock_index].height -
-			 2 * app->clocks[clock_index].rect_height - space) /
+			 2 * app->clocks[clock_index].time_height - space) /
 			2;
 		app->clocks[clock_index].cards.hour.rect.x =
 			(app->clocks[clock_index].width -
-			 app->clocks[clock_index].rect_height) /
+			 app->clocks[clock_index].time_height) /
 			2;
 		app->clocks[clock_index].cards.hour.rect.w =
-			app->clocks[clock_index].rect_height;
+			app->clocks[clock_index].time_height;
 		app->clocks[clock_index].cards.hour.rect.h =
-			app->clocks[clock_index].rect_height;
+			app->clocks[clock_index].time_height;
 
 		app->clocks[clock_index].cards.minute.rect.y =
 			app->clocks[clock_index].cards.hour.rect.y +
@@ -557,12 +557,12 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 		app->clocks[clock_index].cards.minute.rect.x =
 			app->clocks[clock_index].cards.hour.rect.x;
 		app->clocks[clock_index].cards.minute.rect.w =
-			app->clocks[clock_index].rect_height;
+			app->clocks[clock_index].time_height;
 		app->clocks[clock_index].cards.minute.rect.h =
-			app->clocks[clock_index].rect_height;
+			app->clocks[clock_index].time_height;
 	} else {
 		// But others love landscape.
-		app->clocks[clock_index].rect_height =
+		app->clocks[clock_index].time_height =
 			(app->clocks[clock_index].width * 0.4 >
 					 app->clocks[clock_index].height * 0.8 ?
 				 app->clocks[clock_index].height * 0.8 :
@@ -570,20 +570,20 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 			app->properties.rect_scale;
 		int space = app->clocks[clock_index].width * 0.06;
 		app->clocks[clock_index].radius =
-			app->clocks[clock_index].rect_height / 10;
+			app->clocks[clock_index].time_height / 10;
 
 		app->clocks[clock_index].cards.hour.rect.x =
 			(app->clocks[clock_index].width -
-			 2 * app->clocks[clock_index].rect_height - space) /
+			 2 * app->clocks[clock_index].time_height - space) /
 			2;
 		app->clocks[clock_index].cards.hour.rect.y =
 			(app->clocks[clock_index].height -
-			 app->clocks[clock_index].rect_height) /
+			 app->clocks[clock_index].time_height) /
 			2;
 		app->clocks[clock_index].cards.hour.rect.w =
-			app->clocks[clock_index].rect_height;
+			app->clocks[clock_index].time_height;
 		app->clocks[clock_index].cards.hour.rect.h =
-			app->clocks[clock_index].rect_height;
+			app->clocks[clock_index].time_height;
 
 		app->clocks[clock_index].cards.minute.rect.x =
 			app->clocks[clock_index].cards.hour.rect.x +
@@ -591,12 +591,12 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 		app->clocks[clock_index].cards.minute.rect.y =
 			app->clocks[clock_index].cards.hour.rect.y;
 		app->clocks[clock_index].cards.minute.rect.w =
-			app->clocks[clock_index].rect_height;
+			app->clocks[clock_index].time_height;
 		app->clocks[clock_index].cards.minute.rect.h =
-			app->clocks[clock_index].rect_height;
+			app->clocks[clock_index].time_height;
 	}
 	app->clocks[clock_index].mode_height =
-		app->clocks[clock_index].rect_height / 10;
+		app->clocks[clock_index].time_height / 10;
 	/**
 	 * Use -2 * MAX_PROGRESS as initial value to ensure a full render
 	 * when mainloop starts.
@@ -644,7 +644,7 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 		LOG_DEBUG("Using font_path `%s`.\n", app->properties.font_path);
 		app->clocks[clock_index].fonts.time =
 			TTF_OpenFont(app->properties.font_path,
-				     app->clocks[clock_index].rect_height *
+				     app->clocks[clock_index].time_height *
 					     app->properties.font_scale);
 		app->clocks[clock_index].fonts.mode =
 			TTF_OpenFont(app->properties.font_path,
@@ -667,7 +667,7 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 #endif
 		LOG_DEBUG("Using font_path `%s`.\n", font_path);
 		app->clocks[clock_index].fonts.time = TTF_OpenFont(
-			font_path, app->clocks[clock_index].rect_height *
+			font_path, app->clocks[clock_index].time_height *
 					   app->properties.font_scale);
 		app->clocks[clock_index].fonts.mode = TTF_OpenFont(
 			font_path, app->clocks[clock_index].mode_height *
@@ -871,11 +871,11 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 		SDL_Rect mode_rect;
 		// How do I get those numbers? Test.
 		mode_rect.x = app->clocks[clock_index].cards.hour.rect.x +
-			      app->clocks[clock_index].rect_height / 50;
+			      app->clocks[clock_index].time_height / 50;
 		mode_rect.y = app->clocks[clock_index].cards.hour.rect.y +
-			      app->clocks[clock_index].rect_height -
+			      app->clocks[clock_index].time_height -
 			      app->clocks[clock_index].mode_height -
-			      app->clocks[clock_index].rect_height / 35;
+			      app->clocks[clock_index].time_height / 35;
 		mode_rect.w = app->clocks[clock_index].mode_height * 2;
 		mode_rect.h = app->clocks[clock_index].mode_height;
 		snprintf(text, sizeof(text), "%cM",
