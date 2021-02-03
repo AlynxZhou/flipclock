@@ -528,7 +528,7 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 {
 	if (app->clocks[clock_index].width < app->clocks[clock_index].height) {
 		// Some user do love portrait.
-		app->clocks[clock_index].rect_size =
+		app->clocks[clock_index].rect_height =
 			(app->clocks[clock_index].height * 0.4 >
 					 app->clocks[clock_index].width * 0.8 ?
 				 app->clocks[clock_index].width * 0.8 :
@@ -536,33 +536,33 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 			app->properties.rect_scale;
 		int space = app->clocks[clock_index].height * 0.06;
 		app->clocks[clock_index].radius =
-			app->clocks[clock_index].rect_size / 10;
+			app->clocks[clock_index].rect_height / 10;
 
-		app->clocks[clock_index].rects.hour.y =
+		app->clocks[clock_index].cards.hour.rect.y =
 			(app->clocks[clock_index].height -
-			 2 * app->clocks[clock_index].rect_size - space) /
+			 2 * app->clocks[clock_index].rect_height - space) /
 			2;
-		app->clocks[clock_index].rects.hour.x =
+		app->clocks[clock_index].cards.hour.rect.x =
 			(app->clocks[clock_index].width -
-			 app->clocks[clock_index].rect_size) /
+			 app->clocks[clock_index].rect_height) /
 			2;
-		app->clocks[clock_index].rects.hour.w =
-			app->clocks[clock_index].rect_size;
-		app->clocks[clock_index].rects.hour.h =
-			app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].cards.hour.rect.w =
+			app->clocks[clock_index].rect_height;
+		app->clocks[clock_index].cards.hour.rect.h =
+			app->clocks[clock_index].rect_height;
 
-		app->clocks[clock_index].rects.minute.y =
-			app->clocks[clock_index].rects.hour.y +
-			app->clocks[clock_index].rects.hour.h + space;
-		app->clocks[clock_index].rects.minute.x =
-			app->clocks[clock_index].rects.hour.x;
-		app->clocks[clock_index].rects.minute.w =
-			app->clocks[clock_index].rect_size;
-		app->clocks[clock_index].rects.minute.h =
-			app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].cards.minute.rect.y =
+			app->clocks[clock_index].cards.hour.rect.y +
+			app->clocks[clock_index].cards.hour.rect.h + space;
+		app->clocks[clock_index].cards.minute.rect.x =
+			app->clocks[clock_index].cards.hour.rect.x;
+		app->clocks[clock_index].cards.minute.rect.w =
+			app->clocks[clock_index].rect_height;
+		app->clocks[clock_index].cards.minute.rect.h =
+			app->clocks[clock_index].rect_height;
 	} else {
 		// But others love landscape.
-		app->clocks[clock_index].rect_size =
+		app->clocks[clock_index].rect_height =
 			(app->clocks[clock_index].width * 0.4 >
 					 app->clocks[clock_index].height * 0.8 ?
 				 app->clocks[clock_index].height * 0.8 :
@@ -570,45 +570,39 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 			app->properties.rect_scale;
 		int space = app->clocks[clock_index].width * 0.06;
 		app->clocks[clock_index].radius =
-			app->clocks[clock_index].rect_size / 10;
+			app->clocks[clock_index].rect_height / 10;
 
-		app->clocks[clock_index].rects.hour.x =
+		app->clocks[clock_index].cards.hour.rect.x =
 			(app->clocks[clock_index].width -
-			 2 * app->clocks[clock_index].rect_size - space) /
+			 2 * app->clocks[clock_index].rect_height - space) /
 			2;
-		app->clocks[clock_index].rects.hour.y =
+		app->clocks[clock_index].cards.hour.rect.y =
 			(app->clocks[clock_index].height -
-			 app->clocks[clock_index].rect_size) /
+			 app->clocks[clock_index].rect_height) /
 			2;
-		app->clocks[clock_index].rects.hour.w =
-			app->clocks[clock_index].rect_size;
-		app->clocks[clock_index].rects.hour.h =
-			app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].cards.hour.rect.w =
+			app->clocks[clock_index].rect_height;
+		app->clocks[clock_index].cards.hour.rect.h =
+			app->clocks[clock_index].rect_height;
 
-		app->clocks[clock_index].rects.minute.x =
-			app->clocks[clock_index].rects.hour.x +
-			app->clocks[clock_index].rects.hour.w + space;
-		app->clocks[clock_index].rects.minute.y =
-			app->clocks[clock_index].rects.hour.y;
-		app->clocks[clock_index].rects.minute.w =
-			app->clocks[clock_index].rect_size;
-		app->clocks[clock_index].rects.minute.h =
-			app->clocks[clock_index].rect_size;
+		app->clocks[clock_index].cards.minute.rect.x =
+			app->clocks[clock_index].cards.hour.rect.x +
+			app->clocks[clock_index].cards.hour.rect.w + space;
+		app->clocks[clock_index].cards.minute.rect.y =
+			app->clocks[clock_index].cards.hour.rect.y;
+		app->clocks[clock_index].cards.minute.rect.w =
+			app->clocks[clock_index].rect_height;
+		app->clocks[clock_index].cards.minute.rect.h =
+			app->clocks[clock_index].rect_height;
 	}
-
-	// How do I get those numbers? Test.
-	app->clocks[clock_index].rects.mode.w =
-		app->clocks[clock_index].rect_size / 5;
-	app->clocks[clock_index].rects.mode.h =
-		app->clocks[clock_index].rect_size / 10;
-	app->clocks[clock_index].rects.mode.x =
-		app->clocks[clock_index].rects.hour.x +
-		app->clocks[clock_index].rect_size / 50;
-	app->clocks[clock_index].rects.mode.y =
-		app->clocks[clock_index].rects.hour.y +
-		app->clocks[clock_index].rect_size -
-		app->clocks[clock_index].rects.mode.h -
-		app->clocks[clock_index].rect_size / 35;
+	app->clocks[clock_index].mode_height =
+		app->clocks[clock_index].rect_height / 10;
+	/**
+	 * Use -2 * MAX_PROGRESS as initial value to ensure a full render
+	 * when mainloop starts.
+	 */
+	app->clocks[clock_index].cards.hour.start_tick = -2 * MAX_PROGRESS;
+	app->clocks[clock_index].cards.minute.start_tick = -2 * MAX_PROGRESS;
 }
 
 void flipclock_create_textures(struct flipclock *app, int clock_index)
@@ -650,11 +644,11 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 		LOG_DEBUG("Using font_path `%s`.\n", app->properties.font_path);
 		app->clocks[clock_index].fonts.time =
 			TTF_OpenFont(app->properties.font_path,
-				     app->clocks[clock_index].rect_size *
+				     app->clocks[clock_index].rect_height *
 					     app->properties.font_scale);
 		app->clocks[clock_index].fonts.mode =
 			TTF_OpenFont(app->properties.font_path,
-				     app->clocks[clock_index].rects.mode.h *
+				     app->clocks[clock_index].mode_height *
 					     app->properties.font_scale);
 	} else {
 #if defined(_WIN32)
@@ -673,10 +667,10 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 #endif
 		LOG_DEBUG("Using font_path `%s`.\n", font_path);
 		app->clocks[clock_index].fonts.time = TTF_OpenFont(
-			font_path, app->clocks[clock_index].rect_size *
+			font_path, app->clocks[clock_index].rect_height *
 					   app->properties.font_scale);
 		app->clocks[clock_index].fonts.mode = TTF_OpenFont(
-			font_path, app->clocks[clock_index].rects.mode.h *
+			font_path, app->clocks[clock_index].mode_height *
 					   app->properties.font_scale);
 	}
 	if (app->clocks[clock_index].fonts.time == NULL ||
@@ -845,9 +839,6 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 				 app->clocks[clock_index].textures.current,
 				 app->colors.transparent);
 
-	char text[3];
-	SDL_Rect divider_rect;
-
 	/**
 	 * Don't draw one card after another!
 	 * I don't know why, but it seems SDL2 under Windows has a bug.
@@ -861,27 +852,37 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 	// Background.
 	_flipclock_render_rounded_box(app, clock_index,
 				      app->clocks[clock_index].textures.current,
-				      app->clocks[clock_index].rects.hour,
+				      app->clocks[clock_index].cards.hour.rect,
 				      app->clocks[clock_index].radius);
 
-	_flipclock_render_rounded_box(app, clock_index,
-				      app->clocks[clock_index].textures.current,
-				      app->clocks[clock_index].rects.minute,
-				      app->clocks[clock_index].radius);
+	_flipclock_render_rounded_box(
+		app, clock_index, app->clocks[clock_index].textures.current,
+		app->clocks[clock_index].cards.minute.rect,
+		app->clocks[clock_index].radius);
 
 	// Text.
+	char text[3];
 	if (app->properties.ampm) {
 		/**
 		 * Just draw AM/PM text on hour card.
 		 * Don't use strftime() here,
 		 * because font only have `A`, `P`, `M`.
 		 */
+		SDL_Rect mode_rect;
+		// How do I get those numbers? Test.
+		mode_rect.x = app->clocks[clock_index].cards.hour.rect.x +
+			      app->clocks[clock_index].rect_height / 50;
+		mode_rect.y = app->clocks[clock_index].cards.hour.rect.y +
+			      app->clocks[clock_index].rect_height -
+			      app->clocks[clock_index].mode_height -
+			      app->clocks[clock_index].rect_height / 35;
+		mode_rect.w = app->clocks[clock_index].mode_height * 2;
+		mode_rect.h = app->clocks[clock_index].mode_height;
 		snprintf(text, sizeof(text), "%cM",
 			 app->times.now.tm_hour / 12 ? 'P' : 'A');
 		_flipclock_render_text(
 			app, clock_index,
-			app->clocks[clock_index].textures.current,
-			app->clocks[clock_index].rects.mode,
+			app->clocks[clock_index].textures.current, mode_rect,
 			app->clocks[clock_index].fonts.mode, text);
 	}
 
@@ -898,72 +899,76 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 	}
 	_flipclock_render_text(app, clock_index,
 			       app->clocks[clock_index].textures.current,
-			       app->clocks[clock_index].rects.hour,
+			       app->clocks[clock_index].cards.hour.rect,
 			       app->clocks[clock_index].fonts.time, text);
 
 	strftime(text, sizeof(text), "%M", &app->times.now);
 	_flipclock_render_text(app, clock_index,
 			       app->clocks[clock_index].textures.current,
-			       app->clocks[clock_index].rects.minute,
+			       app->clocks[clock_index].cards.minute.rect,
 			       app->clocks[clock_index].fonts.time, text);
 
 	// And cut the card!
-	divider_rect.h = app->clocks[clock_index].rects.hour.h / 100;
-	divider_rect.w = app->clocks[clock_index].rects.hour.w;
-	divider_rect.x = app->clocks[clock_index].rects.hour.x;
+	SDL_Rect divider_rect;
+	divider_rect.h = app->clocks[clock_index].cards.hour.rect.h / 100;
+	divider_rect.w = app->clocks[clock_index].cards.hour.rect.w;
+	divider_rect.x = app->clocks[clock_index].cards.hour.rect.x;
 	divider_rect.y =
-		app->clocks[clock_index].rects.hour.y +
-		(app->clocks[clock_index].rects.hour.h - divider_rect.h) / 2;
+		app->clocks[clock_index].cards.hour.rect.y +
+		(app->clocks[clock_index].cards.hour.rect.h - divider_rect.h) /
+			2;
 	_flipclock_render_divider(app, clock_index,
 				  app->clocks[clock_index].textures.current,
 				  divider_rect);
 
-	divider_rect.h = app->clocks[clock_index].rects.minute.h / 100;
-	divider_rect.w = app->clocks[clock_index].rects.minute.w;
-	divider_rect.x = app->clocks[clock_index].rects.minute.x;
-	divider_rect.y =
-		app->clocks[clock_index].rects.minute.y +
-		(app->clocks[clock_index].rects.minute.h - divider_rect.h) / 2;
+	divider_rect.h = app->clocks[clock_index].cards.minute.rect.h / 100;
+	divider_rect.w = app->clocks[clock_index].cards.minute.rect.w;
+	divider_rect.x = app->clocks[clock_index].cards.minute.rect.x;
+	divider_rect.y = app->clocks[clock_index].cards.minute.rect.y +
+			 (app->clocks[clock_index].cards.minute.rect.h -
+			  divider_rect.h) /
+				 2;
 	_flipclock_render_divider(app, clock_index,
 				  app->clocks[clock_index].textures.current,
 				  divider_rect);
 }
 
-void _flipclock_copy_rect(struct flipclock *app, int clock_index,
-			  SDL_Rect target_rect, int progress)
+void _flipclock_flip_card(struct flipclock *app, int clock_index,
+			  struct card card)
 {
+	int progress = SDL_GetTicks() - card.start_tick;
 	if (progress >= MAX_PROGRESS) {
 		// It finished flipping, so we don't draw flipping.
 		SDL_RenderCopy(app->clocks[clock_index].renderer,
 			       app->clocks[clock_index].textures.current,
-			       &target_rect, &target_rect);
+			       &card.rect, &card.rect);
 		return;
 	}
 
 	// Draw the upper current digit and render it.
 	SDL_Rect half_source_rect;
-	half_source_rect.x = target_rect.x;
-	half_source_rect.y = target_rect.y;
-	half_source_rect.w = target_rect.w;
-	half_source_rect.h = target_rect.h / 2;
+	half_source_rect.x = card.rect.x;
+	half_source_rect.y = card.rect.y;
+	half_source_rect.w = card.rect.w;
+	half_source_rect.h = card.rect.h / 2;
 	SDL_Rect half_target_rect;
-	half_target_rect.x = target_rect.x;
-	half_target_rect.y = target_rect.y;
-	half_target_rect.w = target_rect.w;
-	half_target_rect.h = target_rect.h / 2;
+	half_target_rect.x = card.rect.x;
+	half_target_rect.y = card.rect.y;
+	half_target_rect.w = card.rect.w;
+	half_target_rect.h = card.rect.h / 2;
 	SDL_RenderCopy(app->clocks[clock_index].renderer,
 		       app->clocks[clock_index].textures.current,
 		       &half_source_rect, &half_target_rect);
 
 	// Draw the lower previous digit and render it.
-	half_source_rect.x = target_rect.x;
-	half_source_rect.y = target_rect.y + target_rect.h / 2;
-	half_source_rect.w = target_rect.w;
-	half_source_rect.h = target_rect.h / 2;
-	half_target_rect.x = target_rect.x;
-	half_target_rect.y = target_rect.y + target_rect.h / 2;
-	half_target_rect.w = target_rect.w;
-	half_target_rect.h = target_rect.h / 2;
+	half_source_rect.x = card.rect.x;
+	half_source_rect.y = card.rect.y + card.rect.h / 2;
+	half_source_rect.w = card.rect.w;
+	half_source_rect.h = card.rect.h / 2;
+	half_target_rect.x = card.rect.x;
+	half_target_rect.y = card.rect.y + card.rect.h / 2;
+	half_target_rect.w = card.rect.w;
+	half_target_rect.h = card.rect.h / 2;
 	SDL_RenderCopy(app->clocks[clock_index].renderer,
 		       app->clocks[clock_index].textures.previous,
 		       &half_source_rect, &half_target_rect);
@@ -977,39 +982,32 @@ void _flipclock_copy_rect(struct flipclock *app, int clock_index,
 	double scale =
 		upper_half ? 1.0 - (1.0 * progress) / HALF_PROGRESS :
 			     ((1.0 * progress) - HALF_PROGRESS) / HALF_PROGRESS;
-	half_source_rect.x = target_rect.x;
-	half_source_rect.y =
-		target_rect.y + (upper_half ? 0 : target_rect.h / 2);
-	half_source_rect.w = target_rect.w;
-	half_source_rect.h = target_rect.h / 2;
-	half_target_rect.x = target_rect.x;
+	half_source_rect.x = card.rect.x;
+	half_source_rect.y = card.rect.y + (upper_half ? 0 : card.rect.h / 2);
+	half_source_rect.w = card.rect.w;
+	half_source_rect.h = card.rect.h / 2;
+	half_target_rect.x = card.rect.x;
 	half_target_rect.y =
-		target_rect.y + (upper_half ? target_rect.h / 2 * (1 - scale) :
-					      target_rect.h / 2);
-	half_target_rect.w = target_rect.w;
-	half_target_rect.h = target_rect.h / 2 * scale;
+		card.rect.y +
+		(upper_half ? card.rect.h / 2 * (1 - scale) : card.rect.h / 2);
+	half_target_rect.w = card.rect.w;
+	half_target_rect.h = card.rect.h / 2 * scale;
 	SDL_RenderCopy(app->clocks[clock_index].renderer,
 		       upper_half ? app->clocks[clock_index].textures.previous :
 				    app->clocks[clock_index].textures.current,
 		       &half_source_rect, &half_target_rect);
 }
 
-void _flipclock_animate(struct flipclock *app, int clock_index, int progress)
+void _flipclock_animate(struct flipclock *app, int clock_index)
 {
 	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
 			       app->colors.back.r, app->colors.back.g,
 			       app->colors.back.b, app->colors.back.a);
 	SDL_RenderClear(app->clocks[clock_index].renderer);
-	_flipclock_copy_rect(app, clock_index,
-			     app->clocks[clock_index].rects.hour,
-			     app->times.now.tm_hour != app->times.past.tm_hour ?
-				     progress :
-				     MAX_PROGRESS);
-	_flipclock_copy_rect(app, clock_index,
-			     app->clocks[clock_index].rects.minute,
-			     app->times.now.tm_min != app->times.past.tm_min ?
-				     progress :
-				     MAX_PROGRESS);
+	_flipclock_flip_card(app, clock_index,
+			     app->clocks[clock_index].cards.hour);
+	_flipclock_flip_card(app, clock_index,
+			     app->clocks[clock_index].cards.minute);
 	SDL_RenderPresent(app->clocks[clock_index].renderer);
 }
 
@@ -1215,9 +1213,6 @@ void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 
 void flipclock_run_mainloop(struct flipclock *app)
 {
-	bool animating = false;
-	int progress = MAX_PROGRESS;
-	unsigned int start_tick = SDL_GetTicks();
 	SDL_Event event;
 	// Clear event queue before running.
 	while (SDL_PollEvent(&event))
@@ -1227,7 +1222,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 		if (!app->clocks[i].running)
 			continue;
 		_flipclock_render_texture(app, i);
-		_flipclock_animate(app, i, MAX_PROGRESS);
+		_flipclock_animate(app, i);
 	}
 	while (app->running) {
 #ifdef _WIN32
@@ -1240,36 +1235,37 @@ void flipclock_run_mainloop(struct flipclock *app)
 			_flipclock_handle_event(app, event);
 		time_t raw_time = time(NULL);
 		app->times.now = *localtime(&raw_time);
-		/**
-		 * Start animation when time changes.
-		 * But don't sync time here!
-		 * We need it to decide which part needs animation.
-		 */
-		if (!animating &&
-		    (app->times.now.tm_hour != app->times.past.tm_hour ||
-		     app->times.now.tm_min != app->times.past.tm_min)) {
-			animating = true;
-			progress = 0;
-			start_tick = SDL_GetTicks();
+		if (app->times.now.tm_hour != app->times.past.tm_hour ||
+		    app->times.now.tm_min != app->times.past.tm_min) {
+			LOG_DEBUG("Time changed, rendering texture.\n");
 			for (int i = 0; i < app->clocks_length; ++i) {
 				if (!app->clocks[i].running)
 					continue;
 				_flipclock_render_texture(app, i);
 			}
 		}
+		if (app->times.now.tm_hour != app->times.past.tm_hour) {
+			for (int i = 0; i < app->clocks_length; ++i) {
+				if (!app->clocks[i].running)
+					continue;
+				app->clocks[i].cards.hour.start_tick =
+					SDL_GetTicks();
+			}
+		}
+		if (app->times.now.tm_min != app->times.past.tm_min) {
+			for (int i = 0; i < app->clocks_length; ++i) {
+				if (!app->clocks[i].running)
+					continue;
+				app->clocks[i].cards.minute.start_tick =
+					SDL_GetTicks();
+			}
+		}
 		// Pause when minimized.
 		for (int i = 0; i < app->clocks_length; ++i)
 			if (!app->clocks[i].waiting && app->clocks[i].running)
-				_flipclock_animate(app, i, progress);
-		// Only calculate frame when animating.
-		if (animating)
-			progress = SDL_GetTicks() - start_tick;
+				_flipclock_animate(app, i);
 		// Sync time when animation ends.
-		if (animating && progress > MAX_PROGRESS) {
-			animating = false;
-			progress = MAX_PROGRESS;
-			app->times.past = app->times.now;
-		}
+		app->times.past = app->times.now;
 	}
 }
 

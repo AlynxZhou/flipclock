@@ -72,10 +72,13 @@ struct fonts {
 	TTF_Font *time;
 	TTF_Font *mode;
 };
-struct rects {
-	SDL_Rect hour;
-	SDL_Rect minute;
-	SDL_Rect mode;
+struct card {
+	SDL_Rect rect;
+	int start_tick;
+};
+struct cards {
+	struct card hour;
+	struct card minute;
 };
 struct textures {
 	SDL_Texture *current;
@@ -85,11 +88,12 @@ struct clock {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
 	struct textures textures;
-	struct rects rects;
+	struct cards cards;
 	struct fonts fonts;
 	int width;
 	int height;
-	int rect_size;
+	int rect_height;
+	int mode_height;
 	int radius;
 	bool waiting;
 	bool running;
