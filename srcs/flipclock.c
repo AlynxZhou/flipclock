@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include "getarg.h"
@@ -18,7 +17,7 @@
 #define DOUBLE_TAP_INTERVAL_MS 300
 
 #if defined(_WIN32)
-void _flipclock_get_program_dir_win32(char *program_dir)
+static void _flipclock_get_program_dir_win32(char *program_dir)
 {
 	/**
 	 * See https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew.
@@ -41,7 +40,8 @@ void _flipclock_get_program_dir_win32(char *program_dir)
 	}
 }
 
-void _flipclock_get_conf_path_win32(char *conf_path, const char *program_dir)
+static void _flipclock_get_conf_path_win32(char *conf_path,
+					   const char *program_dir)
 {
 	snprintf(conf_path, MAX_BUFFER_LENGTH, "%s\\flipclock.conf",
 		 program_dir);
@@ -50,7 +50,7 @@ void _flipclock_get_conf_path_win32(char *conf_path, const char *program_dir)
 		LOG_ERROR("conf_path too long, may fail to load.\n");
 }
 #elif defined(__linux__)
-void _flipclock_get_conf_path_linux(char *conf_path)
+static void _flipclock_get_conf_path_linux(char *conf_path)
 {
 	// Be a good program.
 	const char *conf_dir = getenv("XDG_CONFIG_HOME");
@@ -125,7 +125,7 @@ struct flipclock *flipclock_create(void)
 	return app;
 }
 
-int _flipclock_parse_key_value(char *line, char **key, char **value)
+static int _flipclock_parse_key_value(char *line, char **key, char **value)
 {
 	const int line_length = strlen(line);
 	int key_start = -1;
@@ -194,7 +194,7 @@ int _flipclock_parse_key_value(char *line, char **key, char **value)
 	return 0;
 }
 
-int _flipclock_parse_color(const char *rgba, SDL_Color *color)
+static int _flipclock_parse_color(const char *rgba, SDL_Color *color)
 {
 	const int rgba_length = strlen(rgba);
 	if (rgba_length == 0) {
@@ -337,7 +337,7 @@ out:
 	return;
 }
 
-void _flipclock_create_clocks_default(struct flipclock *app)
+static void _flipclock_create_clocks_default(struct flipclock *app)
 {
 	/**
 	 * We need `SDL_WINDOW_RESIZABLE` for auto-rotate
@@ -405,7 +405,7 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 }
 
 #ifdef _WIN32
-void _flipclock_create_clocks_preview(struct flipclock *app)
+static void _flipclock_create_clocks_preview(struct flipclock *app)
 {
 	// Don't set fullscreen if in preview.
 	app->properties.full = false;
@@ -442,7 +442,7 @@ void _flipclock_create_clocks_preview(struct flipclock *app)
 				   SDL_BLENDMODE_BLEND);
 }
 
-void _flipclock_create_clocks_win32(struct flipclock *app)
+static void _flipclock_create_clocks_win32(struct flipclock *app)
 {
 	if (!app->properties.screensaver)
 		SDL_DisableScreenSaver();
@@ -464,8 +464,8 @@ void flipclock_create_clocks(struct flipclock *app)
 #endif
 }
 
-void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
-			       bool full)
+static void _flipclock_set_fullscreen(struct flipclock *app, int clock_index,
+				      bool full)
 {
 	app->properties.full = full;
 	// Let's find which display the clock is inside.
@@ -597,12 +597,6 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 	}
 	app->clocks[clock_index].mode_height =
 		app->clocks[clock_index].time_height / 10;
-	/**
-	 * Use -2 * MAX_PROGRESS as initial value to ensure a full render
-	 * when mainloop starts.
-	 */
-	app->clocks[clock_index].cards.hour.start_tick = -2 * MAX_PROGRESS;
-	app->clocks[clock_index].cards.minute.start_tick = -2 * MAX_PROGRESS;
 }
 
 void flipclock_create_textures(struct flipclock *app, int clock_index)
@@ -688,9 +682,9 @@ void flipclock_close_fonts(struct flipclock *app, int clock_index)
 		TTF_CloseFont(app->clocks[clock_index].fonts.mode);
 }
 
-void _flipclock_clear_texture(struct flipclock *app, int clock_index,
-			      SDL_Texture *target_texture,
-			      SDL_Color background_color)
+static void _flipclock_clear_texture(struct flipclock *app, int clock_index,
+				     SDL_Texture *target_texture,
+				     SDL_Color background_color)
 {
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
 	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
@@ -700,9 +694,10 @@ void _flipclock_clear_texture(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void _flipclock_render_rounded_box(struct flipclock *app, int clock_index,
-				   SDL_Texture *target_texture,
-				   SDL_Rect target_rect, int radius)
+static void _flipclock_render_rounded_box(struct flipclock *app,
+					  int clock_index,
+					  SDL_Texture *target_texture,
+					  SDL_Rect target_rect, int radius)
 {
 	if (radius <= 1) {
 		SDL_SetRenderTarget(app->clocks[clock_index].renderer,
@@ -767,9 +762,10 @@ void _flipclock_render_rounded_box(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void _flipclock_render_text(struct flipclock *app, int clock_index,
-			    SDL_Texture *target_texture, SDL_Rect target_rect,
-			    TTF_Font *font, char text[])
+static void _flipclock_render_text(struct flipclock *app, int clock_index,
+				   SDL_Texture *target_texture,
+				   SDL_Rect target_rect, TTF_Font *font,
+				   char text[])
 {
 	int len = strlen(text);
 	if (len > 2) {
@@ -815,9 +811,9 @@ void _flipclock_render_text(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void _flipclock_render_divider(struct flipclock *app, int clock_index,
-			       SDL_Texture *target_texture,
-			       SDL_Rect target_rect)
+static void _flipclock_render_divider(struct flipclock *app, int clock_index,
+				      SDL_Texture *target_texture,
+				      SDL_Rect target_rect)
 {
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, target_texture);
 	// Don't be transparent, or you will not see divider.
@@ -828,7 +824,7 @@ void _flipclock_render_divider(struct flipclock *app, int clock_index,
 	SDL_SetRenderTarget(app->clocks[clock_index].renderer, NULL);
 }
 
-void _flipclock_render_texture(struct flipclock *app, int clock_index)
+static void _flipclock_render_texture(struct flipclock *app, int clock_index)
 {
 	SDL_Texture *swap = app->clocks[clock_index].textures.current;
 	app->clocks[clock_index].textures.current =
@@ -933,11 +929,12 @@ void _flipclock_render_texture(struct flipclock *app, int clock_index)
 				  divider_rect);
 }
 
-void _flipclock_flip_card(struct flipclock *app, int clock_index,
-			  struct card card)
+static void _flipclock_flip_card(struct flipclock *app, int clock_index,
+				 struct card card)
 {
-	int progress = SDL_GetTicks() - card.start_tick;
-	if (progress >= MAX_PROGRESS) {
+	long long progress = SDL_GetTicks() - card.start_tick;
+	// Don't animate when program just started.
+	if (progress >= MAX_PROGRESS || card.start_tick == 0) {
 		// It finished flipping, so we don't draw flipping.
 		SDL_RenderCopy(app->clocks[clock_index].renderer,
 			       app->clocks[clock_index].textures.current,
@@ -998,7 +995,7 @@ void _flipclock_flip_card(struct flipclock *app, int clock_index,
 		       &half_source_rect, &half_target_rect);
 }
 
-void _flipclock_animate(struct flipclock *app, int clock_index)
+static void _flipclock_animate(struct flipclock *app, int clock_index)
 {
 	SDL_SetRenderDrawColor(app->clocks[clock_index].renderer,
 			       app->colors.back.r, app->colors.back.g,
@@ -1011,7 +1008,8 @@ void _flipclock_animate(struct flipclock *app, int clock_index)
 	SDL_RenderPresent(app->clocks[clock_index].renderer);
 }
 
-void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
+static void _flipclock_handle_window_event(struct flipclock *app,
+					   SDL_Event event)
 {
 	int clock_index = -1;
 	for (int i = 0; i < app->clocks_length; ++i) {
@@ -1081,7 +1079,7 @@ void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 	}
 }
 
-void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
+static void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
 {
 	switch (event.key.keysym.sym) {
 	case SDLK_ESCAPE:
@@ -1126,7 +1124,7 @@ void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
 	}
 }
 
-void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
+static void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 {
 	switch (event.type) {
 #ifdef _WIN32
@@ -1221,6 +1219,8 @@ void flipclock_run_mainloop(struct flipclock *app)
 	for (int i = 0; i < app->clocks_length; ++i) {
 		if (!app->clocks[i].running)
 			continue;
+		app->clocks[i].cards.hour.start_tick = 0;
+		app->clocks[i].cards.minute.start_tick = 0;
 		_flipclock_render_texture(app, i);
 		_flipclock_animate(app, i);
 	}
@@ -1244,22 +1244,20 @@ void flipclock_run_mainloop(struct flipclock *app)
 				_flipclock_render_texture(app, i);
 			}
 		}
-		if (app->times.now.tm_hour != app->times.past.tm_hour) {
+		if (app->times.now.tm_hour != app->times.past.tm_hour)
 			for (int i = 0; i < app->clocks_length; ++i) {
 				if (!app->clocks[i].running)
 					continue;
 				app->clocks[i].cards.hour.start_tick =
 					SDL_GetTicks();
 			}
-		}
-		if (app->times.now.tm_min != app->times.past.tm_min) {
+		if (app->times.now.tm_min != app->times.past.tm_min)
 			for (int i = 0; i < app->clocks_length; ++i) {
 				if (!app->clocks[i].running)
 					continue;
 				app->clocks[i].cards.minute.start_tick =
 					SDL_GetTicks();
 			}
-		}
 		// Pause when minimized.
 		for (int i = 0; i < app->clocks_length; ++i)
 			if (!app->clocks[i].waiting && app->clocks[i].running)

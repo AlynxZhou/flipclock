@@ -74,7 +74,7 @@ struct fonts {
 };
 struct card {
 	SDL_Rect rect;
-	int start_tick;
+	long long start_tick;
 };
 struct cards {
 	struct card hour;
@@ -108,7 +108,7 @@ struct flipclock {
 	struct times times;
 	struct colors colors;
 	struct properties properties;
-	unsigned int last_touch;
+	long long last_touch;
 	bool running;
 };
 
