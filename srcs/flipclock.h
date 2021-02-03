@@ -64,10 +64,6 @@ struct colors {
 	SDL_Color black;
 	SDL_Color transparent;
 };
-struct times {
-	struct tm past;
-	struct tm now;
-};
 struct fonts {
 	TTF_Font *time;
 	TTF_Font *mode;
@@ -105,7 +101,7 @@ struct flipclock {
 	// Number of clocks.
 	int clocks_length;
 	// Structures shared by clocks.
-	struct times times;
+	struct tm now;
 	struct colors colors;
 	struct properties properties;
 	long long last_touch;

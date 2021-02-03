@@ -120,8 +120,7 @@ struct flipclock *flipclock_create(void)
 	LOG_DEBUG("Using conf_path `%s`.\n", app->properties.conf_path);
 #endif
 	time_t raw_time = time(NULL);
-	app->times.past = *localtime(&raw_time);
-	app->times.now = *localtime(&raw_time);
+	app->now = *localtime(&raw_time);
 	return app;
 }
 
@@ -875,7 +874,7 @@ static void _flipclock_render_texture(struct flipclock *app, int clock_index)
 		mode_rect.w = app->clocks[clock_index].mode_height * 2;
 		mode_rect.h = app->clocks[clock_index].mode_height;
 		snprintf(text, sizeof(text), "%cM",
-			 app->times.now.tm_hour / 12 ? 'P' : 'A');
+			 app->now.tm_hour / 12 ? 'P' : 'A');
 		_flipclock_render_text(
 			app, clock_index,
 			app->clocks[clock_index].textures.current, mode_rect,
@@ -887,7 +886,7 @@ static void _flipclock_render_texture(struct flipclock *app, int clock_index)
 	 * so we have to use `%I` (`01` - `12`), and trim zero.
 	 */
 	strftime(text, sizeof(text), app->properties.ampm ? "%I" : "%H",
-		 &app->times.now);
+		 &app->now);
 	// Trim zero when using 12-hour clock.
 	if (app->properties.ampm && text[0] == '0') {
 		text[0] = text[1];
@@ -898,7 +897,7 @@ static void _flipclock_render_texture(struct flipclock *app, int clock_index)
 			       app->clocks[clock_index].cards.hour.rect,
 			       app->clocks[clock_index].fonts.time, text);
 
-	strftime(text, sizeof(text), "%M", &app->times.now);
+	strftime(text, sizeof(text), "%M", &app->now);
 	_flipclock_render_text(app, clock_index,
 			       app->clocks[clock_index].textures.current,
 			       app->clocks[clock_index].cards.minute.rect,
@@ -1233,10 +1232,11 @@ void flipclock_run_mainloop(struct flipclock *app)
 #endif
 		if (SDL_WaitEventTimeout(&event, 1000 / FPS))
 			_flipclock_handle_event(app, event);
+		struct tm past = app->now;
 		time_t raw_time = time(NULL);
-		app->times.now = *localtime(&raw_time);
-		if (app->times.now.tm_hour != app->times.past.tm_hour ||
-		    app->times.now.tm_min != app->times.past.tm_min) {
+		app->now = *localtime(&raw_time);
+		if (app->now.tm_hour != past.tm_hour ||
+		    app->now.tm_min != past.tm_min) {
 			LOG_DEBUG("Time changed, rendering texture.\n");
 			for (int i = 0; i < app->clocks_length; ++i) {
 				if (!app->clocks[i].running)
@@ -1244,14 +1244,14 @@ void flipclock_run_mainloop(struct flipclock *app)
 				_flipclock_render_texture(app, i);
 			}
 		}
-		if (app->times.now.tm_hour != app->times.past.tm_hour)
+		if (app->now.tm_hour != past.tm_hour)
 			for (int i = 0; i < app->clocks_length; ++i) {
 				if (!app->clocks[i].running)
 					continue;
 				app->clocks[i].cards.hour.start_tick =
 					SDL_GetTicks();
 			}
-		if (app->times.now.tm_min != app->times.past.tm_min)
+		if (app->now.tm_min != past.tm_min)
 			for (int i = 0; i < app->clocks_length; ++i) {
 				if (!app->clocks[i].running)
 					continue;
@@ -1262,8 +1262,6 @@ void flipclock_run_mainloop(struct flipclock *app)
 		for (int i = 0; i < app->clocks_length; ++i)
 			if (!app->clocks[i].waiting && app->clocks[i].running)
 				_flipclock_animate(app, i);
-		// Sync time when animation ends.
-		app->times.past = app->times.now;
 	}
 }
 
