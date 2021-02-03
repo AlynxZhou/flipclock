@@ -91,14 +91,14 @@ struct clock {
 	int height;
 	int rect_size;
 	int radius;
-	bool wait;
+	bool waiting;
 	bool running;
 };
 // You only need this to create an app.
 struct flipclock {
 	// Structures not shared by clocks.
 	struct clock *clocks;
-	// Number of displays.
+	// Number of clocks.
 	int clocks_length;
 	// Structures shared by clocks.
 	struct times times;

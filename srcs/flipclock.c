@@ -367,7 +367,7 @@ void _flipclock_create_clocks_default(struct flipclock *app)
 		app->clocks[i].fonts.mode = NULL;
 		app->clocks[i].textures.current = NULL;
 		app->clocks[i].textures.previous = NULL;
-		app->clocks[i].wait = false;
+		app->clocks[i].waiting = false;
 		app->clocks[i].running = true;
 		SDL_Rect display_bounds;
 		SDL_GetDisplayBounds(i, &display_bounds);
@@ -418,7 +418,7 @@ void _flipclock_create_clocks_preview(struct flipclock *app)
 	app->clocks[0].fonts.mode = NULL;
 	app->clocks[0].textures.current = NULL;
 	app->clocks[0].textures.previous = NULL;
-	app->clocks[0].wait = false;
+	app->clocks[0].waiting = false;
 	app->clocks[0].running = true;
 	// Create window from native window when in preview.
 	app->clocks[0].window =
@@ -1052,11 +1052,11 @@ void _flipclock_handle_window_event(struct flipclock *app, SDL_Event event)
 		}
 		break;
 	case SDL_WINDOWEVENT_MINIMIZED:
-		app->clocks[clock_index].wait = true;
+		app->clocks[clock_index].waiting = true;
 		break;
 	// `RESTORED` is emitted after `MINIMIZED`.
 	case SDL_WINDOWEVENT_RESTORED:
-		app->clocks[clock_index].wait = false;
+		app->clocks[clock_index].waiting = false;
 		/**
 		 * Sometimes when a window is restored, its texture get lost.
 		 * Typically happens when we have two fullscreen clocks in
@@ -1259,7 +1259,7 @@ void flipclock_run_mainloop(struct flipclock *app)
 		}
 		// Pause when minimized.
 		for (int i = 0; i < app->clocks_length; ++i)
-			if (!app->clocks[i].wait && app->clocks[i].running)
+			if (!app->clocks[i].waiting && app->clocks[i].running)
 				_flipclock_animate(app, i, progress);
 		// Only calculate frame when animating.
 		if (animating)
