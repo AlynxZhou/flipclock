@@ -250,7 +250,7 @@ void flipclock_load_conf(struct flipclock *app)
 		if (conf == NULL) {
 			// Just skip conf, it's able to run.
 			LOG_ERROR("Failed to write default content!\n");
-			goto out;
+			return;
 		}
 		fputs("# Uncomment `ampm = true` to use 12-hour format.\n"
 		      "#ampm = true\n"
@@ -276,7 +276,8 @@ void flipclock_load_conf(struct flipclock *app)
 		      "the color of the background.\n"
 		      "#back_color = #000000ff\n",
 		      conf);
-		goto close_file;
+		fclose(conf);
+		return;
 	}
 	/**
 	 * Most file systems have max file name length limit.
@@ -333,10 +334,7 @@ void flipclock_load_conf(struct flipclock *app)
 			LOG_DEBUG("Unknown key `%s`.\n", key);
 		}
 	}
-close_file:
 	fclose(conf);
-out:
-	return;
 }
 
 static void _flipclock_create_clocks(struct flipclock *app)
