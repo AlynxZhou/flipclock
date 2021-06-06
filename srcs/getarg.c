@@ -7,6 +7,7 @@
 
 char *argopt = NULL;
 
+// TODO: Make it more similiar to getopt().
 int getarg(int argc, char *argv[], const char opt_string[])
 {
 	static int i = 1;

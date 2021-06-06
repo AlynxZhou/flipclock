@@ -81,7 +81,7 @@ if host_machine.system() == 'linux'
 
   install_data(
     'LICENSE',
-    install_dir: get_option('datadir') / 'license' / meson.project_name()
+    install_dir: get_option('datadir') / 'licenses' / meson.project_name()
   )
   install_data(
     'dists' / 'flipclock.ttf',
