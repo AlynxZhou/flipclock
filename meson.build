@@ -1,9 +1,16 @@
+# If we want to build static program with wrap on Windows,
+# We need to set `default_library=static` here
+# instead of setting it for each dependencies.
+# Because though FlipClock does not link against freetype2 directly,
+# sdl2_ttf needs to link against freetype2,
+# and if we only pass `default_library=static` to sdl2_ttf,
+# it still links against freetype2 dynamically.
 project(
   'flipclock',
   'c',
   version: '2.8.1',
   license: 'Apache-2.0',
-  default_options: ['c_std=c11']
+  default_options: ['c_std=c11', 'default_library=static']
 )
 
 cc = meson.get_compiler('c')
@@ -32,41 +39,10 @@ sources = files(
 
 dependencies = []
 include_directories = []
-if host_machine.system() == 'linux'
-  # Just simply use pkg-config.
-  sdl2 = dependency('sdl2', required: true)
-  sdl2_ttf = dependency('SDL2_ttf', required: true)
-  dependencies += [sdl2, sdl2_ttf]
-  # Deps from pkg-config don't need to set include_directories explicitly.
-elif host_machine.system() == 'windows'
-  # I failed to build static SDL2 on Windows,
-  # so I just find downloaded prebuild libraries.
-  vc_path = 'x86'
-  if host_machine.cpu_family() == 'x86_64'
-    vc_path = 'x64'
-  endif
-  # Need absolute path for find_library().
-  sdl2 = cc.find_library(
-    'SDL2',
-    dirs: [meson.project_source_root() / 'deps' / 'SDL2' / 'lib' / vc_path],
-    required: true
-  )
-  sdl2main = cc.find_library(
-    'SDL2main',
-    dirs: [meson.project_source_root() / 'deps' / 'SDL2' / 'lib' / vc_path],
-    required: true
-  )
-  sdl2_ttf = cc.find_library(
-    'SDL2_ttf',
-    dirs: [meson.project_source_root() / 'deps' / 'SDL2_ttf' / 'lib' / vc_path],
-    required: true
-  )
-  # But relative path is acceptable for include_directories().
-  sdl2_inc = include_directories('deps' / 'SDL2' / 'include')
-  sdl2_ttf_inc = include_directories('deps' / 'SDL2_ttf' / 'include')
-  dependencies += [sdl2, sdl2main, sdl2_ttf]
-  include_directories += [sdl2_inc, sdl2_ttf_inc]
-endif
+# Wrap files will be used as fallback.
+sdl2 = dependency('sdl2', required: true)
+sdl2_ttf = dependency('SDL2_ttf', required: true)
+dependencies += [sdl2, sdl2_ttf]
 
 if host_machine.system() == 'linux'
   executable(
@@ -136,22 +112,6 @@ elif host_machine.system() == 'windows'
   )
   install_data(
     'dists' / '请先读我.txt',
-    install_dir: get_option('prefix') / meson.project_name()
-  )
-  install_data(
-    'deps' / 'SDL2' / 'lib' / vc_path / 'SDL2.dll',
-    install_dir: get_option('prefix') / meson.project_name()
-  )
-  install_data(
-    'deps' / 'SDL2_ttf' / 'lib' / vc_path / 'SDL2_ttf.dll',
-    install_dir: get_option('prefix') / meson.project_name()
-  )
-  install_data(
-    'deps' / 'SDL2_ttf' / 'lib' / vc_path / 'libfreetype-6.dll',
-    install_dir: get_option('prefix') / meson.project_name()
-  )
-  install_data(
-    'deps' / 'SDL2_ttf' / 'lib' / vc_path / 'zlib1.dll',
     install_dir: get_option('prefix') / meson.project_name()
   )
 endif

@@ -1,0 +1,11 @@
+[wrap-file]
+directory = SDL2_ttf-2.0.12
+source_url = https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.12.zip
+source_filename = SDL2_ttf-2.0.12.zip
+source_hash = eb909b4e5717b86e87dad7ee15adbbc5f26a33bd2dc22b93a77517bb0ba7fec8
+patch_url = https://wrapdb.mesonbuild.com/v1/projects/sdl2_ttf/2.0.12/3/get_zip
+patch_filename = sdl2_ttf-2.0.12-3-wrap.zip
+patch_hash = 1113ee5af044f3549daa62047af4a3cb7ba2330acbd78932f4e9d206170073f4
+
+[provide]
+sdl2_ttf = sdl2_ttf_dep

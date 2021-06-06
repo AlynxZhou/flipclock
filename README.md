@@ -44,15 +44,15 @@ Just download file with `win` in its name from [lastest release page](https://gi
 
 ### From Source
 
-Meson has a tool called wrap that can download and compile dependencies automatically on Windows, but SDL2 is always failed to build. So I cannot make a static linked program.
+**NOTICE**: I saw a windows user says "This program has dlls in its folder so it's not simple!" and I got angry. This user knows nothing about compiling, linking and loading. It might be not so easy for some windows users to understand how complicated building static libraries is and what dynamically libraries are. Windows is a horrible platform for developers: no package manager for easy distribution, slowly visual studio, complicated tool chains. But thanks to Meson which handles all dirty things for me, it's SDL2 wrap works now and I managed to tweak it to build a static linked program automatically if no pre-built dependency found.
 
 #### With Meson (Recommended)
 
 1. Install Meson, Ninja, Visual Studio.
-2. Download SDL2 and SDL2_ttf devel files and extract and rename. Please refer to [`deps/README.md`](deps/README.md) for links.
+2. Create a prefix directory, for example `d:/flipclock-prefix`, program files will be installed into it.
 3. Open `x64 Native Tools Command Prompt for VS 2019` from Start Menu, or other architectures you need.
-4. Change dir to where you put this project. Run `mkdir build && cd build && meson setup --prefix=d:/ --buildtype=release . .. && meson compile && meson install`. You can change prefix to other path, but you need to use UNIX style slash instead of backslash because it's escape character in C.
-5. Go to `flipclock` dir under your prefix, you can now find `flipclock.scr` and right click it to install it as a screensaver.
+4. Change dir to where you put this project. Run `mkdir build && cd build && meson setup --prefix=d:/flipclock-prefix --buildtype=release . .. && meson compile && meson install`. You can change prefix argument to other path you created in Step 2, but you need to use UNIX style slash instead of backslash because it's escape character in C.
+5. Go to `flipclock` dir under your prefix directory, you can now find `flipclock.scr` and right click it to install it as a screensaver.
 
 #### With CMake
 
