@@ -10,21 +10,27 @@
 #	define OPT_START '-'
 #endif
 
+#define FORCE_STOP_OPTS "--"
+
 // Global optarg.
 extern char *argopt;
 
 /**
- * getarg() receives an arguments counter,
- * a pointer array of arguments,
- * and parse it with given option string.
- * It only receives single-char option, and will return it.
- * In order to parse a value following the option,
- * use "x:" in the option string where 'x' is the option,
- * and it will store a pointer to the value in global pointer argopt.
- * You should use a while-switch-case to deal with options.
- * If you have a single value not leading by an option, it will return 0
- * and store the pointer in the argopt.
+ * `getarg()`: a portable option parser similiar to `getopt()`.
+ *
+ * Just use it like `getopt()`, but with following differences:
+ * - Global variable `optarg` is replaced with `argopt`.
+ * - `getopt()` will return `'?'` if it gets an option character not in
+ *   `optstring`, `getarg()` will return the character.
+ * - `getopt()` will return `'?'` or `':'` if it gets an option character with a
+ *    missing argument string, `getarg()` will return the character, you should
+ *    check whether `argopt` is `NULL` by yourself.
+ * - `getopt()` will return `-1` if it gets `"--"` and give you a global
+ *    variable `optind` to handle remaining argument strings, `getarg()` does
+ *    not return `-1` on `"--"`, but it will stop option-parsing, you can
+ *    continue calling it in a loop to get next argument strings in `argopt`,
+ *    it will return `0` for them.
  */
-int getarg(int argc, char *argv[], const char opt_string[]);
+int getarg(int argc, char *argv[], const char optstring[]);
 
 #endif

@@ -64,6 +64,12 @@ int main(int argc, char *argv[])
 			break;
 		case 'p':
 			app->properties.preview = true;
+			if (argopt == NULL) {
+				LOG_ERROR("Missing value for option `%c%c`\n",
+					  OPT_START, opt);
+				exit_after_argument = true;
+				break;
+			}
 			/**
 			 * See https://docs.microsoft.com/en-us/windows/win32/winprog/windows-data-types.
 			 * typedef void *PVOID;
@@ -81,12 +87,24 @@ int main(int argc, char *argv[])
 			app->properties.full = false;
 			break;
 		case 't':
+			if (argopt == NULL) {
+				LOG_ERROR("Missing value for option `%c%c`\n",
+					  OPT_START, opt);
+				exit_after_argument = true;
+				break;
+			}
 			if (atoi(argopt) == 12)
 				app->properties.ampm = true;
 			else
 				app->properties.ampm = false;
 			break;
 		case 'f':
+			if (argopt == NULL) {
+				LOG_ERROR("Missing value for option `%c%c`\n",
+					  OPT_START, opt);
+				exit_after_argument = true;
+				break;
+			}
 			strncpy(app->properties.font_path, argopt,
 				MAX_BUFFER_LENGTH - 1);
 			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
