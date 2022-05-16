@@ -87,12 +87,20 @@ if host_machine.system() == 'linux'
     install_dir: get_option('datadir') / 'fonts'
   )
   install_data(
-    'dists' / 'one.alynx.FlipClock.png',
-    install_dir: get_option('datadir') / 'icons' / 'hicolor' / '48x48' / 'apps'
+    'dists' / 'icons' / '128x128' / 'one.alynx.FlipClock.png',
+    install_dir: get_option('datadir') / 'icons' / 'hicolor' / '128x128' / 'apps'
   )
   install_data(
-    'dists' / 'one.alynx.FlipClock.svg',
+    'dists' / 'icons' / '64x64' / 'one.alynx.FlipClock.png',
+    install_dir: get_option('datadir') / 'icons' / 'hicolor' / '64x64' / 'apps'
+  )
+  install_data(
+    'dists' / 'icons' / 'scalable' / 'one.alynx.FlipClock.svg',
     install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps'
+  )
+  install_data(
+    'dists' / 'one.alynx.FlipClock.metainfo.xml',
+    install_dir: get_option('datadir') / 'metainfo'
   )
   install_data(
     'LICENSE',

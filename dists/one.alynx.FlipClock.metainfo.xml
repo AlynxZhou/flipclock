@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2022 Alynx Zhou -->
+<component type="desktop-application">
+  <id>one.alynx.FlipClock</id>
+  
+  <name>FlipClock</name>
+  <summary>A flip clock screensaver supported by SDL2.</summary>
+  
+  <metadata_license>CC-BY-SA-3.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+
+  <content_rating type="oars-1.1" />
+  
+  <launchable type="desktop-id">one.alynx.FlipClock.desktop</launchable>
+  
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+    <control>tablet</control>
+  </supports>
+  
+  <description>
+    <p>
+      A flip clock screensaver supported by SDL2. It simulates a flip clock, displays time in digit cards and will flip cards if time changes.
+    </p>
+  </description>
+  <url type="homepage">https://flipclock.alynx.one/</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://flipclock.alynx.one/images/screenshot-1.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://flipclock.alynx.one/images/screenshot-2.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://flipclock.alynx.one/images/screenshot-3.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://flipclock.alynx.one/images/screenshot-4.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="2.8.6" date="2022-05-16">
+      <description>
+        <p>Updated configuration files loading sequence.</p>
+      </description>
+    </release>
+    <release version="2.8.5" date="2022-05-16">
+      <description>
+        <p>Updated to follow Freedesktop specifications.</p>
+      </description>
+    </release>
+    <release version="2.8.4" date="2022-05-16">
+      <description>
+        <p>Dropped CMake support: I am unable to maintain two different build systems, Meson works better for myself.</p>
+	<p>Updated to use Meson options instead of hard-coded bin dir: You can now use Meson's --bindir option to custom binary install path.</p>
+      </description>
+    </release>
+  </releases>
+</component>
