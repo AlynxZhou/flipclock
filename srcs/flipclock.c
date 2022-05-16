@@ -710,7 +710,7 @@ void flipclock_open_fonts(struct flipclock *app, int clock_index)
 		// Directly under `app/src/main/assets` for Android APP.
 		char *font_path = "flipclock.ttf";
 #elif defined(__linux__)
-		char *font_path = INSTALL_PREFIX "/share/fonts/flipclock.ttf";
+		char *font_path = PACKAGE_DATADIR "/fonts/flipclock.ttf";
 #endif
 		LOG_DEBUG("Using font_path `%s`.\n", font_path);
 		app->clocks[clock_index].fonts.time = TTF_OpenFont(

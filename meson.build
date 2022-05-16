@@ -22,14 +22,27 @@ if get_option('debug') == true
 endif
 
 conf_data = configuration_data()
-conf_data.set('install_prefix', get_option('prefix'))
 conf_data.set('project_version', meson.project_version())
+conf_data.set('package_bindir', get_option('prefix') / get_option('bindir'))
+conf_data.set('package_datadir', get_option('prefix') / get_option('datadir'))
 
 configure_file(
   input: 'srcs/config-meson.h.in',
   output: 'config.h',
   configuration: conf_data
 )
+
+# Don't install desktop entry for Windows.
+if host_machine.system() == 'linux'
+  configure_file(
+    input: 'dists/flipclock.desktop.in',
+    output: 'flipclock.desktop',
+    configuration: conf_data,
+    install: true,
+    # If a relative path is given, meson will put it under prefix so we don't need to put `get_option('prefix')` manually here.
+    install_dir: get_option('datadir') / 'applications'
+  )
+endif
 
 sources = files(
   'srcs/main.c',
@@ -51,8 +64,8 @@ if host_machine.system() == 'linux'
     c_args: c_args,
     dependencies: dependencies,
     include_directories: include_directories,
-    install: true,
-    install_dir: get_option('prefix') / 'bin'
+    install: true
+    # By default, meson install binary to `get_option('prefix') / get_option('bindir')`, so we can omit `install_dir` here.
   )
 
   install_data(
@@ -67,10 +80,6 @@ if host_machine.system() == 'linux'
     'dists' / 'flipclock.png',
     install_dir: get_option('datadir') / 'pixmaps'
   )
-  install_data(
-    'dists' / 'flipclock.desktop',
-    install_dir: get_option('datadir') / 'applications'
-  )
 elif host_machine.system() == 'windows'
   if get_option('debug') == true
     executable(
@@ -80,7 +89,7 @@ elif host_machine.system() == 'windows'
       dependencies: dependencies,
       include_directories: include_directories,
       install: true,
-      install_dir: get_option('prefix') / meson.project_name(),
+      install_dir: meson.project_name(),
       name_suffix: 'scr',
       win_subsystem: 'console'
     )
@@ -92,7 +101,7 @@ elif host_machine.system() == 'windows'
       dependencies: dependencies,
       include_directories: include_directories,
       install: true,
-      install_dir: get_option('prefix') / meson.project_name(),
+      install_dir: meson.project_name(),
       name_suffix: 'scr',
       win_subsystem: 'windows'
     )
@@ -100,18 +109,18 @@ elif host_machine.system() == 'windows'
 
   install_data(
     'LICENSE',
-    install_dir: get_option('prefix') / meson.project_name()
+    install_dir: meson.project_name()
   )
   install_data(
     'dists' / 'flipclock.ttf',
-    install_dir: get_option('prefix') / meson.project_name()
+    install_dir: meson.project_name()
   )
   install_data(
     'dists' / 'COPYING',
-    install_dir: get_option('prefix') / meson.project_name()
+    install_dir: meson.project_name()
   )
   install_data(
     'dists' / '请先读我.txt',
-    install_dir: get_option('prefix') / meson.project_name()
+    install_dir: meson.project_name()
   )
 endif
