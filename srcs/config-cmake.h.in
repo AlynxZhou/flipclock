@@ -1,6 +1,0 @@
-#ifndef __CONFIG_H__
-
-#define INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
-#define PROJECT_VERSION "@CMAKE_PROJECT_VERSION@"
-
-#endif
