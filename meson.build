@@ -27,7 +27,7 @@ conf_data.set('package_bindir', get_option('prefix') / get_option('bindir'))
 conf_data.set('package_datadir', get_option('prefix') / get_option('datadir'))
 
 configure_file(
-  input: 'srcs/config-meson.h.in',
+  input: 'srcs/config.h.in',
   output: 'config.h',
   configuration: conf_data
 )
@@ -35,11 +35,12 @@ configure_file(
 # Don't install desktop entry for Windows.
 if host_machine.system() == 'linux'
   configure_file(
-    input: 'dists/flipclock.desktop.in',
-    output: 'flipclock.desktop',
+    input: 'dists/one.alynx.FlipClock.desktop.in',
+    output: 'one.alynx.FlipClock.desktop',
     configuration: conf_data,
     install: true,
-    # If a relative path is given, meson will put it under prefix so we don't need to put `get_option('prefix')` manually here.
+    # If a relative path is given, meson will put it under prefix
+    # so we don't need to put `get_option('prefix')` manually here.
     install_dir: get_option('datadir') / 'applications'
   )
 endif
@@ -65,7 +66,9 @@ if host_machine.system() == 'linux'
     dependencies: dependencies,
     include_directories: include_directories,
     install: true
-    # By default, meson install binary to `get_option('prefix') / get_option('bindir')`, so we can omit `install_dir` here.
+    # By default, meson install binary to
+    # `get_option('prefix') / get_option('bindir')`,
+    # so we can omit `install_dir` here.
   )
 
   install_data(
@@ -77,8 +80,12 @@ if host_machine.system() == 'linux'
     install_dir: get_option('datadir') / 'fonts'
   )
   install_data(
-    'dists' / 'flipclock.png',
-    install_dir: get_option('datadir') / 'pixmaps'
+    'dists' / 'one.alynx.FlipClock.png',
+    install_dir: get_option('datadir') / 'icons' / 'hicolor' / '48x48' / 'apps'
+  )
+  install_data(
+    'dists' / 'one.alynx.FlipClock.svg',
+    install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps'
   )
 elif host_machine.system() == 'windows'
   if get_option('debug') == true

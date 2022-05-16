@@ -2,7 +2,7 @@
 Type=Application
 Name=FlipClock
 Comment=A flip clock screensaver supported by SDL2.
-Icon=flipclock
+Icon=one.alynx.FlipClock
 Exec=flipclock
 TryExec=@package_bindir@/flipclock
 StartupNotify=false
