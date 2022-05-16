@@ -53,11 +53,11 @@ See [flipclock-android](https://github.com/AlynxZhou/flipclock-android/).
 
 # Configuration
 
-On Linux, program will first use `$XDG_CONFIG_HOME/flipclock.conf`, if `XDG_CONFIG_HOME` is not set, it will use `$HOME/.config/flipclock.conf`.
+On Linux, program will first use `$XDG_CONFIG_HOME/flipclock.conf`, if `XDG_CONFIG_HOME` is not set or file does not exist, it will use `$HOME/.config/flipclock.conf`. If per-user configuration file does not exist, it will use `/etc/flipclock.conf` or `flipclock.conf` under `sysconfdir` you choosed while building.
 
 On Windows, program will use `flipclock.conf` under the same directory as program.
 
-`flipclock.conf` will be automatically created if program does not find it, so please run program once before editing configuration file.
+`flipclock.conf` should be installed with the binary by Meson.
 
 # Contribution
 

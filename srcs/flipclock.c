@@ -199,87 +199,70 @@ static int _flipclock_parse_color(const char *rgba, SDL_Color *color)
 }
 
 #if defined(_WIN32)
-static void _flipclock_get_conf_path_win32(char *conf_path,
-					   const char *program_dir)
+static FILE *_flipclock_open_conf_win32(char *conf_path,
+					const char *program_dir)
 {
 	snprintf(conf_path, MAX_BUFFER_LENGTH, "%s\\flipclock.conf",
 		 program_dir);
 	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
 	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
 		LOG_ERROR("conf_path too long, may fail to load.\n");
+	return fopen(conf_path, "r");
 }
 #elif defined(__linux__)
-static void _flipclock_get_conf_path_linux(char *conf_path)
+static FILE *_flipclock_open_conf_linux(char *conf_path)
 {
+	FILE *conf = NULL;
 	// Be a good program.
 	const char *conf_dir = getenv("XDG_CONFIG_HOME");
-	if (conf_dir == NULL || strlen(conf_dir) == 0) {
-		// Linux users should not be homeless.
-		const char *home = getenv("HOME");
-		snprintf(conf_path, MAX_BUFFER_LENGTH,
-			 "%s/.config/flipclock.conf", home);
-	} else {
+	if (conf_dir != NULL && strlen(conf_dir) != 0) {
 		snprintf(conf_path, MAX_BUFFER_LENGTH, "%s/flipclock.conf",
 			 conf_dir);
+		conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
+		if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
+			LOG_ERROR("conf_path too long, may fail to load.\n");
+		conf = fopen(conf_path, "r");
+		if (conf != NULL)
+			return conf;
 	}
+
+	// Linux users should not be homeless. But we may in sandbox.
+	const char *home = getenv("HOME");
+	if (home != NULL && strlen(home) != 0) {
+		snprintf(conf_path, MAX_BUFFER_LENGTH,
+			 "%s/.config/flipclock.conf", home);
+		conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
+		if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
+			LOG_ERROR("conf_path too long, may fail to load.\n");
+		conf = fopen(conf_path, "r");
+		if (conf != NULL)
+			return conf;
+	}
+
+	strncpy(conf_path, PACKAGE_SYSCONFDIR "/flipclock.conf",
+		MAX_BUFFER_LENGTH);
 	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
 	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
 		LOG_ERROR("conf_path too long, may fail to load.\n");
+	return fopen(conf_path, "r");
 }
 #endif
 
 void flipclock_load_conf(struct flipclock *app)
 {
+	FILE *conf = NULL;
 #if defined(_WIN32)
-	_flipclock_get_conf_path_win32(app->properties.conf_path,
-				       app->properties.program_dir);
+	conf = _flipclock_open_conf_win32(app->properties.conf_path,
+					  app->properties.program_dir);
 #elif defined(__linux__)
-	_flipclock_get_conf_path_linux(app->properties.conf_path);
+	conf = _flipclock_open_conf_linux(app->properties.conf_path);
 #endif
-#ifndef __ANDROID__
-	LOG_DEBUG("Using conf_path `%s`.\n", app->properties.conf_path);
-#endif
-	FILE *conf = fopen(app->properties.conf_path, "r");
-	/**
-	 * See https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-constants?view=msvc-160.
-	 * errno seems work on MSVC.
-	 */
-	if (conf == NULL && errno == ENOENT) {
-		LOG_DEBUG("File not found, create with default content.\n");
-		conf = fopen(app->properties.conf_path, "w");
-		if (conf == NULL) {
-			// Just skip conf, it's able to run.
-			LOG_ERROR("Failed to write default content!\n");
-			return;
-		}
-		fputs("# Uncomment `ampm = true` to use 12-hour format.\n"
-		      "#ampm = true\n"
-		      "# Uncomment `full = false` to disable fullscreen.\n"
-		      "# You should not change this for a screensaver.\n"
-		      "#full = false\n"
-		      "# Uncomment `font = ` and "
-		      "add path to use custom font.\n"
-		      "#font = \n"
-		      "# Uncomment `font_scale = 0.8` to modify digit scale.\n"
-		      "# This scales the digits again based on card scale.\n"
-		      "#font_scale = 0.8\n"
-		      "# Uncomment `rect_scale = 0.8` to modify card scale.\n"
-		      "# This also scales the digits.\n"
-		      "#rect_scale = 0.8\n"
-		      "# Uncomment `font_color = ` to modify "
-		      "the color of the digit.\n"
-		      "#font_color = #000000ff\n"
-		      "# Uncomment `rect_color = ` to modify "
-		      "the color of the card.\n"
-		      "#rect_color = #fe9a00ff\n"
-		      "# Uncomment `black_color = ` to modify "
-		      "the color of the background.\n"
-		      "#back_color = #000000ff\n",
-		      conf);
-		fclose(conf);
+	// Should never happen, but it's fine.
+	if (conf == NULL)
 		return;
-	}
-	/**
+#ifndef __ANDROID__
+	LOG_DEBUG("Parsing `%s`.\n", app->properties.conf_path);
+#endif /**
 	 * Most file systems have max file name length limit.
 	 * So I don't need to alloc memory dynamically.
 	 */
@@ -305,7 +288,7 @@ void flipclock_load_conf(struct flipclock *app)
 				app->properties.full = false;
 		} else if (!strcmp(key, "font")) {
 			strncpy(app->properties.font_path, value,
-				MAX_BUFFER_LENGTH - 1);
+				MAX_BUFFER_LENGTH);
 			app->properties.font_path[MAX_BUFFER_LENGTH - 1] = '\0';
 			if (strlen(app->properties.font_path) ==
 			    MAX_BUFFER_LENGTH - 1)
@@ -586,7 +569,7 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 			(app->clocks[clock_index].height * 0.4 >
 					 app->clocks[clock_index].width * 0.8 ?
 				 app->clocks[clock_index].width * 0.8 :
-				 app->clocks[clock_index].height * 0.4) *
+				       app->clocks[clock_index].height * 0.4) *
 			app->properties.rect_scale;
 		int space = app->clocks[clock_index].height * 0.06;
 		app->clocks[clock_index].radius =
@@ -620,7 +603,7 @@ void flipclock_refresh(struct flipclock *app, int clock_index)
 			(app->clocks[clock_index].width * 0.4 >
 					 app->clocks[clock_index].height * 0.8 ?
 				 app->clocks[clock_index].height * 0.8 :
-				 app->clocks[clock_index].width * 0.4) *
+				       app->clocks[clock_index].width * 0.4) *
 			app->properties.rect_scale;
 		int space = app->clocks[clock_index].width * 0.06;
 		app->clocks[clock_index].radius =
@@ -1031,7 +1014,7 @@ static void _flipclock_flip_card(struct flipclock *app, int clock_index,
 	bool upper_half = progress <= HALF_PROGRESS;
 	double scale =
 		upper_half ? 1.0 - (1.0 * progress) / HALF_PROGRESS :
-			     ((1.0 * progress) - HALF_PROGRESS) / HALF_PROGRESS;
+				   ((1.0 * progress) - HALF_PROGRESS) / HALF_PROGRESS;
 	half_source_rect.x = card.rect.x;
 	half_source_rect.y = card.rect.y + (upper_half ? 0 : card.rect.h / 2);
 	half_source_rect.w = card.rect.w;
@@ -1044,7 +1027,7 @@ static void _flipclock_flip_card(struct flipclock *app, int clock_index,
 	half_target_rect.h = card.rect.h / 2 * scale;
 	SDL_RenderCopy(app->clocks[clock_index].renderer,
 		       upper_half ? app->clocks[clock_index].textures.previous :
-				    app->clocks[clock_index].textures.current,
+					  app->clocks[clock_index].textures.current,
 		       &half_source_rect, &half_target_rect);
 }
 

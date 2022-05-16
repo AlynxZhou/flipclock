@@ -25,6 +25,13 @@ conf_data = configuration_data()
 conf_data.set('project_version', meson.project_version())
 conf_data.set('package_bindir', get_option('prefix') / get_option('bindir'))
 conf_data.set('package_datadir', get_option('prefix') / get_option('datadir'))
+# `sysconfdir` is `/etc` if `prefix` is `/usr`,
+# but it will be relative path if using other prefix.
+# See <https://mesonbuild.com/Builtin-options.html#universal-options>.
+# Meson's string path building operator will not join two absolute path,
+# it will keep the right one, so it's OK to handle `sysconfdir` with it.
+# See <https://mesonbuild.com/Syntax.html#string-path-building>.
+conf_data.set('package_sysconfdir', get_option('prefix') / get_option('sysconfdir'))
 
 configure_file(
   input: 'srcs/config.h.in',
@@ -72,8 +79,8 @@ if host_machine.system() == 'linux'
   )
 
   install_data(
-    'LICENSE',
-    install_dir: get_option('datadir') / 'licenses' / meson.project_name()
+    'dists' / 'flipclock.conf',
+    install_dir: get_option('sysconfdir')
   )
   install_data(
     'dists' / 'flipclock.ttf',
@@ -86,6 +93,10 @@ if host_machine.system() == 'linux'
   install_data(
     'dists' / 'one.alynx.FlipClock.svg',
     install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps'
+  )
+  install_data(
+    'LICENSE',
+    install_dir: get_option('datadir') / 'licenses' / meson.project_name()
   )
 elif host_machine.system() == 'windows'
   if get_option('debug') == true
@@ -115,11 +126,15 @@ elif host_machine.system() == 'windows'
   endif
 
   install_data(
-    'LICENSE',
+    'dists' / 'flipclock.conf',
     install_dir: meson.project_name()
   )
   install_data(
     'dists' / 'flipclock.ttf',
+    install_dir: meson.project_name()
+  )
+  install_data(
+    'LICENSE',
     install_dir: meson.project_name()
   )
   install_data(
