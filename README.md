@@ -12,15 +12,39 @@ I added multi-display support to this program, but adding/removing monitors whil
 
 If you run this program in windowed mode (`-w`), only one display is supported. Multi-display is only supported in fullscreen mode.
 
-# Usage
+# Installation
 
-## Linux/macOS
+## Distribution Package (Recommended)
 
-### Packaged
+### Arch Linux
 
-- Arch Linux: You can install from [AUR](https://aur.archlinux.org/packages/flipclock/).
+#### Install From AUR
 
-### From Source
+You can get PKGBUILD from [FlipClock's AUR Page](https://aur.archlinux.org/packages/flipclock/) and build it manually, or use some AUR helpers.
+
+```
+$ paru flipclock
+```
+
+#### Install From `archlinuxcn` Repo
+
+First [add `archlinuxcn` repo to your system](https://www.archlinuxcn.org/archlinux-cn-repo-and-mirror/), then use `pacman` to install it.
+
+```
+# pacman -S flipclock
+```
+
+### Other Linux Distributions
+
+Please help package FlipClock to your distribution!
+
+### Windows
+
+Just download file with `win` in its name from [release page](https://github.com/AlynxZhou/flipclock/releases/), extract it and right click `flipclock.scr` to install it as a screensaver. Please note I may not have time to build every version for Windows, just pick the latest available one.
+
+## Build From Source
+
+### Linux
 
 #### With Meson (Recommended)
 
@@ -29,15 +53,9 @@ If you run this program in windowed mode (`-w`), only one display is supported. 
 3. `./flipclock -f ../dists/flipclock.ttf`
 4. If you want to install this to your system, it is suggested to build with `mkdir build && cd build && meson setup --prefix=/usr --buildtype=release . .. && meson compile && sudo meson install`.
 
-## Windows
+### Windows
 
-### Prebuilt
-
-Just download file with `win` in its name from [lastest release page](https://github.com/AlynxZhou/flipclock/releases/latest), extract it and right click `flipclock.scr` to install it as a screensaver.
-
-### From Source
-
-**NOTICE**: I saw a windows user says "This program has dlls in its folder so it's not simple!" and I got angry. This user knows nothing about compiling, linking and loading. It might be not so easy for some windows users to understand how complicated building static libraries is and what dynamically libraries are. Windows is a horrible platform for developers: no package manager for easy distribution, slowly visual studio, complicated tool chains. But thanks to Meson which handles all dirty things for me, it's SDL2 wrap works now and I managed to tweak it to build a static linked program automatically if no pre-built dependency found.
+**NOTICE**: I saw a windows user says "This program has dlls in its folder so it's not simple!" and I got angry. Anyone who knows something about compiling, linking and loading won't complain. It might be quite hard for some Windows users to understand how complicated building static libraries is and what dynamically libraries are. Windows is a horrible platform for developers: no package manager for easy distribution, slowly visual studio, complicated tool chains. But thanks to Meson which handles all dirty things for me, it's SDL2 wrap works now and I managed to tweak it to build a static linked program automatically if no pre-built dependency found.
 
 #### With Meson (Recommended)
 
@@ -47,9 +65,9 @@ Just download file with `win` in its name from [lastest release page](https://gi
 4. Change dir to where you put this project. Run `mkdir build && cd build && meson setup --prefix=d:/flipclock-prefix --buildtype=release . .. && meson compile && meson install`. You can change prefix argument to other path you created in Step 2, but you need to use UNIX style slash instead of backslash because it's escape character in C.
 5. Go to `flipclock` dir under your prefix directory, you can now find `flipclock.scr` and right click it to install it as a screensaver.
 
-## Android
+### Android
 
-See [flipclock-android](https://github.com/AlynxZhou/flipclock-android/).
+See [flipclock-android](https://github.com/AlynxZhou/flipclock-android/). It may be obsolete because I don't have enough time to update the Android wrapper.
 
 # Configuration
 
