@@ -4,6 +4,8 @@ FlipClock
 A flip clock screensaver supported by SDL2.
 -------------------------------------------
 
+[Project Website](https://flipclock.alynx.one)
+
 ![Screenshot](screenshot.png)
 
 # Notice
