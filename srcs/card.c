@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "flipclock.h"
-#include "clock.h"
 #include "card.h"
 
 #define PI 3.1415927
