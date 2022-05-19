@@ -9,11 +9,10 @@ SDL_TTF_PATH := ../SDL_ttf
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include $(LOCAL_PATH)/$(SDL_TTF_PATH)/include
 
-# Add your application source files here...
-LOCAL_SRC_FILES := srcs/main.c srcs/getarg.c srcs/flipclock.c
+LOCAL_SRC_FILES := srcs/main.c srcs/getarg.c srcs/card.c srcs/clock.c srcs/flipclock.c
 
 LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf
 
-LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -llog
+LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -llog -lm
 
 include $(BUILD_SHARED_LIBRARY)

@@ -12,7 +12,7 @@
 
 如果想替换字体，可以直接将其它字体重命名为 flipclock.ttf 并放置在这个目录下面。也可以修改 flipclock.conf 里面的 font 选项，但不推荐这种方式。
 
-如果想修改字符大小，找到 #font_scale = 0.8 那一行删掉行首的 # 并修改数字保存，这个数字会乘到默认的字号上。
+如果想修改字符大小，找到 #text_scale = 0.8 那一行删掉行首的 # 并修改数字保存，这个数字会乘到默认的字号上。
 
 如果想使用自定义颜色，请参考此文件末尾的中文说明版配置文件分别修改各项。
 
@@ -32,22 +32,22 @@
 # Uncomment `font = ` and add path to use custom font.
 # 删除 `font = ` 前面的 `#` 并添加路径以使用自定义字体。
 #font =
-# Uncomment `font_scale = 0.8` to modify digit scale.
-# 删除 `font_scale = 0.8` 前面的 `#` 并修改数字以改变字符缩放大小。
-# This scales the digits again based on card scale.
-# 这会在卡片缩放大小基础上再次缩放字符。
-#font_scale = 0.8
-# Uncomment `rect_scale = 0.8` to modify card scale.
-# 删除 `rect_scale = 0.8` 前面的 `#` 并修改数字以改变卡片缩放大小。
-# This also scales the digits.
-# 这也会缩放字符大小。
-#rect_scale = 0.8
-# Uncomment `font_color = ` to modify the color of the digit.
-# 删除 `font_color` 前面的 `#` 并修改颜色码以使用自定义数字色。
-#font_color = #000000ff
-# Uncomment `rect_color = ` to modify the color of the card.
-# 删除 `rect_color` 前面的 `#` 并修改颜色码以使用自定义卡片色。
-#rect_color = #fe9a00ff
-# Uncomment `black_color = ` to modify the color of the background.
-# 删除 `back_color` 前面的 `#` 并修改颜色码以使用自定义背景色。
-#back_color = #000000ff
+# Uncomment `text_scale = 0.8` to modify digit scale.
+# 删除 `text_scale = 0.8` 前面的 `#` 并修改数字以改变文本缩放大小。
+# This scales the text again based on card scale.
+# 这会在卡片缩放大小基础上再次缩放文本。
+#text_scale = 0.8
+# Uncomment `card_scale = 0.8` to modify card scale.
+# 删除 `card_scale = 0.8` 前面的 `#` 并修改数字以改变卡片缩放大小。
+# This also scales the text.
+# 这也会缩放文本。
+#card_scale = 0.8
+# Uncomment `text_color = ` to modify the color of the text.
+# 删除 `text_color` 前面的 `#` 并修改颜色码以修改文本颜色。
+#text_color = #000000ff
+# Uncomment `box_color = ` to modify the color of the rounded box behind the text.
+# 删除 `box_color` 前面的 `#` 并修改颜色码以修改文本背后的圆角矩形的颜色。
+#box_color = #fe9a00ff
+# Uncomment `background_color = ` to modify the color of the background.
+# 删除 `background_color` 前面的 `#` 并修改颜色码以修改背景颜色。
+#background_color = #000000ff

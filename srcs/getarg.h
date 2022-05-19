@@ -4,7 +4,7 @@
 #ifndef __GETARG_H__
 #define __GETARG_H__
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #	define OPT_START '/'
 #else
 #	define OPT_START '-'

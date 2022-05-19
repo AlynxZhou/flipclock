@@ -10,15 +10,15 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #	include <windows.h>
 #endif
 
 // Android APP does not generate `config.h` and use its own logger.
-#ifdef __ANDROID__
+#if defined(__ANDROID__)
 #	include <android/log.h>
 #	define LOG_TAG "FlipClock"
-#	ifdef __DEBUG__
+#	if defined(__DEBUG__)
 #		define LOG_DEBUG(...)                                  \
 			__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, \
 					    __VA_ARGS__)
@@ -29,7 +29,7 @@
 		__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #else
 #	include <stdio.h>
-#	ifdef __DEBUG__
+#	if defined(__DEBUG__)
 #		define LOG_DEBUG(...) fprintf(stdout, __VA_ARGS__)
 #	else
 #		define LOG_DEBUG(...)
@@ -41,69 +41,28 @@
 #define PROGRAM_TITLE "FlipClock"
 #define MAX_BUFFER_LENGTH 2048
 
-// Those are from arguments.
-struct properties {
-	const char *title;
+struct flipclock {
+	// Structures not shared by clocks.
+	struct flipclock_clock **clocks;
+	// Number of clocks.
+	int clocks_length;
+	// Structures shared by clocks.
+	struct tm now;
+	SDL_Color box_color;
+	SDL_Color text_color;
+	SDL_Color background_color;
 	char font_path[MAX_BUFFER_LENGTH];
 	char conf_path[MAX_BUFFER_LENGTH];
-	bool ampm;
-	bool full;
-	double font_scale;
-	double rect_scale;
-#ifdef _WIN32
+	double text_scale;
+	double card_scale;
+#if defined(_WIN32)
 	HWND preview_window;
 	bool preview;
 	bool screensaver;
 	char program_dir[MAX_BUFFER_LENGTH];
 #endif
-};
-struct colors {
-	SDL_Color font;
-	SDL_Color rect;
-	SDL_Color back;
-	SDL_Color black;
-	SDL_Color transparent;
-};
-struct fonts {
-	TTF_Font *time;
-	TTF_Font *mode;
-};
-struct card {
-	SDL_Rect rect;
-	long long start_tick;
-};
-struct cards {
-	struct card hour;
-	struct card minute;
-};
-struct textures {
-	SDL_Texture *current;
-	SDL_Texture *previous;
-};
-struct clock {
-	SDL_Window *window;
-	SDL_Renderer *renderer;
-	struct textures textures;
-	struct cards cards;
-	struct fonts fonts;
-	int width;
-	int height;
-	int time_height;
-	int mode_height;
-	int radius;
-	bool waiting;
-	bool running;
-};
-// You only need this to create an app.
-struct flipclock {
-	// Structures not shared by clocks.
-	struct clock *clocks;
-	// Number of clocks.
-	int clocks_length;
-	// Structures shared by clocks.
-	struct tm now;
-	struct colors colors;
-	struct properties properties;
+	bool ampm;
+	bool full;
 	long long last_touch;
 	bool running;
 };

@@ -55,15 +55,18 @@ endif
 sources = files(
   'srcs/main.c',
   'srcs/getarg.c',
+  'srcs/card.c',
+  'srcs/clock.c',
   'srcs/flipclock.c'
 )
 
 dependencies = []
 include_directories = []
+m = cc.find_library('m', required: true)
 # Wrap files will be used as fallback.
 sdl2 = dependency('sdl2', required: true)
 sdl2_ttf = dependency('SDL2_ttf', required: true)
-dependencies += [sdl2, sdl2_ttf]
+dependencies += [m, sdl2, sdl2_ttf]
 
 if host_machine.system() == 'linux'
   executable(

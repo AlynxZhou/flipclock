@@ -22,7 +22,7 @@ If you run this program in windowed mode (`-w`), only one display is supported. 
 
 #### Install From AUR
 
-You can get PKGBUILD from [FlipClock's AUR Page](https://aur.archlinux.org/packages/flipclock/) and build it manually, or use some AUR helpers.
+You can get PKGBUILD from [FlipClock's AUR page](https://aur.archlinux.org/packages/flipclock/) and build it manually, or use some AUR helpers.
 
 ```
 $ paru flipclock
@@ -34,6 +34,14 @@ First [add `archlinuxcn` repo to your system](https://www.archlinuxcn.org/archli
 
 ```
 # pacman -S flipclock
+```
+
+### Flatpak
+
+FlipClock is also available as Flatpak on Flathub, you can get it from [FlipClock's Flathub page](https://flathub.org/apps/details/one.alynx.FlipClock), or using `flatpak` CLI tool.
+
+```
+# flatpak install flathub one.alynx.FlipClock && flatpak run one.alynx.FlipClock
 ```
 
 ### Other Linux Distributions
@@ -50,7 +58,7 @@ Just download file with `win` in its name from [release page](https://github.com
 
 #### With Meson (Recommended)
 
-1. Install sdl2, sdl2_ttf.
+1. Install a C compiler, Meson, Ninja, libc, libm, SDL2 and SDL2_ttf.
 2. `mkdir build && cd build && meson setup . .. && meson compile`
 3. `./flipclock -f ../dists/flipclock.ttf`
 4. If you want to install this to your system, it is suggested to build with `mkdir build && cd build && meson setup --prefix=/usr --buildtype=release . .. && meson compile && sudo meson install`.
