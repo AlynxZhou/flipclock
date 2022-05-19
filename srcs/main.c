@@ -11,11 +11,11 @@
 int main(int argc, char *argv[])
 {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		LOG_ERROR("SDL Error: %s\n", SDL_GetError());
+		LOG_ERROR("%s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 	if (TTF_Init() < 0) {
-		LOG_ERROR("SDL Error: %s\n", SDL_GetError());
+		LOG_ERROR("%s\n", TTF_GetError());
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 			strncpy(app->font_path, argopt, MAX_BUFFER_LENGTH);
 			app->font_path[MAX_BUFFER_LENGTH - 1] = '\0';
 			if (strlen(app->font_path) == MAX_BUFFER_LENGTH - 1)
-				LOG_ERROR("font_path too long, "
+				LOG_ERROR("`font_path` too long, "
 					  "may fail to load.\n");
 			break;
 		case 0:

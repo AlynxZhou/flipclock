@@ -62,11 +62,15 @@ sources = files(
 
 dependencies = []
 include_directories = []
-m = cc.find_library('m', required: true)
+# Windows does not have sperated libm.
+if host_machine.system() == 'linux'
+  m = cc.find_library('m', required: true)
+  dependencies += [m]
+endif
 # Wrap files will be used as fallback.
 sdl2 = dependency('sdl2', required: true)
 sdl2_ttf = dependency('SDL2_ttf', required: true)
-dependencies += [m, sdl2, sdl2_ttf]
+dependencies += [sdl2, sdl2_ttf]
 
 if host_machine.system() == 'linux'
   executable(

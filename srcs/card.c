@@ -38,7 +38,7 @@ struct flipclock_card *flipclock_card_create(struct flipclock *app,
 
 static void _flipclock_card_create_textures(struct flipclock_card *card)
 {
-	LOG_DEBUG("Creating new textures with size %dx%d.\n", card->rect.w,
+	LOG_DEBUG("Creating new textures with size `%dx%d`.\n", card->rect.w,
 		  card->rect.h);
 	card->current = SDL_CreateTexture(card->renderer, 0,
 					  SDL_TEXTUREACCESS_TARGET,

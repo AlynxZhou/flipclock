@@ -29,7 +29,7 @@ static void _flipclock_get_program_dir_win32(char *program_dir)
 	GetModuleFileName(NULL, program_dir, MAX_BUFFER_LENGTH);
 	program_dir[MAX_BUFFER_LENGTH - 1] = '\0';
 	if (strlen(program_dir) == MAX_BUFFER_LENGTH - 1)
-		LOG_ERROR("program_dir too long, may fail to load.\n");
+		LOG_ERROR("`program_dir` too long, may fail to load.\n");
 	/**
 	 * Remove the program name and get the dir.
 	 * This should work because Windows path should have `\\`.
@@ -78,14 +78,11 @@ struct flipclock *flipclock_create(void)
 	app->screensaver = false;
 	app->program_dir[0] = '\0';
 	_flipclock_get_program_dir_win32(app->program_dir);
-	LOG_DEBUG("Using program_dir `%s`.\n", app->program_dir);
+	LOG_DEBUG("Using `program_dir` `%s`.\n", app->program_dir);
 #endif
 #if defined(_WIN32)
 	snprintf(app->font_path, MAX_BUFFER_LENGTH, "%s\\flipclock.ttf",
 		 app->program_dir);
-	font_path[MAX_BUFFER_LENGTH - 1] = '\0';
-	if (strlen(font_path) == MAX_BUFFER_LENGTH - 1)
-		LOG_ERROR("font_path too long, may fail to load.\n");
 #elif defined(__ANDROID__)
 	// Directly under `app/src/main/assets` for Android APP.
 	strncpy(app->font_path, "flipclock.ttf", MAX_BUFFER_LENGTH);
@@ -93,6 +90,9 @@ struct flipclock *flipclock_create(void)
 	strncpy(app->font_path, PACKAGE_DATADIR "/fonts/flipclock.ttf",
 		MAX_BUFFER_LENGTH);
 #endif
+	app->font_path[MAX_BUFFER_LENGTH - 1] = '\0';
+	if (strlen(app->font_path) == MAX_BUFFER_LENGTH - 1)
+		LOG_ERROR("`font_path` too long, may fail to load.\n");
 	time_t raw_time = time(NULL);
 	app->now = *localtime(&raw_time);
 	return app;
@@ -217,7 +217,7 @@ static FILE *_flipclock_open_conf_win32(char *conf_path,
 		 program_dir);
 	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
 	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
-		LOG_ERROR("conf_path too long, may fail to load.\n");
+		LOG_ERROR("`conf_path` too long, may fail to load.\n");
 	return fopen(conf_path, "r");
 }
 #elif defined(__linux__)
@@ -231,7 +231,7 @@ static FILE *_flipclock_open_conf_linux(char *conf_path)
 			 conf_dir);
 		conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
 		if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
-			LOG_ERROR("conf_path too long, may fail to load.\n");
+			LOG_ERROR("`conf_path` too long, may fail to load.\n");
 		conf = fopen(conf_path, "r");
 		if (conf != NULL)
 			return conf;
@@ -244,7 +244,7 @@ static FILE *_flipclock_open_conf_linux(char *conf_path)
 			 "%s/.config/flipclock.conf", home);
 		conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
 		if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
-			LOG_ERROR("conf_path too long, may fail to load.\n");
+			LOG_ERROR("`conf_path` too long, may fail to load.\n");
 		conf = fopen(conf_path, "r");
 		if (conf != NULL)
 			return conf;
@@ -254,7 +254,7 @@ static FILE *_flipclock_open_conf_linux(char *conf_path)
 		MAX_BUFFER_LENGTH);
 	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
 	if (strlen(conf_path) == MAX_BUFFER_LENGTH - 1)
-		LOG_ERROR("conf_path too long, may fail to load.\n");
+		LOG_ERROR("`conf_path` too long, may fail to load.\n");
 	return fopen(conf_path, "r");
 }
 #endif
@@ -332,7 +332,7 @@ static void _flipclock_apply_key_value(struct flipclock *app, const char key[],
 		else
 			LOG_ERROR("Failed to parse `background_color`!\n");
 	} else {
-		LOG_DEBUG("Unknown key `%s`.\n", key);
+		LOG_ERROR("Unknown key `%s`.\n", key);
 	}
 }
 
@@ -358,7 +358,7 @@ void flipclock_load_conf(struct flipclock *app)
 	char *value;
 	while (fgets(conf_line, MAX_BUFFER_LENGTH, conf) != NULL) {
 		if (strlen(conf_line) == MAX_BUFFER_LENGTH - 1)
-			LOG_ERROR("conf_line too long, may fail to load.\n");
+			LOG_ERROR("`conf_line` too long, may fail to load.\n");
 		if (_flipclock_parse_key_value(conf_line, &key, &value))
 			continue;
 		LOG_DEBUG("Parsed key `%s` and value `%s`.\n", key, value);
@@ -413,7 +413,7 @@ static void _flipclock_get_preview_lock_path_win32(HWND preview_window,
 		 program_dir, preview_window);
 	preview_lock_path[MAX_BUFFER_LENGTH - 1] = '\0';
 	if (strlen(preview_lock_path) == MAX_BUFFER_LENGTH - 1)
-		LOG_ERROR("preview_lock_path too long, may fail to load.\n");
+		LOG_ERROR("`preview_lock_path` too long, may fail to load.\n");
 }
 
 static void _flipclock_remove_preview_lock_win32(void)
@@ -432,7 +432,7 @@ static void _flipclock_lock_preview_win32(struct flipclock *app)
 {
 	_flipclock_get_preview_lock_path_win32(app->preview_window,
 					       app->program_dir);
-	LOG_DEBUG("Using preview_lock_path `%s`.\n", preview_lock_path);
+	LOG_DEBUG("Using `preview_lock_path` `%s`.\n", preview_lock_path);
 	FILE *preview_lock = fopen(preview_lock_path, "r");
 	if (preview_lock != NULL || errno != ENOENT) {
 		LOG_ERROR("Already running in the given preview window!\n");
@@ -482,6 +482,10 @@ void flipclock_create_clocks(struct flipclock *app)
 static void _flipclock_set_fullscreen(struct flipclock *app, bool full)
 {
 	app->full = full;
+	if (full)
+		SDL_ShowCursor(SDL_DISABLE);
+	else
+		SDL_ShowCursor(SDL_ENABLE);
 	for (int i = 0; i < app->clocks_length; ++i) {
 		if (app->clocks[i] == NULL)
 			continue;
@@ -613,7 +617,7 @@ static void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 	 * So we have to close the lost program manually here.
 	 */
 	case SDL_RENDER_TARGETS_RESET:
-		if (app->properties.preview)
+		if (app->preview)
 			app->running = false;
 		break;
 #endif
