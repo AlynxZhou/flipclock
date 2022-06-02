@@ -42,6 +42,11 @@
   </screenshots>
 
   <releases>
+    <release version="2.9.1" date="2022-06-02">
+      <description>
+	<p>Updated Android linking libraries.</p>
+      </description>
+    </release>
     <release version="2.9.0" date="2022-05-19">
       <description>
         <p>Updated to make flipping card a widget.</p>
