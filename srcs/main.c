@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <SDL.h>
+#include <SDL_ttf.h>
+
 #include "getarg.h"
 #include "flipclock.h"
 

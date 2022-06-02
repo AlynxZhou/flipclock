@@ -193,13 +193,13 @@ static void _draw_text(SDL_Renderer *renderer, SDL_Texture *target_texture,
 		SDL_Surface *text_surface =
 			TTF_RenderGlyph_Blended(font, text[i], color);
 		if (text_surface == NULL) {
-			LOG_ERROR("%s\n", SDL_GetError());
+			LOG_ERROR("%s\n", TTF_GetError());
 			exit(EXIT_FAILURE);
 		}
 		SDL_Texture *text_texture =
 			SDL_CreateTextureFromSurface(renderer, text_surface);
 		if (text_texture == NULL) {
-			LOG_ERROR("%s\n", SDL_GetError());
+			LOG_ERROR("%s\n", TTF_GetError());
 			exit(EXIT_FAILURE);
 		}
 		SDL_Rect text_rect;

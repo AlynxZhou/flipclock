@@ -8,7 +8,6 @@
 #include <time.h>
 
 #include <SDL.h>
-#include <SDL_ttf.h>
 
 #if defined(_WIN32)
 #	include <windows.h>

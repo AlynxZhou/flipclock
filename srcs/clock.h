@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include <SDL.h>
-#include <SDL_ttf.h>
 
 struct flipclock_clock {
 	struct flipclock *app;
