@@ -13,6 +13,6 @@ LOCAL_SRC_FILES := srcs/main.c srcs/getarg.c srcs/card.c srcs/clock.c srcs/flipc
 
 LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf
 
-LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -llog -lm
+LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -lOpenSLES -landroid -llog -lm
 
 include $(BUILD_SHARED_LIBRARY)
