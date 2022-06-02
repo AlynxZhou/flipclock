@@ -86,7 +86,7 @@ struct flipclock *flipclock_create(void)
 #elif defined(__ANDROID__)
 	// Directly under `app/src/main/assets` for Android APP.
 	strncpy(app->font_path, "flipclock.ttf", MAX_BUFFER_LENGTH);
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__ANDROID__)
 	strncpy(app->font_path, PACKAGE_DATADIR "/fonts/flipclock.ttf",
 		MAX_BUFFER_LENGTH);
 #endif
@@ -220,7 +220,7 @@ static FILE *_flipclock_open_conf_win32(char *conf_path,
 		LOG_ERROR("`conf_path` too long, may fail to load.\n");
 	return fopen(conf_path, "r");
 }
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__ANDROID__)
 static FILE *_flipclock_open_conf_linux(char *conf_path)
 {
 	FILE *conf = NULL;
@@ -341,7 +341,7 @@ void flipclock_load_conf(struct flipclock *app)
 	FILE *conf = NULL;
 #if defined(_WIN32)
 	conf = _flipclock_open_conf_win32(app->conf_path, app->program_dir);
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__ANDROID__)
 	conf = _flipclock_open_conf_linux(app->conf_path);
 #endif
 	// Should never happen, but it's fine.
@@ -735,7 +735,9 @@ void flipclock_destroy(struct flipclock *app)
 void flipclock_print_help(struct flipclock *app, char program_name[])
 {
 	printf("A simple flip clock screensaver using SDL2.\n");
+#if !defined(__ANDROID__)
 	printf("Version " PROJECT_VERSION ".\n");
+#endif
 	printf("Usage: %s [OPTION...] <value>\n", program_name);
 	printf("Options:\n");
 	printf("\t%ch\t\tDisplay help then exit.\n", OPT_START);

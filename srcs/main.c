@@ -20,10 +20,9 @@ int main(int argc, char *argv[])
 	}
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	struct flipclock *app = flipclock_create();
-	// Android don't need conf and arguments.
 #if !defined(__ANDROID__)
+	// Android don't need conf and arguments.
 	flipclock_load_conf(app);
-	// Dealing with arguments which have higher priority.
 #	if defined(_WIN32)
 	char OPT_STRING[] = "hvscp:wt:f:";
 #	else

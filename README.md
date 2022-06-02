@@ -93,7 +93,7 @@ If you want some features and you can implement it, a PR is always welcome, but 
 
 - If you are writing multi-line comment, please use the same style with existing comments. Comments should always occupy a new line. If your comment is longer than Column 80, break it into block comment with `/* */` (but don't break long URL, it's fine), don't use `//` for block comment.
 - You can use all **C11** features freely.
-- Try to use C standard functions first, until you are implementing some platform-dependent features that libc does not support. Do use preprocessor (`_WIN32`, `__ANDROID__`, `__linux__`) for platform-dependent code.
+- Try to use C standard functions first, until you are implementing some platform-dependent features that libc does not support. Do use preprocessor (`_WIN32`, `__ANDROID__` and `__linux__`) for platform-dependent code. (Note: Android will also define `__linux__`, so if you are targeting traditional Linux distributions, please use `defined(__linux__) && !defined(__ANDROID__)`.)
 - Try not to pull new dependencies into project other than SDL2 and SDL2_ttf, it's too brain damage to add dependency when building on Windows, building on this platform is a disaster and packaging on this platform is a mistery.
 - **When you are coding please use [Linux kernel coding style](https://www.kernel.org/doc/html/v4.10/process/coding-style.html).** There is a `.clang-format` for this project, please run `clang-format` yourself before committing something. It will keep most coding style consistent.
 - There are still some coding style `clang-format` cannot change, please keep the same as existing code. For example, add period for all comments and printed text, add `\n` yourself for logging.

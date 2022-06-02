@@ -15,4 +15,8 @@ LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf
 
 LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -lOpenSLES -landroid -llog -lm
 
+ifeq ($(NDK_DEBUG), 1)
+	LOCAL_CFLAGS += -D__DEBUG__
+endif
+
 include $(BUILD_SHARED_LIBRARY)
