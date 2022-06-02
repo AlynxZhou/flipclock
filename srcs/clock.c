@@ -278,9 +278,10 @@ void flipclock_clock_handle_window_event(struct flipclock_clock *clock,
 		 * Sometimes when a window is restored, its texture get lost.
 		 * Typically happens when we have two fullscreen clocks in
 		 * one display, and the lower one is switched to top, and we
-		 * have to re-render its texture.
+		 * have to redraw its texture.
 		 */
-		/* flipclock_clock_draw(clock); */
+		// XXX: It seems OK without redrawing.
+		// flipclock_clock_draw(clock);
 		break;
 	case SDL_WINDOWEVENT_CLOSE:
 		flipclock_clock_destroy(clock);
