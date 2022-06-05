@@ -18,7 +18,7 @@
 #	include <android/log.h>
 #	define LOG_TAG "FlipClock"
 #	if defined(__DEBUG__)
-#		define LOG_DEBUG(...)                                   \
+#		define LOG_DEBUG(...)                                  \
 			__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, \
 					    __VA_ARGS__)
 #	else
@@ -83,7 +83,8 @@ struct flipclock {
 	bool ampm;
 	bool full;
 	bool show_second;
-	long long last_touch;
+	long long last_touch_time;
+	SDL_FingerID last_touch_finger;
 	bool running;
 };
 

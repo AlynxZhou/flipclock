@@ -55,7 +55,8 @@ struct flipclock *flipclock_create(void)
 	app->clocks = NULL;
 	// Should create 1 clock in windowed mode.
 	app->clocks_length = 1;
-	app->last_touch = 0;
+	app->last_touch_time = 0;
+	app->last_touch_finger = 0;
 	app->running = true;
 	app->text_color.r = 0xd0;
 	app->text_color.g = 0xd0;
@@ -731,11 +732,13 @@ static void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 		// TODO: May not work, 3 fingers contains 2 fingers.
 		switch (SDL_GetNumTouchFingers(event.tfinger.touchId)) {
 		case 2:
+			LOG_DEBUG("2 finger touch detected!\n");
 			_flipclock_set_ampm(app, !app->ampm);
 			// Setting ampm always changes hour.
 			_flipclock_set_hour(app, false);
 			break;
 		case 3:
+			LOG_DEBUG("3 finger touch detected!\n");
 			_flipclock_set_show_second(app, !app->show_second);
 			/**
 			 * Must set second text, because created card has empty
@@ -756,12 +759,15 @@ static void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 	 * Double tap (less then 300ms) changes type.
 	 */
 	case SDL_FINGERUP:
-		if (event.tfinger.timestamp <
-		    app->last_touch + DOUBLE_TAP_INTERVAL_MS) {
+		if (event.tfinger.fingerId == app->last_touch_finger &&
+		    event.tfinger.timestamp <
+			    app->last_touch_time + DOUBLE_TAP_INTERVAL_MS) {
+			LOG_DEBUG("Double tap detected.\n");
 			_flipclock_set_ampm(app, !app->ampm);
 			_flipclock_set_hour(app, false);
 		}
-		app->last_touch = event.tfinger.timestamp;
+		app->last_touch_time = event.tfinger.timestamp;
+		app->last_touch_finger = event.tfinger.fingerId;
 		break;
 	case SDL_KEYDOWN:
 #if defined(_WIN32)
