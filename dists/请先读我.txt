@@ -10,6 +10,8 @@
 
 如果想修改为 12 小时制，找到 #ampm = true 那一行删掉行首的 # 并保存即可。
 
+如果想显示秒，找到 #show_second = true 那一行删除行首的 # 并保存即可。
+
 如果想替换字体，可以直接将其它字体重命名为 flipclock.ttf 并放置在这个目录下面。也可以修改 flipclock.conf 里面的 font 选项，但不推荐这种方式。
 
 如果想修改字符大小，找到 #text_scale = 0.8 那一行删掉行首的 # 并修改数字保存，这个数字会乘到默认的字号上。
@@ -29,6 +31,9 @@
 # 删除 `full = false` 前面的 `#` 以取消全屏。
 # 屏幕保护程序不应当修改这个设置。
 #full = false
+# Uncomment `show_second = true` to show second.
+# 删除 `show_second = true` 前面的 `#` 以显示秒。
+#show_second = true
 # Uncomment `font = ` and add path to use custom font.
 # 删除 `font = ` 前面的 `#` 并添加路径以使用自定义字体。
 #font =

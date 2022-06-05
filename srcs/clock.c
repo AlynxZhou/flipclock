@@ -14,11 +14,13 @@
 
 static void _flipclock_clock_update_layout(struct flipclock_clock *clock)
 {
+	RETURN_IF_FAIL(clock != NULL);
+
 	const struct flipclock *app = clock->app;
-	// TODO: Add second.
 	SDL_Rect hour_rect;
 	SDL_Rect minute_rect;
-	int cards_length = 2;
+	SDL_Rect second_rect;
+	int cards_length = app->show_second ? 3 : 2;
 	int spaces_length = cards_length + 1;
 	// space/card = 1/8.
 	/**
@@ -48,6 +50,15 @@ static void _flipclock_clock_update_layout(struct flipclock_clock *clock)
 		minute_rect.w = card_size;
 		minute_rect.h = card_size;
 		flipclock_card_set_rect(clock->minute, minute_rect);
+
+		if (app->show_second) {
+			second_rect.x = hour_rect.x + hour_rect.w + space_size +
+					minute_rect.w + space_size;
+			second_rect.y = hour_rect.y;
+			second_rect.w = card_size;
+			second_rect.h = card_size;
+			flipclock_card_set_rect(clock->second, second_rect);
+		}
 	} else {
 		int space_size = clock->h / (cards_length * 8 + spaces_length);
 		int min_width = clock->w * 0.8;
@@ -69,11 +80,36 @@ static void _flipclock_clock_update_layout(struct flipclock_clock *clock)
 		minute_rect.w = card_size;
 		minute_rect.h = card_size;
 		flipclock_card_set_rect(clock->minute, minute_rect);
+
+		if (app->show_second) {
+			second_rect.y = hour_rect.y + hour_rect.h + space_size +
+					minute_rect.h + space_size;
+			second_rect.x = hour_rect.x;
+			second_rect.w = card_size;
+			second_rect.h = card_size;
+			flipclock_card_set_rect(clock->second, second_rect);
+		}
 	}
+}
+
+static void _flipclock_clock_create_cards(struct flipclock_clock *clock)
+{
+	RETURN_IF_FAIL(clock != NULL);
+
+	struct flipclock *app = clock->app;
+
+	clock->hour = flipclock_card_create(app, clock->renderer);
+	clock->minute = flipclock_card_create(app, clock->renderer);
+	clock->second = NULL;
+	if (app->show_second)
+		clock->second = flipclock_card_create(app, clock->renderer);
+	_flipclock_clock_update_layout(clock);
 }
 
 struct flipclock_clock *flipclock_clock_create(struct flipclock *app, int i)
 {
+	RETURN_VAL_IF_FAIL(app != NULL, NULL);
+
 	/**
 	 * We need `SDL_WINDOW_RESIZABLE` for auto-rotate
 	 * while fullscreen on Android.
@@ -126,9 +162,7 @@ struct flipclock_clock *flipclock_clock_create(struct flipclock *app, int i)
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetRenderDrawBlendMode(clock->renderer, SDL_BLENDMODE_BLEND);
-	clock->hour = flipclock_card_create(app, clock->renderer);
-	clock->minute = flipclock_card_create(app, clock->renderer);
-	_flipclock_clock_update_layout(clock);
+	_flipclock_clock_create_cards(clock);
 	return clock;
 }
 
@@ -139,6 +173,8 @@ struct flipclock_clock *flipclock_clock_create(struct flipclock *app, int i)
  */
 struct flipclock_clock *flipclock_clock_create_preview(struct flipclock *app)
 {
+	RETURN_VAL_IF_FAIL(app != NULL, NULL);
+
 	struct flipclock_clock *clock = malloc(sizeof(*clock));
 	if (clock == NULL) {
 		LOG_ERROR("Failed to create clock!");
@@ -163,15 +199,34 @@ struct flipclock_clock *flipclock_clock_create_preview(struct flipclock *app)
 		exit(EXIT_FAILURE);
 	}
 	SDL_SetRenderDrawBlendMode(clock->renderer, SDL_BLENDMODE_BLEND);
-	clock->hour = flipclock_card_create(app, clock->renderer);
-	clock->minute = flipclock_card_create(app, clock->renderer);
-	_flipclock_clock_update_layout(clock);
+	_flipclock_clock_create_cards(clock);
 	return clock;
 }
 #endif
 
+void flipclock_clock_set_show_second(struct flipclock_clock *clock,
+				     bool show_second)
+{
+	RETURN_IF_FAIL(clock != NULL);
+
+	if (show_second) {
+		if (clock->second == NULL)
+			clock->second = flipclock_card_create(clock->app,
+							      clock->renderer);
+	} else {
+		if (clock->second != NULL) {
+			flipclock_card_destory(clock->second);
+			clock->second = NULL;
+		}
+	}
+	// Toggling seconds always changes size.
+	_flipclock_clock_update_layout(clock);
+}
+
 void flipclock_clock_set_fullscreen(struct flipclock_clock *clock, bool full)
 {
+	RETURN_IF_FAIL(clock != NULL);
+
 	// Let's find which display the clock is inside.
 	SDL_Rect display_bounds;
 	int clock_x;
@@ -227,6 +282,9 @@ void flipclock_clock_set_fullscreen(struct flipclock_clock *clock, bool full)
 void flipclock_clock_set_hour(struct flipclock_clock *clock, const char hour[],
 			      bool flip)
 {
+	// Text can be NULL to clear card.
+	RETURN_IF_FAIL(clock != NULL);
+
 	flipclock_card_set_text(clock->hour, hour);
 	if (flip)
 		flipclock_card_flip(clock->hour);
@@ -235,13 +293,33 @@ void flipclock_clock_set_hour(struct flipclock_clock *clock, const char hour[],
 void flipclock_clock_set_minute(struct flipclock_clock *clock,
 				const char minute[], bool flip)
 {
+	// Text can be NULL to clear card.
+	RETURN_IF_FAIL(clock != NULL);
+
 	flipclock_card_set_text(clock->minute, minute);
 	if (flip)
 		flipclock_card_flip(clock->minute);
 }
 
+void flipclock_clock_set_second(struct flipclock_clock *clock,
+				const char second[], bool flip)
+{
+	// Text can be NULL to clear card.
+	RETURN_IF_FAIL(clock != NULL);
+
+	if (!clock->app->show_second)
+		return;
+
+	flipclock_card_set_text(clock->second, second);
+	if (flip)
+		flipclock_card_flip(clock->second);
+}
+
 void flipclock_clock_set_ampm(struct flipclock_clock *clock, const char ampm[])
 {
+	// Text can be NULL to clear card.
+	RETURN_IF_FAIL(clock != NULL);
+
 	flipclock_card_set_sub_text(clock->hour, ampm);
 	// Set ampm should never flip a card.
 }
@@ -249,6 +327,8 @@ void flipclock_clock_set_ampm(struct flipclock_clock *clock, const char ampm[])
 void flipclock_clock_handle_window_event(struct flipclock_clock *clock,
 					 SDL_Event event)
 {
+	RETURN_IF_FAIL(clock != NULL);
+
 	const struct flipclock *app = clock->app;
 	int clock_i = clock->i;
 	switch (event.window.event) {
@@ -301,6 +381,8 @@ void flipclock_clock_handle_window_event(struct flipclock_clock *clock,
 
 void flipclock_clock_animate(struct flipclock_clock *clock)
 {
+	RETURN_IF_FAIL(clock != NULL);
+
 	const struct flipclock *app = clock->app;
 	SDL_SetRenderDrawColor(clock->renderer, app->background_color.r,
 			       app->background_color.g, app->background_color.b,
@@ -309,16 +391,20 @@ void flipclock_clock_animate(struct flipclock_clock *clock)
 
 	flipclock_card_animate(clock->hour);
 	flipclock_card_animate(clock->minute);
+	if (app->show_second)
+		flipclock_card_animate(clock->second);
 
 	SDL_RenderPresent(clock->renderer);
 }
 
 void flipclock_clock_destroy(struct flipclock_clock *clock)
 {
-	if (clock == NULL)
-		return;
+	RETURN_IF_FAIL(clock != NULL);
+
 	flipclock_card_destory(clock->hour);
 	flipclock_card_destory(clock->minute);
+	if (clock->second != NULL)
+		flipclock_card_destory(clock->second);
 	SDL_DestroyRenderer(clock->renderer);
 	SDL_DestroyWindow(clock->window);
 	free(clock);

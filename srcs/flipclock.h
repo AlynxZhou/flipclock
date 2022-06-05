@@ -18,7 +18,7 @@
 #	include <android/log.h>
 #	define LOG_TAG "FlipClock"
 #	if defined(__DEBUG__)
-#		define LOG_DEBUG(...)                                  \
+#		define LOG_DEBUG(...)                                   \
 			__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, \
 					    __VA_ARGS__)
 #	else
@@ -36,6 +36,26 @@
 #	define LOG_ERROR(...) fprintf(stderr, __VA_ARGS__)
 #	include "config.h"
 #endif
+
+/**
+ * Similiar with GLib. Those macros are only used for debug, which means a
+ * failure should be a programmer error so the code should be checked.
+ */
+#define RETURN_IF_FAIL(EXPR)                                              \
+	do {                                                              \
+		if (!(EXPR)) {                                            \
+			LOG_ERROR("%s: `%s` failed!\n", __func__, #EXPR); \
+			return;                                           \
+		}                                                         \
+	} while (0)
+
+#define RETURN_VAL_IF_FAIL(EXPR, VAL)                                     \
+	do {                                                              \
+		if (!(EXPR)) {                                            \
+			LOG_ERROR("%s: `%s` failed!\n", __func__, #EXPR); \
+			return (VAL);                                     \
+		}                                                         \
+	} while (0)
 
 #define PROGRAM_TITLE "FlipClock"
 #define MAX_BUFFER_LENGTH 2048
@@ -62,6 +82,7 @@ struct flipclock {
 #endif
 	bool ampm;
 	bool full;
+	bool show_second;
 	long long last_touch;
 	bool running;
 };

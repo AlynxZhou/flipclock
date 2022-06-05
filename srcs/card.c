@@ -14,6 +14,9 @@
 struct flipclock_card *flipclock_card_create(struct flipclock *app,
 					     SDL_Renderer *renderer)
 {
+	RETURN_VAL_IF_FAIL(app != NULL, NULL);
+	RETURN_VAL_IF_FAIL(renderer != NULL, NULL);
+
 	struct flipclock_card *card = malloc(sizeof(*card));
 	if (card == NULL) {
 		LOG_ERROR("Failed to create card!");
@@ -38,6 +41,8 @@ struct flipclock_card *flipclock_card_create(struct flipclock *app,
 
 static void _flipclock_card_create_textures(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	LOG_DEBUG("Creating new textures with size `%dx%d`.\n", card->rect.w,
 		  card->rect.h);
 	card->current = SDL_CreateTexture(card->renderer, 0,
@@ -60,6 +65,8 @@ static void _flipclock_card_create_textures(struct flipclock_card *card)
 
 static void _flipclock_card_destroy_textures(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	LOG_DEBUG("Destroying old textures.\n");
 	if (card->current != NULL) {
 		SDL_DestroyTexture(card->current);
@@ -74,6 +81,8 @@ static void _flipclock_card_destroy_textures(struct flipclock_card *card)
 // TODO: Only open sub font if sub text used.
 static void _flipclock_card_open_fonts(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	const struct flipclock *app = card->app;
 	LOG_DEBUG("Opening font from `%s`.\n", app->font_path);
 	card->font =
@@ -88,6 +97,8 @@ static void _flipclock_card_open_fonts(struct flipclock_card *card)
 
 static void _flipclock_card_close_fonts(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	LOG_DEBUG("Closing old font.\n");
 	if (card->font != NULL) {
 		TTF_CloseFont(card->font);
@@ -101,6 +112,8 @@ static void _flipclock_card_close_fonts(struct flipclock_card *card)
 
 static void _flipclock_card_clear_current_texture(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	SDL_SetRenderTarget(card->renderer, card->current);
 	// Always clear texture with transparent so rounded corner will be fine.
 	SDL_SetRenderDrawColor(card->renderer, 0x00, 0x00, 0x00, 0x00);
@@ -110,6 +123,8 @@ static void _flipclock_card_clear_current_texture(struct flipclock_card *card)
 
 static void _flipclock_card_draw_rounded_box(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	const struct flipclock *app = card->app;
 	// Card-local position.
 	const SDL_Rect box_rect = { 0, 0, card->rect.w, card->rect.h };
@@ -178,6 +193,11 @@ static void _draw_text(SDL_Renderer *renderer, SDL_Texture *target_texture,
 		       SDL_Rect target_rect, TTF_Font *font, SDL_Color color,
 		       const char text[])
 {
+	RETURN_IF_FAIL(renderer != NULL);
+	RETURN_IF_FAIL(target_texture != NULL);
+	RETURN_IF_FAIL(font != NULL);
+	RETURN_IF_FAIL(text != NULL);
+
 	int len = strlen(text);
 	LOG_DEBUG("Drawing text `%s`.\n", text);
 	SDL_SetRenderTarget(renderer, target_texture);
@@ -218,6 +238,8 @@ static void _draw_text(SDL_Renderer *renderer, SDL_Texture *target_texture,
 
 static void _flipclock_card_draw_text(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	const struct flipclock *app = card->app;
 	// Card-local position.
 	const SDL_Rect box_rect = { 0, 0, card->rect.w, card->rect.h };
@@ -231,6 +253,8 @@ static void _flipclock_card_draw_text(struct flipclock_card *card)
 
 static void _flipclock_card_draw_divider(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	const struct flipclock *app = card->app;
 	SDL_Rect divider_rect = { 0, (card->rect.h - card->divider_height) / 2,
 				  card->rect.w, card->divider_height };
@@ -245,6 +269,8 @@ static void _flipclock_card_draw_divider(struct flipclock_card *card)
 
 static void _flipclock_card_draw(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	// Always do texture swap before drawing.
 	SDL_Texture *swap = card->current;
 	card->current = card->previous;
@@ -261,6 +287,8 @@ static void _flipclock_card_draw(struct flipclock_card *card)
 // Those setter functions will request redraw.
 void flipclock_card_set_rect(struct flipclock_card *card, const SDL_Rect rect)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	card->divider_height = rect.h / 100;
 	card->radius = rect.h / 10;
 	card->sub_rect.h = rect.h / 10;
@@ -277,15 +305,16 @@ void flipclock_card_set_rect(struct flipclock_card *card, const SDL_Rect rect)
 		_flipclock_card_open_fonts(card);
 		_flipclock_card_destroy_textures(card);
 		_flipclock_card_create_textures(card);
-	}
-	// A redraw is requested because size or position changed.
-	if (card->rect.x != old_rect.x || card->rect.y != old_rect.y ||
-	    card->rect.w != old_rect.w || card->rect.h != old_rect.h)
+		// A redraw is requested because size changed.
 		card->should_redraw = true;
+	}
 }
 
 void flipclock_card_set_text(struct flipclock_card *card, const char text[])
 {
+	// Text can be NULL to clear card.
+	RETURN_IF_FAIL(card != NULL);
+
 	// card->text_changed = true;
 	if (text == NULL) {
 		card->text[0] = '\0';
@@ -308,6 +337,9 @@ void flipclock_card_set_text(struct flipclock_card *card, const char text[])
 void flipclock_card_set_sub_text(struct flipclock_card *card,
 				 const char sub_text[])
 {
+	// Text can be NULL to clear card.
+	RETURN_IF_FAIL(card != NULL);
+
 	if (sub_text == NULL) {
 		card->has_sub_text = false;
 		card->sub_text[0] = '\0';
@@ -328,12 +360,16 @@ void flipclock_card_set_sub_text(struct flipclock_card *card,
 
 void flipclock_card_flip(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	// Flipping animation start.
 	card->start_tick = SDL_GetTicks();
 }
 
 void flipclock_card_animate(struct flipclock_card *card)
 {
+	RETURN_IF_FAIL(card != NULL);
+
 	/**
 	 * We defer redraw requests to actually copy, so we only redraw card
 	 * once for different text changes.
@@ -393,8 +429,8 @@ void flipclock_card_animate(struct flipclock_card *card)
 
 void flipclock_card_destory(struct flipclock_card *card)
 {
-	if (card == NULL)
-		return;
+	RETURN_IF_FAIL(card != NULL);
+
 	_flipclock_card_close_fonts(card);
 	_flipclock_card_destroy_textures(card);
 	free(card);

@@ -19,8 +19,10 @@
 #define DOUBLE_TAP_INTERVAL_MS 300
 
 #if defined(_WIN32)
-static void _flipclock_get_program_dir_win32(char *program_dir)
+static void _flipclock_get_program_dir_win32(char program_dir[])
 {
+	RETURN_IF_FAIL(program_dir != NULL);
+
 	/**
 	 * See https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew.
 	 * GetModuleFileName is a macro to
@@ -69,6 +71,7 @@ struct flipclock *flipclock_create(void)
 	app->background_color.a = 0xff;
 	app->ampm = false;
 	app->full = true;
+	app->show_second = false;
 	app->font_path[0] = '\0';
 	app->conf_path[0] = '\0';
 	app->text_scale = 1.0;
@@ -98,8 +101,12 @@ struct flipclock *flipclock_create(void)
 	return app;
 }
 
-static int _flipclock_parse_key_value(char *line, char **key, char **value)
+static int _flipclock_parse_key_value(char line[], char **key, char **value)
 {
+	RETURN_VAL_IF_FAIL(line != NULL, -6);
+	RETURN_VAL_IF_FAIL(key != NULL, -7);
+	RETURN_VAL_IF_FAIL(value != NULL, -8);
+
 	const int line_length = strlen(line);
 	int key_start = -1;
 	for (int i = 0; i < line_length; ++i) {
@@ -170,6 +177,9 @@ static int _flipclock_parse_key_value(char *line, char **key, char **value)
 
 static int _flipclock_parse_color(const char rgba[], SDL_Color *color)
 {
+	RETURN_VAL_IF_FAIL(rgba != NULL, -5);
+	RETURN_VAL_IF_FAIL(color != NULL, -6);
+
 	const int rgba_length = strlen(rgba);
 	if (rgba_length == 0) {
 		LOG_ERROR("Empty color string!\n");
@@ -210,9 +220,12 @@ static int _flipclock_parse_color(const char rgba[], SDL_Color *color)
 }
 
 #if defined(_WIN32)
-static FILE *_flipclock_open_conf_win32(char *conf_path,
-					const char *program_dir)
+static FILE *_flipclock_open_conf_win32(char conf_path[],
+					const char program_dir[])
 {
+	RETURN_VAL_IF_FAIL(conf_path != NULL, NULL);
+	RETURN_VAL_IF_FAIL(program_dir != NULL, NULL);
+
 	snprintf(conf_path, MAX_BUFFER_LENGTH, "%s\\flipclock.conf",
 		 program_dir);
 	conf_path[MAX_BUFFER_LENGTH - 1] = '\0';
@@ -223,7 +236,10 @@ static FILE *_flipclock_open_conf_win32(char *conf_path,
 #elif defined(__linux__) && !defined(__ANDROID__)
 static FILE *_flipclock_open_conf_linux(char *conf_path)
 {
+	RETURN_VAL_IF_FAIL(conf_path != NULL, NULL);
+
 	FILE *conf = NULL;
+
 	// Be a good program.
 	const char *conf_dir = getenv("XDG_CONFIG_HOME");
 	if (conf_dir != NULL && strlen(conf_dir) != 0) {
@@ -262,6 +278,10 @@ static FILE *_flipclock_open_conf_linux(char *conf_path)
 static void _flipclock_apply_key_value(struct flipclock *app, const char key[],
 				       const char value[])
 {
+	RETURN_IF_FAIL(app != NULL);
+	RETURN_IF_FAIL(key != NULL);
+	RETURN_IF_FAIL(value != NULL);
+
 	/**
 	 * It's better to use a temp variable here,
 	 * so when parsing failed we still have the default color.
@@ -273,6 +293,9 @@ static void _flipclock_apply_key_value(struct flipclock *app, const char key[],
 	} else if (!strcmp(key, "full")) {
 		if (!strcmp(value, "false"))
 			app->full = false;
+	} else if (!strcmp(key, "show_second")) {
+		if (!strcmp(value, "true"))
+			app->show_second = true;
 	} else if (!strcmp(key, "font")) {
 		strncpy(app->font_path, value, MAX_BUFFER_LENGTH);
 		app->font_path[MAX_BUFFER_LENGTH - 1] = '\0';
@@ -338,6 +361,8 @@ static void _flipclock_apply_key_value(struct flipclock *app, const char key[],
 
 void flipclock_load_conf(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	FILE *conf = NULL;
 #if defined(_WIN32)
 	conf = _flipclock_open_conf_win32(app->conf_path, app->program_dir);
@@ -369,6 +394,8 @@ void flipclock_load_conf(struct flipclock *app)
 
 static void _flipclock_create_clocks(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	// Create window for each display if fullscreen.
 	if (app->full) {
 		/**
@@ -403,8 +430,10 @@ static void _flipclock_create_clocks(struct flipclock *app)
 char preview_lock_path[MAX_BUFFER_LENGTH] = { '\0' };
 
 static void _flipclock_get_preview_lock_path_win32(HWND preview_window,
-						   const char *program_dir)
+						   const char program_dir[])
 {
+	RETURN_IF_FAIL(program_dir != NULL);
+
 	/**
 	 * User can open more than screensaver chooser,
 	 * so we need to add HWND as part of lock file name.
@@ -430,6 +459,8 @@ static void _flipclock_remove_preview_lock_win32(void)
 
 static void _flipclock_lock_preview_win32(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	_flipclock_get_preview_lock_path_win32(app->preview_window,
 					       app->program_dir);
 	LOG_DEBUG("Using `preview_lock_path` `%s`.\n", preview_lock_path);
@@ -447,6 +478,8 @@ static void _flipclock_lock_preview_win32(struct flipclock *app)
 
 static void _flipclock_create_preview_win32(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	_flipclock_lock_preview_win32(app);
 	app->clocks = malloc(sizeof(*app->clocks) * app->clocks_length);
 	if (app->clocks == NULL) {
@@ -459,6 +492,8 @@ static void _flipclock_create_preview_win32(struct flipclock *app)
 
 static void _flipclock_create_clocks_win32(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	if (!app->screensaver)
 		SDL_DisableScreenSaver();
 	if (app->preview)
@@ -470,6 +505,8 @@ static void _flipclock_create_clocks_win32(struct flipclock *app)
 
 void flipclock_create_clocks(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 #if defined(_WIN32)
 	_flipclock_create_clocks_win32(app);
 #else
@@ -479,8 +516,22 @@ void flipclock_create_clocks(struct flipclock *app)
 #endif
 }
 
+static void _flipclock_set_show_second(struct flipclock *app, bool show_second)
+{
+	RETURN_IF_FAIL(app != NULL);
+
+	app->show_second = show_second;
+	for (int i = 0; i < app->clocks_length; ++i) {
+		if (app->clocks[i] == NULL)
+			continue;
+		flipclock_clock_set_show_second(app->clocks[i], show_second);
+	}
+}
+
 static void _flipclock_set_fullscreen(struct flipclock *app, bool full)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	app->full = full;
 	if (full)
 		SDL_ShowCursor(SDL_DISABLE);
@@ -499,6 +550,8 @@ static void _flipclock_set_fullscreen(struct flipclock *app, bool full)
  */
 static void _flipclock_set_ampm(struct flipclock *app, bool ampm)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	app->ampm = ampm;
 	if (app->ampm) {
 		for (int i = 0; i < app->clocks_length; ++i) {
@@ -520,6 +573,8 @@ static void _flipclock_set_ampm(struct flipclock *app, bool ampm)
 
 static void _flipclock_set_hour(struct flipclock *app, bool flip)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	for (int i = 0; i < app->clocks_length; ++i) {
 		if (app->clocks[i] == NULL)
 			continue;
@@ -537,6 +592,8 @@ static void _flipclock_set_hour(struct flipclock *app, bool flip)
 
 static void _flipclock_set_minute(struct flipclock *app, bool flip)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	for (int i = 0; i < app->clocks_length; ++i) {
 		if (app->clocks[i] == NULL)
 			continue;
@@ -546,8 +603,23 @@ static void _flipclock_set_minute(struct flipclock *app, bool flip)
 	}
 }
 
+static void _flipclock_set_second(struct flipclock *app, bool flip)
+{
+	RETURN_IF_FAIL(app != NULL);
+
+	for (int i = 0; i < app->clocks_length; ++i) {
+		if (app->clocks[i] == NULL)
+			continue;
+		char text[3];
+		strftime(text, sizeof(text), "%S", &app->now);
+		flipclock_clock_set_second(app->clocks[i], text, flip);
+	}
+}
+
 static void _flipclock_animate(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	// Pause when minimized.
 	for (int i = 0; i < app->clocks_length; ++i) {
 		if (app->clocks[i] == NULL)
@@ -560,6 +632,8 @@ static void _flipclock_animate(struct flipclock *app)
 static void _flipclock_handle_window_event(struct flipclock *app,
 					   SDL_Event event)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	struct flipclock_clock *clock = NULL;
 	for (int i = 0; i < app->clocks_length; ++i) {
 		// Ignore closed clocks.
@@ -581,6 +655,8 @@ static void _flipclock_handle_window_event(struct flipclock *app,
 
 static void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	switch (event.key.keysym.sym) {
 	case SDLK_ESCAPE:
 	case SDLK_q:
@@ -596,6 +672,12 @@ static void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
 		LOG_DEBUG("Key `f` pressed.\n");
 		_flipclock_set_fullscreen(app, !app->full);
 		break;
+	case SDLK_s:
+		LOG_DEBUG("Key `s` pressed.\n");
+		_flipclock_set_show_second(app, !app->show_second);
+		// Must set second text, because created card has empty text.
+		_flipclock_set_second(app, false);
+		break;
 	default:
 		break;
 	}
@@ -603,6 +685,8 @@ static void _flipclock_handle_keydown(struct flipclock *app, SDL_Event event)
 
 static void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	switch (event.type) {
 #if defined(_WIN32)
 	/**
@@ -634,11 +718,37 @@ static void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEMOTION:
 	case SDL_MOUSEWHEEL:
-	case SDL_FINGERDOWN:
 		if (!app->preview && app->screensaver)
 			app->running = false;
 		break;
 #endif
+	case SDL_FINGERDOWN:
+#if defined(_WIN32)
+		if (!app->preview && app->screensaver)
+			app->running = false;
+		break;
+#else
+		// TODO: May not work, 3 fingers contains 2 fingers.
+		switch (SDL_GetNumTouchFingers(event.tfinger.touchId)) {
+		case 2:
+			_flipclock_set_ampm(app, !app->ampm);
+			// Setting ampm always changes hour.
+			_flipclock_set_hour(app, false);
+			break;
+		case 3:
+			_flipclock_set_show_second(app, !app->show_second);
+			/**
+			 * Must set second text, because created card has empty
+			 * text.
+			 */
+			_flipclock_set_second(app, false);
+			break;
+		default:
+			break;
+		}
+		break;
+#endif
+
 	/**
 	 * For touch devices, the most used function is
 	 * changing type, so we use double tap for it,
@@ -682,6 +792,8 @@ static void _flipclock_handle_event(struct flipclock *app, SDL_Event event)
 
 void flipclock_run_mainloop(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	SDL_Event event;
 	// Clear event queue before running.
 	while (SDL_PollEvent(&event))
@@ -690,6 +802,8 @@ void flipclock_run_mainloop(struct flipclock *app)
 	_flipclock_set_ampm(app, app->ampm);
 	_flipclock_set_hour(app, false);
 	_flipclock_set_minute(app, false);
+	if (app->show_second)
+		_flipclock_set_second(app, false);
 	_flipclock_animate(app);
 	while (app->running) {
 #if defined(_WIN32)
@@ -708,14 +822,21 @@ void flipclock_run_mainloop(struct flipclock *app)
 		}
 		if (app->now.tm_min != past.tm_min)
 			_flipclock_set_minute(app, true);
+		if (app->show_second && app->now.tm_sec != past.tm_sec)
+			_flipclock_set_second(app, true);
 		_flipclock_animate(app);
 	}
 }
 
 void flipclock_destroy_clocks(struct flipclock *app)
 {
-	for (int i = 0; i < app->clocks_length; ++i)
+	RETURN_IF_FAIL(app != NULL);
+
+	for (int i = 0; i < app->clocks_length; ++i) {
+		if (app->clocks[i] == NULL)
+			continue;
 		flipclock_clock_destroy(app->clocks[i]);
+	}
 	free(app->clocks);
 	if (app->full)
 		SDL_ShowCursor(SDL_ENABLE);
@@ -729,11 +850,16 @@ void flipclock_destroy_clocks(struct flipclock *app)
 
 void flipclock_destroy(struct flipclock *app)
 {
+	RETURN_IF_FAIL(app != NULL);
+
 	free(app);
 }
 
 void flipclock_print_help(struct flipclock *app, char program_name[])
 {
+	RETURN_IF_FAIL(app != NULL);
+	RETURN_IF_FAIL(program_name != NULL);
+
 	printf("A simple flip clock screensaver using SDL2.\n");
 #if !defined(__ANDROID__)
 	printf("Version " PROJECT_VERSION ".\n");
@@ -751,12 +877,14 @@ void flipclock_print_help(struct flipclock *app, char program_name[])
 	printf("\t%cp <HWND>\t(Windows only) Preview in given window.\n",
 	       OPT_START);
 #endif
+	printf("\t%cS\t\tShow second.\n", OPT_START);
 	printf("\t%cw\t\tRun as a window instead of fullscreen.\n", OPT_START);
 	printf("\t%ct <12|24>\tToggle 12-hour clock format (AM/PM) "
 	       "or 24-hour clock format.\n",
 	       OPT_START);
 	printf("\t%cf <font>\tLoad custom font path.\n", OPT_START);
 	printf("Press Esc or q to exit.\n");
+	printf("Press s to toggle second display.\n");
 	printf("Press f to toggle fullscreen.\n");
 	printf("Press t to toggle 12/24-hour clock format.\n");
 	printf("Using configuration file %s.\n", app->conf_path);

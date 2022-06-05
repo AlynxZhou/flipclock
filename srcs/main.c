@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
 	// Android don't need conf and arguments.
 	flipclock_load_conf(app);
 #	if defined(_WIN32)
-	char OPT_STRING[] = "hvscp:wt:f:";
+	char OPT_STRING[] = "hvscp:Swt:f:";
 #	else
-	char OPT_STRING[] = "hvwt:f:";
+	char OPT_STRING[] = "hvSwt:f:";
 #	endif
 	int opt = 0;
 	bool exit_after_argument = false;
@@ -84,6 +84,9 @@ int main(int argc, char *argv[])
 			app->preview_window = strtoul(argopt, NULL, 0);
 			break;
 #	endif
+		case 'S':
+			app->show_second = true;
+			break;
 		case 'w':
 			app->full = false;
 			break;
