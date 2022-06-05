@@ -26,10 +26,14 @@ int main(int argc, char *argv[])
 #if !defined(__ANDROID__)
 	// Android don't need conf and arguments.
 	flipclock_load_conf(app);
+#	if defined(__DEBUG__)
+	for (int i = 0; i < argc; ++i)
+		LOG_DEBUG("argv[%d]: %s\n", i, argv[i]);
+#	endif
 #	if defined(_WIN32)
-	char OPT_STRING[] = "hvscp:Swt:f:";
+	char OPT_STRING[] = "hvscp:3wt:f:";
 #	else
-	char OPT_STRING[] = "hvSwt:f:";
+	char OPT_STRING[] = "hv3wt:f:";
 #	endif
 	int opt = 0;
 	bool exit_after_argument = false;
@@ -77,14 +81,21 @@ int main(int argc, char *argv[])
 			 * typedef void *PVOID;
 			 * typedef PVOID HANDLE;
 			 * typedef HANDLE HWND;
-			 * So it's safe to treat it as a unsigned int.
+			 * So it's safe to treat it as a unsigned int, even
+			 * though silly MSVC will complain. If MSVC is unhappy,
+			 * why not tell us how to handle it correctly?
 			 * Seems Windows print HWND as a decimal number,
 			 * so %p with scanf() is not suitable here.
 			 */
 			app->preview_window = strtoul(argopt, NULL, 0);
 			break;
 #	endif
-		case 'S':
+		/**
+		 * Windows taken `/s` for screensaver, and if you run `.scr`
+		 * file from explorer, it will add `/S`! What a silly behavior,
+		 * so we cannot use those chars.
+		 */
+		case '3':
 			app->show_second = true;
 			break;
 		case 'w':
