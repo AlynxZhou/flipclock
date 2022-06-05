@@ -42,6 +42,13 @@
   </screenshots>
 
   <releases>
+    <release version="2.10.0" date="2022-06-05">
+      <description>
+        <p>Added card for second.</p>
+        <p>Updated touch event handling.</p>
+        <p>Updated arguments handling.</p>
+      </description>
+    </release>
     <release version="2.9.2" date="2022-06-03">
       <description>
         <p>Fixed Android build.</p>
