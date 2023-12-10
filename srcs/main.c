@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 			exit_after_argument = true;
 			break;
 #	if defined(_WIN32)
-		// See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms686421(v=vs.85)#concepts.
+		// See <https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms686421(v=vs.85)#concepts>.
 		case 's':
 			/**
 			 * One of the most silly requirement I've seen.
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 			/**
-			 * See https://docs.microsoft.com/en-us/windows/win32/winprog/windows-data-types.
+			 * See <https://docs.microsoft.com/en-us/windows/win32/winprog/windows-data-types>.
 			 * typedef void *PVOID;
 			 * typedef PVOID HANDLE;
 			 * typedef HANDLE HWND;

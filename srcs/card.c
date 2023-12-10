@@ -203,7 +203,7 @@ static void _draw_text(SDL_Renderer *renderer, SDL_Texture *target_texture,
 	SDL_SetRenderTarget(renderer, target_texture);
 	for (int i = 0; i < len; ++i) {
 		/**
-		 * See https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html#SEC42.
+		 * See <https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html#SEC42>.
 		 * Normally shaded is enough, however we have a rounded box,
 		 * and many fonts' boxes are too big compared with their
 		 * characters, they just cover the rounded corner.

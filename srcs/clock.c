@@ -367,7 +367,7 @@ void flipclock_clock_handle_window_event(struct flipclock_clock *clock,
 		flipclock_clock_destroy(clock);
 		app->clocks[clock_i] = NULL;
 		/**
-		 * See https://wiki.libsdl.org/SDL_EventType#SDL_QUIT.
+		 * See <https://wiki.libsdl.org/SDL_EventType#SDL_QUIT>.
 		 * It seems that SDL will send SDL_QUIT automatically
 		 * when all windows are closed, so we don't need to exit
 		 * manually here.

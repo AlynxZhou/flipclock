@@ -24,7 +24,7 @@ static void _flipclock_get_program_dir_win32(char program_dir[])
 	RETURN_IF_FAIL(program_dir != NULL);
 
 	/**
-	 * See https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew.
+	 * See <https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew>.
 	 * GetModuleFileName is a macro to
 	 * GetModuleFileNameW and GetModuleFileNameA.
 	 */

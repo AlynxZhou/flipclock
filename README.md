@@ -8,12 +8,6 @@ A flip clock screensaver supported by SDL2.
 
 ![Screenshot](screenshot.png)
 
-# Notice
-
-I added multi-display support to this program, but adding/removing monitors while program is running is not supported, and you should not do this.
-
-If you run this program in windowed mode (`-w`), only one display is supported. Multi-display is only supported in fullscreen mode.
-
 # Installation
 
 ## Distribution Package (Recommended)
@@ -56,18 +50,14 @@ Just download file with `win` in its name from [release page](https://github.com
 
 ### Linux
 
-#### With Meson (Recommended)
-
 1. Install a C compiler, Meson, Ninja, libc, libm, SDL2 and SDL2_ttf.
 2. `mkdir build && cd build && meson setup . .. && meson compile`
 3. `./flipclock -f ../dists/flipclock.ttf`
-4. If you want to install this to your system, it is suggested to build with `mkdir build && cd build && meson setup --prefix=/usr --buildtype=release . .. && meson compile && sudo meson install`.
+4. If you want to install this to your system, you could use `mkdir build && cd build && meson setup --prefix=/usr --buildtype=release . .. && meson compile && sudo meson install`.
 
 ### Windows
 
-**NOTICE**: I saw a windows user says "This program has dlls in its folder so it's not simple!" and I got angry. Anyone who knows something about compiling, linking and loading won't complain. It might be quite hard for some Windows users to understand how complicated building static libraries is and what dynamically libraries are. Windows is a horrible platform for developers: no package manager for easy distribution, slowly visual studio, complicated tool chains. But thanks to Meson which handles all dirty things for me, it's SDL2 wrap works now and I managed to tweak it to build a static linked program automatically if no pre-built dependency found.
-
-#### With Meson (Recommended)
+I saw a windows user says "This program has dlls in its folder so it's not simple!" and I got angry. Anyone who knows compiling, linking and loading won't complain. It might be quite hard for some Windows users to understand how hard to build static libraries. Windows is a horrible platform for developers: there is no package manager so you have to package all dependencies, Visual Studio is slow and complex on adding dependenvies. Thanks to Meson which handles all dirty things, its SDL2 wrap works good and I managed to tweak it to build a static linked program automatically if no pre-built dependency found.
 
 1. Install Meson, Ninja, Visual Studio.
 2. Create a prefix directory, for example `d:/flipclock-prefix`, program files will be installed into it.
@@ -87,16 +77,22 @@ On Windows, program will use `flipclock.conf` under the same directory as progra
 
 `flipclock.conf` should be installed with the binary by Meson.
 
+# About Fullscreen and Multi-Monitor
+
+This program has multi-monitor support when it is started as fullscreen, but adding/removing monitors while program is running is not supported, and you should not do this.
+
+If you run this program in windowed mode (`-w`), it will only create one window.
+
 # Contribution
 
-If you want some features and you can implement it, a PR is always welcome, but there are some rules or personal habits:
+If you want some features and you can implement it, PRs are always welcome, but there are some rules or personal habits:
 
 - If you are writing multi-line comment, please use the same style with existing comments. Comments should always occupy a new line. If your comment is longer than Column 80, break it into block comment with `/* */` (but don't break long URL, it's fine), don't use `//` for block comment.
 - You can use all **C11** features freely.
 - Try to use C standard functions first, until you are implementing some platform-dependent features that libc does not support. Do use preprocessor (`_WIN32`, `__ANDROID__` and `__linux__`) for platform-dependent code. (Note: Android will also define `__linux__`, so if you are targeting traditional Linux distributions, please use `defined(__linux__) && !defined(__ANDROID__)`.)
 - Use `RETURN_IF_FAIL(EXPR)` or `RETURN_VAL_IF_FAIL(EXPR, VAL)` from `flipclock.h` to check arguments for newly added functions.
-- Try not to pull new dependencies into project other than SDL2 and SDL2_ttf, it's too brain damage to add dependency when building on Windows, building on this platform is a disaster and packaging on this platform is a mistery.
-- **When you are coding please use [Linux kernel coding style](https://www.kernel.org/doc/html/v4.10/process/coding-style.html).** There is a `.clang-format` for this project, please run `clang-format` yourself before committing something. It will keep most coding style consistent.
+- Try not to pull new dependencies into project other than SDL2 and SDL2_ttf, it's too brain damage to add dependencies when building on Windows, building on this platform is a disaster and packaging on this platform is a mistery.
+- **When you are coding please use [Linux kernel coding style](https://www.kernel.org/doc/html/latest/process/coding-style.html).** There is a `.clang-format` for this project, please run `clang-format` yourself before committing something. It will keep most coding style consistent.
 - There are still some coding style `clang-format` cannot change, please keep the same as existing code. For example, add period for all comments and printed text, add `\n` yourself for logging.
 - Prefer to `++i`, except when you really need `i` before increasement.
 - I prefer to write commit message in past tense, capitalize the first character and add period. For example "Added new feature.", "Updated README.md.".
