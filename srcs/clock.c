@@ -111,14 +111,22 @@ struct flipclock_clock *flipclock_clock_create(struct flipclock *app, int i)
 	RETURN_VAL_IF_FAIL(app != NULL, NULL);
 
 	/**
-	 * We need `SDL_WINDOW_RESIZABLE` for auto-rotate
-	 * while fullscreen on Android.
+	 * We need `SDL_WINDOW_RESIZABLE` for auto-rotate while fullscreen on
+	 * Android.
+	 *
+	 * Being HiDPI aware aware on macOS requires extra files, we don't have
+	 * it so disable this currently.
 	 */
-	unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
-			     SDL_WINDOW_ALLOW_HIGHDPI;
+	unsigned int flags = SDL_WINDOW_SHOWN |
+#ifndef __APPLE__
+		SDL_WINDOW_ALLOW_HIGHDPI ｜
+#endif
+		SDL_WINDOW_RESIZABLE;
 	if (app->full) {
 		flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+#ifndef __APPLE__
 			SDL_WINDOW_ALLOW_HIGHDPI |
+#endif
 			SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 	struct flipclock_clock *clock = malloc(sizeof(*clock));

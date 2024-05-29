@@ -72,7 +72,7 @@ sdl2 = dependency('sdl2', required: true)
 sdl2_ttf = dependency('SDL2_ttf', required: true)
 dependencies += [sdl2, sdl2_ttf]
 
-if host_machine.system() == 'linux'
+if host_machine.system() == 'linux' or host_machine.system() == 'darwin'
   executable(
     'flipclock',
     sources: sources,
