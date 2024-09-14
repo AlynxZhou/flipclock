@@ -119,7 +119,7 @@ struct flipclock_clock *flipclock_clock_create(struct flipclock *app, int i)
 	 */
 	unsigned int flags = SDL_WINDOW_SHOWN |
 #ifndef __APPLE__
-		SDL_WINDOW_ALLOW_HIGHDPI ｜
+		SDL_WINDOW_ALLOW_HIGHDPI |
 #endif
 		SDL_WINDOW_RESIZABLE;
 	if (app->full) {
