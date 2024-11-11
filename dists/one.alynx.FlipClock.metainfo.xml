@@ -12,6 +12,7 @@
   <content_rating type="oars-1.1" />
   
   <launchable type="desktop-id">one.alynx.FlipClock.desktop</launchable>
+  <developer_name>Alynx Zhou</developer_name>
   
   <supports>
     <control>pointing</control>
@@ -26,6 +27,8 @@
     </p>
   </description>
   <url type="homepage">https://flipclock.alynx.one/</url>
+  <url type="bugtracker">https://github.com/AlynxZhou/flipclock/issues</url>
+  <url type="vcs-browser">https://github.com/AlynxZhou/flipclock</url>  
   <screenshots>
     <screenshot type="default">
       <image>https://flipclock.alynx.one/images/screenshot-1.png</image>
