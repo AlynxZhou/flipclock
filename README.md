@@ -73,6 +73,12 @@ See [flipclock-android](https://github.com/AlynxZhou/flipclock-android/). It may
 
 On Linux, program will first use `$XDG_CONFIG_HOME/flipclock.conf`, if `XDG_CONFIG_HOME` is not set or file does not exist, it will use `$HOME/.config/flipclock.conf`. If per-user configuration file does not exist, it will use `/etc/flipclock.conf` or `flipclock.conf` under `sysconfdir` you choosed while building.
 
+If you want to run this program under Wayland, you can set environment variable `SDL_VIDEODRIVER` to `wayland`:
+
+```
+SDL_VIDEODRIVER=wayland
+```
+
 On Windows, program will use `flipclock.conf` under the same directory as program.
 
 `flipclock.conf` should be installed with the binary by Meson.
