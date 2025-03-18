@@ -8,3 +8,4 @@ TryExec=@package_bindir@/flipclock
 StartupNotify=false
 Terminal=false
 Categories=Utility;Clock;
+StartupWMClass=flipclock
